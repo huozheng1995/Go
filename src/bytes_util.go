@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"math"
+	"strconv"
 )
 
 var Endian = binary.BigEndian
@@ -57,4 +58,12 @@ func BytesToInt64(bytes []byte) int64 {
 
 func BytesToString(bytes []byte) string {
 	return string(bytes)
+}
+
+func ReadBytesData(bytes []byte) string {
+	var result string
+	for _, val := range bytes {
+		result = result + strconv.Itoa(int(val)) + " "
+	}
+	return result
 }

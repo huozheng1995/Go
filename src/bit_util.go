@@ -8,7 +8,7 @@ func ByteToBit(val byte) string {
 	var result string
 	for i := 0; i < 8; i++ {
 		var t int
-		t = (val >> (7 - i)) & 0x01
+		t = int((val >> (7 - i)) & 0x01)
 		result += strconv.Itoa(t)
 	}
 	return result
@@ -46,7 +46,7 @@ func Int64ToBit(val int64) string {
 	var result string
 	for i := 0; i < 64; i++ {
 		var t int
-		t = (val >> (63 - i)) & 0x01
+		t = int((val >> (63 - i)) & 0x01)
 		result += strconv.Itoa(t)
 	}
 	return result
