@@ -62,8 +62,14 @@ func BytesToString(bytes []byte) string {
 
 func ReadBytesData(bytes []byte) string {
 	var result string
+	count := 0
 	for _, val := range bytes {
-		result = result + strconv.Itoa(int(val)) + " "
+		count++
+		if count > 0 && (count%8) == 0 {
+			result = result + strconv.Itoa(int(val)) + " || "
+		} else {
+			result = result + strconv.Itoa(int(val)) + " "
+		}
 	}
 	return result
 }

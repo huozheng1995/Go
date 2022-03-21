@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	utils.ReadFile("C:\\source\\binlog.000001")
+	utils.ReadFileBytes("C:\\source\\binlog.000001")
 }
 
 func printASCII() {
