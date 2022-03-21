@@ -29,9 +29,9 @@ func PrintFile(fileName string) {
 		}
 
 		if count < BufferSize {
-			fmt.Println("row" + strconv.Itoa(rowIndex) + ": " + string(buffer[:count]))
+			fmt.Printf("%s\n", string(buffer[:count]))
 		} else {
-			fmt.Println("row" + strconv.Itoa(rowIndex) + ": " + string(buffer))
+			fmt.Printf("%s\n", string(buffer))
 		}
 		rowIndex++
 	}
@@ -59,9 +59,39 @@ func PrintFileBytes(fileName string) {
 		}
 
 		if count < BufferSize {
-			fmt.Println("row" + strconv.Itoa(rowIndex) + ": " + ReadBytesData(buffer[:count]))
+			fmt.Println("row" + strconv.Itoa(rowIndex) + ": " + GetBytesData(buffer[:count]))
 		} else {
-			fmt.Println("row" + strconv.Itoa(rowIndex) + ": " + ReadBytesData(buffer))
+			fmt.Println("row" + strconv.Itoa(rowIndex) + ": " + GetBytesData(buffer))
+		}
+		rowIndex++
+	}
+}
+
+func PrintFileBytesHex(fileName string) {
+	const BufferSize = 64
+	file, err := os.Open(fileName)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer file.Close()
+
+	buffer := make([]byte, BufferSize)
+
+	var rowIndex = 1
+	for {
+		count, err := file.Read(buffer)
+		if err != nil {
+			if err != io.EOF {
+				fmt.Println(err)
+			}
+			break
+		}
+
+		if count < BufferSize {
+			fmt.Println("row" + strconv.Itoa(rowIndex) + ": " + GetBytesDataHex(buffer[:count]))
+		} else {
+			fmt.Println("row" + strconv.Itoa(rowIndex) + ": " + GetBytesDataHex(buffer))
 		}
 		rowIndex++
 	}

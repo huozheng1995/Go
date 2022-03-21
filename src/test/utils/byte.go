@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/binary"
+	"fmt"
 	"math"
 	"strconv"
 )
@@ -60,7 +61,7 @@ func BytesToString(bytes []byte) string {
 	return string(bytes)
 }
 
-func ReadBytesData(bytes []byte) string {
+func GetBytesData(bytes []byte) string {
 	var result string
 	count := 0
 	for _, val := range bytes {
@@ -72,4 +73,22 @@ func ReadBytesData(bytes []byte) string {
 		}
 	}
 	return result
+}
+
+func GetBytesDataHex(bytes []byte) string {
+	var result string
+	count := 0
+	for _, val := range bytes {
+		count++
+		if count > 0 && (count%8) == 0 {
+			result = result + DecToHex(int64(val)) + " || "
+		} else {
+			result = result + DecToHex(int64(val)) + " "
+		}
+	}
+	return result
+}
+
+func PrintStringBytes(val string) {
+	fmt.Println(GetBytesData(StringToBytes(val)))
 }
