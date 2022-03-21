@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func ReadFile(fileName string) {
+func PrintFile(fileName string) {
 	const BufferSize = 64
 	file, err := os.Open(fileName)
 	if err != nil {
@@ -37,7 +37,7 @@ func ReadFile(fileName string) {
 	}
 }
 
-func ReadFileBytes(fileName string) {
+func PrintFileBytes(fileName string) {
 	const BufferSize = 64
 	file, err := os.Open(fileName)
 	if err != nil {
