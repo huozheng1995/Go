@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 )
 
 var Endian = binary.BigEndian
@@ -61,26 +62,28 @@ func BytesToString(bytes []byte) string {
 	return string(bytes)
 }
 
-func GetBytesData(bytes []byte) string {
+type BytesDataToNum func(bytes []byte) string
+
+func BytesDataToDec(bytes []byte) string {
 	var result string
 	count := 0
 	for _, val := range bytes {
 		count++
-		if count > 0 && (count%8) == 0 {
-			result = result + strconv.Itoa(int(val)) + ", "
+		if count%8 == 0 {
+			result = result + Fill0(strconv.Itoa(int(val)), 3) + ", "
 		} else {
-			result = result + strconv.Itoa(int(val)) + " "
+			result = result + Fill0(strconv.Itoa(int(val)), 3) + " "
 		}
 	}
 	return result
 }
 
-func GetBytesDataHex(bytes []byte) string {
+func BytesDataToHex(bytes []byte) string {
 	var result string
 	count := 0
 	for _, val := range bytes {
 		count++
-		if count > 0 && (count%8) == 0 {
+		if count%8 == 0 {
 			result = result + DecToHex(int64(val)) + ", "
 		} else {
 			result = result + DecToHex(int64(val)) + " "
@@ -90,5 +93,14 @@ func GetBytesDataHex(bytes []byte) string {
 }
 
 func PrintStringBytes(val string) {
-	fmt.Println(GetBytesData(StringToBytes(val)))
+	fmt.Println(BytesDataToDec(StringToBytes(val)))
+}
+
+func Fill0(val string, expectedLen int) string {
+	diff := expectedLen - len(val)
+	if diff > 0 {
+		return strings.Repeat("0", diff) + val
+	} else {
+		return val
+	}
 }

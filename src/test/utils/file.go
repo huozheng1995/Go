@@ -5,9 +5,13 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 )
 
-const beforePrint, printing = 1, 2
+const (
+	beforePrint, printing = 1, 2
+	printLen              = 5
+)
 
 var PrintState = beforePrint
 
@@ -41,104 +45,71 @@ func PrintFile(fileName string) {
 	}
 }
 
-func PrintFileBytes2(fileName string, beginIndex int, len int) {
-	const BufferSize = 32
-	file, err := os.Open(fileName)
-	if err != nil {
-		log.Fatal(err.Error())
-		return
-	}
-	defer file.Close()
-
-	buffer := make([]byte, BufferSize)
-
-	if beginIndex < 1 {
-		beginIndex = 1
-	}
-	var rowIndex = 1
-	for {
-		count, err := file.Read(buffer)
-		if err != nil {
-			if err != io.EOF {
-				log.Fatal(err.Error())
-			}
-			break
-		}
-
-		switch PrintState {
-		case beforePrint:
-			if rowIndex >= beginIndex {
-				PrintState = printing
-			}
-		case printing:
-			if len > 0 && rowIndex >= beginIndex+len {
-				return
-			}
-		}
-
-		if PrintState == printing {
-			byteIndex := (rowIndex - 1) * BufferSize
-			if count < BufferSize {
-				fmt.Printf("row%d(%d, %d, %d, %d): %s\n", rowIndex, byteIndex, byteIndex+8, byteIndex+16, byteIndex+24, GetBytesData(buffer[:count]))
-			} else {
-				fmt.Printf("row%d(%d, %d, %d, %d): %s\n", rowIndex, byteIndex, byteIndex+8, byteIndex+16, byteIndex+24, GetBytesData(buffer))
-			}
-		}
-		rowIndex++
-	}
-}
-
-func PrintFileBytes(fileName string) {
-	PrintFileBytes2(fileName, 1, -1)
-}
-
-func PrintFileBytesHex2(fileName string, beginIndex int, len int) {
-	const BufferSize = 32
-	file, err := os.Open(fileName)
-	if err != nil {
-		log.Fatal(err.Error())
-		return
-	}
-	defer file.Close()
-
-	buffer := make([]byte, BufferSize)
-
-	if beginIndex < 1 {
-		beginIndex = 1
-	}
-	var rowIndex = 1
-	for {
-		count, err := file.Read(buffer)
-		if err != nil {
-			if err != io.EOF {
-				log.Fatal(err.Error())
-			}
-			break
-		}
-
-		switch PrintState {
-		case beforePrint:
-			if rowIndex >= beginIndex {
-				PrintState = printing
-			}
-		case printing:
-			if len > 0 && rowIndex >= beginIndex+len {
-				return
-			}
-		}
-
-		if PrintState == printing {
-			byteIndex := (rowIndex - 1) * BufferSize
-			if count < BufferSize {
-				fmt.Printf("row%d(%d, %d, %d, %d): %s\n", rowIndex, byteIndex, byteIndex+8, byteIndex+16, byteIndex+24, GetBytesDataHex(buffer[:count]))
-			} else {
-				fmt.Printf("row%d(%d, %d, %d, %d): %s\n", rowIndex, byteIndex, byteIndex+8, byteIndex+16, byteIndex+24, GetBytesDataHex(buffer))
-			}
-		}
-		rowIndex++
-	}
+func PrintFileBytesDec(fileName string) {
+	printFileBytes(fileName, 1, -1, BytesDataToDec)
 }
 
 func PrintFileBytesHex(fileName string) {
-	PrintFileBytesHex2(fileName, 1, -1)
+	printFileBytes(fileName, 1, -1, BytesDataToHex)
+}
+
+func PrintFileBytesDec2(fileName string, beginIndex int, len int) {
+	printFileBytes(fileName, beginIndex, len, BytesDataToDec)
+}
+
+func PrintFileBytesHex2(fileName string, beginIndex int, len int) {
+	printFileBytes(fileName, beginIndex, len, BytesDataToHex)
+}
+
+func printFileBytes(fileName string, beginIndex int, len int, bytesDataToNum BytesDataToNum) {
+	const BufferSize = 32
+	file, err := os.Open(fileName)
+	if err != nil {
+		log.Fatal(err.Error())
+		return
+	}
+	defer file.Close()
+
+	buffer := make([]byte, BufferSize)
+
+	if beginIndex < 1 {
+		beginIndex = 1
+	}
+	var rowIndex = 1
+	for {
+		count, err := file.Read(buffer)
+		if err != nil {
+			if err != io.EOF {
+				log.Fatal(err.Error())
+			}
+			break
+		}
+
+		switch PrintState {
+		case beforePrint:
+			if rowIndex >= beginIndex {
+				PrintState = printing
+			}
+		case printing:
+			if len > 0 && rowIndex >= beginIndex+len {
+				return
+			}
+		}
+
+		if PrintState == printing {
+			byteIndex := (rowIndex - 1) * BufferSize
+			if count < BufferSize {
+				fmt.Printf("row%s(%s, %s, %s, %s): %s\n", Fill0(strconv.Itoa(rowIndex), printLen),
+					Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
+					Fill0(strconv.Itoa(byteIndex+16), printLen), Fill0(strconv.Itoa(byteIndex+24), printLen),
+					bytesDataToNum(buffer[:count]))
+			} else {
+				fmt.Printf("row%s(%s, %s, %s, %s): %s\n", Fill0(strconv.Itoa(rowIndex), printLen),
+					Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
+					Fill0(strconv.Itoa(byteIndex+16), printLen), Fill0(strconv.Itoa(byteIndex+24), printLen),
+					bytesDataToNum(buffer))
+			}
+		}
+		rowIndex++
+	}
 }

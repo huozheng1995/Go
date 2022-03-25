@@ -51,7 +51,7 @@ func DecToHex(n int64) string {
 		return ""
 	}
 	if n == 0 {
-		return "0"
+		return "00"
 	}
 	hex := map[int64]int64{10: 65, 11: 66, 12: 67, 13: 68, 14: 69, 15: 70}
 	s := ""
@@ -63,6 +63,9 @@ func DecToHex(n int64) string {
 			continue
 		}
 		s = fmt.Sprintf("%v%v", m, s)
+	}
+	if n/16 == 0 {
+		return "0" + s
 	}
 	return s
 }
