@@ -7,6 +7,10 @@ import (
 	"os"
 )
 
+const beforePrint, printing = 1, 2
+
+var PrintState = beforePrint
+
 func PrintFile(fileName string) {
 	const BufferSize = 64
 	file, err := os.Open(fileName)
@@ -48,6 +52,9 @@ func PrintFileBytes2(fileName string, beginIndex int, len int) {
 
 	buffer := make([]byte, BufferSize)
 
+	if beginIndex < 1 {
+		beginIndex = 1
+	}
 	var rowIndex = 1
 	for {
 		count, err := file.Read(buffer)
@@ -58,20 +65,18 @@ func PrintFileBytes2(fileName string, beginIndex int, len int) {
 			break
 		}
 
-		if beginIndex < 1 {
-			beginIndex = 1
-		}
-
-		print := false
-		if len < 0 {
+		switch PrintState {
+		case beforePrint:
 			if rowIndex >= beginIndex {
-				print = true
+				PrintState = printing
 			}
-		} else if rowIndex >= beginIndex && rowIndex < beginIndex+len {
-			print = true
+		case printing:
+			if len > 0 && rowIndex >= beginIndex+len {
+				return
+			}
 		}
 
-		if print {
+		if PrintState == printing {
 			byteIndex := (rowIndex - 1) * BufferSize
 			if count < BufferSize {
 				fmt.Printf("row%d(%d, %d, %d, %d): %s\n", rowIndex, byteIndex, byteIndex+8, byteIndex+16, byteIndex+24, GetBytesData(buffer[:count]))
@@ -98,6 +103,9 @@ func PrintFileBytesHex2(fileName string, beginIndex int, len int) {
 
 	buffer := make([]byte, BufferSize)
 
+	if beginIndex < 1 {
+		beginIndex = 1
+	}
 	var rowIndex = 1
 	for {
 		count, err := file.Read(buffer)
@@ -108,20 +116,18 @@ func PrintFileBytesHex2(fileName string, beginIndex int, len int) {
 			break
 		}
 
-		if beginIndex < 1 {
-			beginIndex = 1
-		}
-
-		print := false
-		if len < 0 {
+		switch PrintState {
+		case beforePrint:
 			if rowIndex >= beginIndex {
-				print = true
+				PrintState = printing
 			}
-		} else if rowIndex >= beginIndex && rowIndex < beginIndex+len {
-			print = true
+		case printing:
+			if len > 0 && rowIndex >= beginIndex+len {
+				return
+			}
 		}
 
-		if print {
+		if PrintState == printing {
 			byteIndex := (rowIndex - 1) * BufferSize
 			if count < BufferSize {
 				fmt.Printf("row%d(%d, %d, %d, %d): %s\n", rowIndex, byteIndex, byteIndex+8, byteIndex+16, byteIndex+24, GetBytesDataHex(buffer[:count]))
