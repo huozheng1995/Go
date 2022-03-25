@@ -67,7 +67,7 @@ func GetBytesData(bytes []byte) string {
 	for _, val := range bytes {
 		count++
 		if count > 0 && (count%8) == 0 {
-			result = result + strconv.Itoa(int(val)) + " || "
+			result = result + strconv.Itoa(int(val)) + ", "
 		} else {
 			result = result + strconv.Itoa(int(val)) + " "
 		}
@@ -81,7 +81,7 @@ func GetBytesDataHex(bytes []byte) string {
 	for _, val := range bytes {
 		count++
 		if count > 0 && (count%8) == 0 {
-			result = result + DecToHex(int64(val)) + " || "
+			result = result + DecToHex(int64(val)) + ", "
 		} else {
 			result = result + DecToHex(int64(val)) + " "
 		}

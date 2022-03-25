@@ -6,10 +6,12 @@ import (
 )
 
 func main() {
-	utils.PrintFileBytesHex("C:\\source\\binlog.000001")
+	utils.PrintFileBytesHex2("C:\\source\\binlog.000002", 450, 50)
+	//utils.PrintFileBytes("C:\\source\\binlog.000002")
+	//utils.PrintFileBytesHex("C:\\source\\binlog.01")
+	//utils.PrintFileBytes("C:\\source\\binlog.01")
 	fmt.Println()
-	utils.PrintFile("C:\\source\\binlog.000001")
-
+	//utils.PrintFile("C:\\source\\binlog.000001")
 }
 
 func printASCII() {
