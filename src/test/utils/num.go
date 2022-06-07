@@ -10,8 +10,7 @@ import (
 
 func DecToBin(n int64) string {
 	if n < 0 {
-		log.Println("Decimal to binary error: the argument must be greater than zero.")
-		return ""
+		n += 256
 	}
 	if n == 0 {
 		return "0"
@@ -29,8 +28,7 @@ func DecToOct(d int64) int64 {
 		return 0
 	}
 	if d < 0 {
-		log.Println("Decimal to octal error: the argument must be greater than zero.")
-		return -1
+		d += 256
 	}
 	s := ""
 	for q := d; q > 0; q = q / 8 {
@@ -47,8 +45,7 @@ func DecToOct(d int64) int64 {
 
 func DecToHex(n int64) string {
 	if n < 0 {
-		log.Println("Decimal to hexadecimal error: the argument must be greater than zero.")
-		return ""
+		n = n + 256
 	}
 	if n == 0 {
 		return "00"
@@ -66,6 +63,14 @@ func DecToHex(n int64) string {
 	}
 	if n/16 == 0 {
 		return "0" + s
+	}
+	return s
+}
+
+func DecToHexArray(intArr []int64) string {
+	s := ""
+	for _, val := range intArr {
+		s += DecToHex(val) + ", "
 	}
 	return s
 }
