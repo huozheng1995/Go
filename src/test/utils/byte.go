@@ -70,9 +70,23 @@ func BytesDataToDec(bytes []byte) string {
 	for _, val := range bytes {
 		count++
 		if count%8 == 0 {
-			result = result + Fill0(strconv.Itoa(int(val)), 3) + ", "
+			result = result + FillSpace(strconv.Itoa(int(val)), 3) + ", "
 		} else {
-			result = result + Fill0(strconv.Itoa(int(val)), 3) + " "
+			result = result + FillSpace(strconv.Itoa(int(val)), 3) + " "
+		}
+	}
+	return result
+}
+
+func BytesDataToSignedDec(bytes []byte) string {
+	var result string
+	count := 0
+	for _, val := range bytes {
+		count++
+		if count%8 == 0 {
+			result = result + FillSpace(strconv.Itoa(int(int8(val))), 4) + ", "
+		} else {
+			result = result + FillSpace(strconv.Itoa(int(int8(val))), 4) + " "
 		}
 	}
 	return result
@@ -96,11 +110,19 @@ func PrintStringBytes(val string) {
 	fmt.Println(BytesDataToDec(StringToBytes(val)))
 }
 
-func Fill0(val string, expectedLen int) string {
+func FillChar(val string, expectedLen int, char rune) string {
 	diff := expectedLen - len(val)
 	if diff > 0 {
-		return strings.Repeat("0", diff) + val
+		return strings.Repeat(string(char), diff) + val
 	} else {
 		return val
 	}
+}
+
+func FillSpace(val string, expectedLen int) string {
+	return FillChar(val, expectedLen, ' ')
+}
+
+func Fill0(val string, expectedLen int) string {
+	return FillChar(val, expectedLen, '0')
 }
