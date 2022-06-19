@@ -14,10 +14,28 @@ func ByteToBit(val byte) string {
 	return result
 }
 
+func int8ToBit(val int8) string {
+	var result string
+	for i := 0; i < 8; i++ {
+		var t int
+		t = int((val >> (7 - i)) & 0x01)
+		result += strconv.Itoa(t)
+	}
+	return result
+}
+
 func BytesToBit(bytes []byte) string {
 	var result string
 	for _, val := range bytes {
 		result += ByteToBit(val) + " "
+	}
+	return result
+}
+
+func Int8ArrToBit(bytes []int8) string {
+	var result string
+	for _, val := range bytes {
+		result += int8ToBit(val) + " "
 	}
 	return result
 }

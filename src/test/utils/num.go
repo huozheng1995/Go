@@ -10,8 +10,7 @@ import (
 
 func DecToBin(n int64) string {
 	if n < 0 {
-		log.Println("Decimal to binary error: the argument must be greater than zero.")
-		return ""
+		n += 256
 	}
 	if n == 0 {
 		return "0"
@@ -29,8 +28,7 @@ func DecToOct(d int64) int64 {
 		return 0
 	}
 	if d < 0 {
-		log.Println("Decimal to octal error: the argument must be greater than zero.")
-		return -1
+		d += 256
 	}
 	s := ""
 	for q := d; q > 0; q = q / 8 {
@@ -47,8 +45,7 @@ func DecToOct(d int64) int64 {
 
 func DecToHex(n int64) string {
 	if n < 0 {
-		log.Println("Decimal to hexadecimal error: the argument must be greater than zero.")
-		return ""
+		n = n + 256
 	}
 	if n == 0 {
 		return "00"
@@ -66,6 +63,14 @@ func DecToHex(n int64) string {
 	}
 	if n/16 == 0 {
 		return "0" + s
+	}
+	return s
+}
+
+func DecArrayToHexArray(intArr []int64) string {
+	s := ""
+	for _, val := range intArr {
+		s += DecToHex(val) + ", "
 	}
 	return s
 }
@@ -121,6 +126,63 @@ func HexToDec(h string) (n int64) {
 		d += f * math.Pow(16, float64(l-i-1))
 	}
 	return int64(d)
+}
+
+func HexArrayToDecArray(str string) (intArr []int64) {
+	decArray := make([]int64, 0, 100)
+	var sLeft, sRight byte
+	var val byte
+	for i := 0; i < len(str)+1; i++ {
+		if i == len(str) {
+			val = 0
+		} else {
+			val = str[i]
+		}
+		if (val >= '0' && val <= '9') || (val >= 'a' && val <= 'z') || (val >= 'A' && val <= 'Z') {
+			if sLeft == 0 {
+				sLeft = val
+			} else if sRight == 0 {
+				sRight = val
+			}
+		} else {
+			if sLeft > 0 && sRight > 0 {
+				hexValue := BytesToString([]uint8{sLeft, sRight})
+				sLeft, sRight = 0, 0
+				decArray = append(decArray, HexToDec(hexValue))
+			}
+		}
+	}
+
+	return decArray
+}
+
+func DecArrayToByteArray(intArr []int64) []byte {
+	byteArray := make([]byte, len(intArr))
+	for i := 0; i < len(intArr); i++ {
+		byteArray[i] = Int64ToBytes(intArr[i])[7]
+	}
+	return byteArray
+}
+
+func PrintByteArray(byteArray []byte) {
+	rowCount := 32
+
+	totalRow := len(byteArray) / rowCount
+	lastRowCount := len(byteArray) % rowCount
+	if lastRowCount > 0 {
+		totalRow++
+	}
+
+	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
+		byteIndex := rowIndex * rowCount
+		if rowIndex == totalRow-1 {
+			rowCount = lastRowCount
+		}
+		fmt.Printf("row%s(%s, %s, %s, %s): %s\n", Fill0(strconv.Itoa(rowIndex), printLen),
+			Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
+			Fill0(strconv.Itoa(byteIndex+16), printLen), Fill0(strconv.Itoa(byteIndex+24), printLen),
+			BytesDataToSignedDec(byteArray[byteIndex:byteIndex+rowCount]))
+	}
 }
 
 func OctToBin(o int64) string {
