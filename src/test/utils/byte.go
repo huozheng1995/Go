@@ -64,7 +64,16 @@ func BytesToString(bytes []byte) string {
 
 type BytesDataToNum func(bytes []byte) string
 
-func BytesDataToDec(bytes []byte) string {
+func ByteArrayToInt8Array(bytes []byte) []int8 {
+	len := len(bytes)
+	var result = make([]int8, len)
+	for i := 0; i < len; i++ {
+		result[i] = int8(bytes[i])
+	}
+	return result
+}
+
+func ByteArrayToLine(bytes []byte) string {
 	var result string
 	count := 0
 	for _, val := range bytes {
@@ -78,15 +87,15 @@ func BytesDataToDec(bytes []byte) string {
 	return result
 }
 
-func BytesDataToSignedDec(bytes []byte) string {
+func Int8ArrayToLine(arr []int8) string {
 	var result string
 	count := 0
-	for _, val := range bytes {
+	for _, val := range arr {
 		count++
 		if count%8 == 0 {
-			result = result + FillSpace(strconv.Itoa(int(int8(val))), 4) + ", "
+			result = result + FillSpace(strconv.Itoa(int(val)), 4) + ", "
 		} else {
-			result = result + FillSpace(strconv.Itoa(int(int8(val))), 4) + " "
+			result = result + FillSpace(strconv.Itoa(int(val)), 4) + " "
 		}
 	}
 	return result
@@ -107,7 +116,7 @@ func BytesDataToHex(bytes []byte) string {
 }
 
 func PrintStringBytes(val string) {
-	fmt.Println(BytesDataToDec(StringToBytes(val)))
+	fmt.Println(ByteArrayToLine(StringToBytes(val)))
 }
 
 func FillChar(val string, expectedLen int, char rune) string {

@@ -164,11 +164,11 @@ func DecArrayToByteArray(intArr []int64) []byte {
 	return byteArray
 }
 
-func PrintByteArray(byteArray []byte) {
+func PrintByteArray(arr []byte) {
 	rowCount := 32
 
-	totalRow := len(byteArray) / rowCount
-	lastRowCount := len(byteArray) % rowCount
+	totalRow := len(arr) / rowCount
+	lastRowCount := len(arr) % rowCount
 	if lastRowCount > 0 {
 		totalRow++
 	}
@@ -181,7 +181,36 @@ func PrintByteArray(byteArray []byte) {
 		fmt.Printf("row%s(%s, %s, %s, %s): %s\n", Fill0(strconv.Itoa(rowIndex), printLen),
 			Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
 			Fill0(strconv.Itoa(byteIndex+16), printLen), Fill0(strconv.Itoa(byteIndex+24), printLen),
-			BytesDataToSignedDec(byteArray[byteIndex:byteIndex+rowCount]))
+			ByteArrayToLine(arr[byteIndex:byteIndex+rowCount]))
+	}
+}
+
+func PrintInt8ArrayWithComma(arr []int8) {
+	str := ""
+	for _, val := range arr {
+		str = str + strconv.Itoa(int(val)) + ", "
+	}
+	fmt.Println(str)
+}
+
+func PrintInt8Array(arr []int8) {
+	rowCount := 32
+
+	totalRow := len(arr) / rowCount
+	lastRowCount := len(arr) % rowCount
+	if lastRowCount > 0 {
+		totalRow++
+	}
+
+	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
+		byteIndex := rowIndex * rowCount
+		if rowIndex == totalRow-1 {
+			rowCount = lastRowCount
+		}
+		fmt.Printf("row%s(%s, %s, %s, %s): %s\n", Fill0(strconv.Itoa(rowIndex), printLen),
+			Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
+			Fill0(strconv.Itoa(byteIndex+16), printLen), Fill0(strconv.Itoa(byteIndex+24), printLen),
+			Int8ArrayToLine(arr[byteIndex:byteIndex+rowCount]))
 	}
 }
 
