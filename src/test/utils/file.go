@@ -50,7 +50,7 @@ func PrintFileBytesDec(fileName string) {
 }
 
 func PrintFileBytesHex(fileName string) {
-	printFileBytes(fileName, 1, -1, BytesDataToHex)
+	printFileBytes(fileName, 1, -1, ByteArrayToHex)
 }
 
 func PrintFileBytesDec2(fileName string, beginIndex int, len int) {
@@ -58,7 +58,7 @@ func PrintFileBytesDec2(fileName string, beginIndex int, len int) {
 }
 
 func PrintFileBytesHex2(fileName string, beginIndex int, len int) {
-	printFileBytes(fileName, beginIndex, len, BytesDataToHex)
+	printFileBytes(fileName, beginIndex, len, ByteArrayToHex)
 }
 
 func printFileBytes(fileName string, beginIndex int, len int, bytesDataToNum BytesDataToNum) {

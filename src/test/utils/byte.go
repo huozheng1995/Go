@@ -73,6 +73,15 @@ func ByteArrayToInt8Array(bytes []byte) []int8 {
 	return result
 }
 
+func Int8ArrayToByteArray(arr []int8) []byte {
+	len := len(arr)
+	var result = make([]byte, len)
+	for i := 0; i < len; i++ {
+		result[i] = byte(arr[i])
+	}
+	return result
+}
+
 func ByteArrayToLine(bytes []byte) string {
 	var result string
 	count := 0
@@ -101,7 +110,7 @@ func Int8ArrayToLine(arr []int8) string {
 	return result
 }
 
-func BytesDataToHex(bytes []byte) string {
+func ByteArrayToHex(bytes []byte) string {
 	var result string
 	count := 0
 	for _, val := range bytes {
