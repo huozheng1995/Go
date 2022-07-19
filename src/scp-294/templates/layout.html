@@ -1,0 +1,51 @@
+{{ define "layout" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{.ProjName}}</title>
+    <link rel="stylesheet" href="/css/my-css.css">
+    <script src="/js/my-js.js"></script>
+</head>
+<body style="width: 90%">
+<div class="rowDiv" style="display: flex;">
+    <div class="selectDiv">
+        <label>Group: </label>
+        <select id="selectGroup">
+            <option value="1">TODO</option>
+        </select>
+    </div>
+    <div class="selectDiv">
+        <label>Record: </label>
+        {{ template "records" . }}
+    </div>
+
+    <button id="btnLoad" onclick="loadRecord()">Load</button>
+</div>
+
+<div class="rowDiv" style="display: flex;justify-content: space-between">
+    <div style="display: flex;">
+        <div class="selectDiv">
+            <label>Type: </label>
+            <select id="selectType">
+                {{range $key, $value := .ConvertTypes}}
+                <option value={{$value}}>{{$value}}</option>
+                {{end}}
+            </select>
+        </div>
+        <button id="btnConvert" onclick="convert()">Convert</button>
+    </div>
+    <button id="btnSave" onclick="saveRecord()" style="margin-left: 100px">Save</button>
+</div>
+
+<div class="rowDiv" style="display: flex;justify-content: space-between">
+    <textarea id="input" placeholder="input..."></textarea>
+    <textarea id="output" placeholder="output..."></textarea>
+</div>
+
+<div>
+    <a id="message"></a>
+</div>
+</body>
+</html>
+{{ end }}
