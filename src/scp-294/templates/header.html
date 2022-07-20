@@ -1,0 +1,26 @@
+{{ define "header" }}
+<div class="rowDiv" style="display: flex;">
+    <div class="selectDiv">
+        <label>Group: </label>
+        <select id="selectGroup">
+            {{range $key, $group := .Groups}}
+            <option value={{$group.Id}}>{{$group.Name}}</option>
+            {{end}}
+        </select>
+    </div>
+    <button onclick="createGroup()">Create</button>
+    <button onclick="deleteGroup()">Delete</button>
+</div>
+<div class="rowDiv" style="display: flex;">
+    <div class="selectDiv">
+        <label>Record: </label>
+        <select id="selectRecord">
+            {{range $key, $record := .Records}}
+            <option value={{$record.Id}}>{{$record.Name}}</option>
+            {{end}}
+        </select>
+    </div>
+    <button onclick="loadRecord()">Load</button>
+    <button onclick="deleteRecord()">Delete</button>
+</div>
+{{ end }}

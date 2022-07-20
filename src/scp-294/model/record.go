@@ -14,15 +14,14 @@ type Record struct {
 }
 
 func ListRecords() (records []Record, err error) {
-	sql := "SELECT Id, Name, ConvertType, InputData, OutputData, GroupId FROM record"
+	sql := "SELECT Id, Name, ConvertType, GroupId FROM record"
 	rows, err := common.Db.Query(sql)
 	if err != nil {
 		return
 	}
 	for rows.Next() {
 		record := Record{}
-		err = rows.Scan(&record.Id, &record.Name, &record.ConvertType,
-			&record.InputData, &record.OutputData, &record.GroupId)
+		err = rows.Scan(&record.Id, &record.Name, &record.ConvertType, &record.GroupId)
 		if err != nil {
 			return
 		}
@@ -56,11 +55,17 @@ func (record *Record) Update() (err error) {
 	sql := "UPDATE record set Name=$1, ConvertType=$2, InputData=$3, OutputData=$4, GroupId=$5 WHERE Id=$6"
 	_, err = common.Db.Exec(sql, record.Name, record.ConvertType, record.InputData, record.OutputData,
 		record.GroupId, record.Id)
+	if err != nil {
+		return
+	}
 	return
 }
 
-func DeleteRecord(id int) (err error) {
+func DeleteRecord(id string) (err error) {
 	sql := "DELETE FROM record WHERE Id=$1"
 	_, err = common.Db.Exec(sql, id)
+	if err != nil {
+		return
+	}
 	return
 }

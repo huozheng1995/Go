@@ -7,28 +7,23 @@ import (
 	"github.com/edward/scp-294/model"
 	"html/template"
 	"net/http"
-	"net/http/httputil"
 )
 
 func registerRoutes() {
 	http.HandleFunc("/", loadMainPage)
+	http.HandleFunc("/loadMainPage", loadMainPage)
 	http.HandleFunc("/convert", convert)
 }
 
 func loadMainPage(w http.ResponseWriter, r *http.Request) {
-	records, err := model.ListRecords()
-	if err != nil {
-		logger.Log(err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 	t := template.New("layout")
-	t, err = t.ParseFiles("./templates/layout.html", "./templates/records.html")
+	t, err := t.ParseFiles("./templates/layout.html", "./templates/header.html")
 	if err != nil {
 		logger.Log(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
 	convertTypes := []string{
 		"DecToHex",
 		"HexToDec",
@@ -37,11 +32,24 @@ func loadMainPage(w http.ResponseWriter, r *http.Request) {
 		"HexToBinary",
 		"BinaryToHex",
 	}
+	groups, err := model.ListGroups()
+	if err != nil {
+		logger.Log(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	records, err := model.ListRecords()
+	if err != nil {
+		logger.Log(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	data := struct {
 		ProjName     string
 		ConvertTypes []string
+		Groups       []model.Group
 		Records      []model.Record
-	}{common.ProjName, convertTypes, records}
+	}{common.ProjName, convertTypes, groups, records}
 	t.ExecuteTemplate(w, "layout", data)
 }
 
@@ -53,9 +61,7 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		err := dec.Decode(&convertReq)
 		if err != nil {
 			logger.Log(err.Error())
-			requestDump, _ := httputil.DumpRequest(r, true)
-			logger.Log(string(requestDump))
-			w.WriteHeader(http.StatusInternalServerError)
+			common.ResponseError(w, "Failed to decode data, error: "+err.Error())
 			return
 		}
 
@@ -71,10 +77,10 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		err = enc.Encode(resData)
 		if err != nil {
 			logger.Log(err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
+			common.ResponseError(w, "Failed to encode data, error: "+err.Error())
 			return
 		}
 	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		common.ResponseError(w, "Failed to convert data")
 	}
 }

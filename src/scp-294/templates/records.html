@@ -1,7 +1,0 @@
-{{ define "records" }}
-<select id="selectRecord">
-    {{range $key, $record := .Records}}
-    <option value={{$record.Id}}>{{$record.Name}}</option>
-    {{end}}
-</select>
-{{ end }}

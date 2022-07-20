@@ -1,7 +1,6 @@
 const httpRoot = "http://localhost:294";
 
 function convert() {
-    console.log("start")
     let input = document.getElementById("input");
     let output = document.getElementById("output");
     let inputModel = {
@@ -11,22 +10,36 @@ function convert() {
     fetch(httpRoot + "/convert", {
         method: "POST",
         body: JSON.stringify(inputModel),
-        headers: {
-            "Content-Type": "application/json;charset=UTF-8",
-        },
-    }).then((re) => {
-        if (re.ok) {
-            return re.json();
-        }
-    }).then((re) => {
+        headers: {"Content-Type": "application/json;charset=UTF-8",},
+    }).then(re => {
+        if (re.ok) return re.json();
+    }).then(re => {
         output.value = re.Data.OutputData;
-        updateMessage(re.Message)
+        updateMessage(re)
     })
 }
 
 function loadRecord() {
-    console.log("abc")
-    alert("aaa")
+    let selectRecord = document.getElementById("selectRecord");
+    fetch(httpRoot + "/loadRecord?RecordId=" + selectRecord.value, {
+        method: "GET",
+        headers: {"Content-Type": "application/json;charset=UTF-8",},
+    }).then(re => {
+        if (re.ok) return re.json();
+    }).then(re => {
+        updateMessage(re)
+        if (re.Success) {
+            let selectGroup = document.getElementById("selectGroup");
+            let selectType = document.getElementById("selectType");
+            let input = document.getElementById("input");
+            let output = document.getElementById("output");
+            selectGroup.value = re.Data.GroupId;
+            selectType.value = re.Data.ConvertType;
+            input.value = re.Data.InputData;
+            output.value = re.Data.OutputData;
+        }
+        output.value = re.Data.OutputData;
+    })
 }
 
 function saveRecord() {
@@ -47,25 +60,48 @@ function saveRecord() {
         OutputData: output.value,
         GroupId: Number(selectGroup.value),
     }
-    console.dir(record)
     fetch(httpRoot + "/saveRecord", {
         method: "POST",
         body: JSON.stringify(record),
-        headers: {
-            "Content-Type": "application/json;charset=UTF-8",
-        },
-    }).then((re) => {
-        if (re.ok) {
-            return re.json();
-        }
-    }).then((re) => {
-        updateMessage(re.Message)
+        headers: {"Content-Type": "text/html; charset=utf-8",},
+    }).then(re => {
+        if (re.ok) return re.text();
+    }).then(re => {
+        let divHeader = document.getElementById("divHeader");
+        divHeader.innerHTML = re;
+        let messageElement = document.getElementById("message");
+        messageElement.innerText = "Record was saved!";
     })
+}
+
+function deleteRecord() {
+    let selectRecord = document.getElementById("selectRecord");
+    fetch(httpRoot + "/deleteRecord?RecordId=" + selectRecord.value, {
+        method: "DELETE",
+        headers: {"Content-Type": "text/html; charset=utf-8",},
+    }).then(re => {
+        if (re.ok) return re.text();
+    }).then(re => {
+        let divHeader = document.getElementById("divHeader");
+        divHeader.innerHTML = re;
+        let messageElement = document.getElementById("message");
+        messageElement.innerText = "Record was deleted!";
+    })
+}
+
+function createGroup() {
 
 }
 
+function deleteGroup() {
 
-function updateMessage(message) {
-    let messageElement = document.getElementById("message");
-    messageElement.innerText = message;
+}
+
+function updateMessage(re) {
+    if (re.Success) {
+        let messageElement = document.getElementById("message");
+        messageElement.innerText = re.Message;
+    } else {
+        alert(re.Message)
+    }
 }
