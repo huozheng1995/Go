@@ -128,34 +128,6 @@ func HexToDec(h string) (n int64) {
 	return int64(d)
 }
 
-func HexArrayToDecArray(str string) (intArr []int64) {
-	decArray := make([]int64, 0, 100)
-	var sLeft, sRight byte
-	var val byte
-	for i := 0; i < len(str)+1; i++ {
-		if i == len(str) {
-			val = 0
-		} else {
-			val = str[i]
-		}
-		if (val >= '0' && val <= '9') || (val >= 'a' && val <= 'z') || (val >= 'A' && val <= 'Z') {
-			if sLeft == 0 {
-				sLeft = val
-			} else if sRight == 0 {
-				sRight = val
-			}
-		} else {
-			if sLeft > 0 && sRight > 0 {
-				hexValue := BytesToString([]uint8{sLeft, sRight})
-				sLeft, sRight = 0, 0
-				decArray = append(decArray, HexToDec(hexValue))
-			}
-		}
-	}
-
-	return decArray
-}
-
 func DecArrayToByteArray(intArr []int64) []byte {
 	byteArray := make([]byte, len(intArr))
 	for i := 0; i < len(intArr); i++ {

@@ -116,6 +116,20 @@ func Int8ArrayToLine(arr []int8) string {
 	return result
 }
 
+func HexByteArrayToLine(arr []string) string {
+	var result string
+	count := 0
+	for _, val := range arr {
+		count++
+		if count%8 == 0 {
+			result = result + FillSpace(val, 3) + ", "
+		} else {
+			result = result + FillSpace(val, 3) + " "
+		}
+	}
+	return result
+}
+
 func ByteArrayToHex(arr []byte) string {
 	var result string
 	count := 0
