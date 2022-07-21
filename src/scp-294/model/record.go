@@ -69,3 +69,12 @@ func DeleteRecord(id string) (err error) {
 	}
 	return
 }
+
+func DeleteRecordsByGroupId(groupId string) (err error) {
+	sql := "DELETE FROM record WHERE GroupId=$1"
+	_, err = common.Db.Exec(sql, groupId)
+	if err != nil {
+		return
+	}
+	return
+}

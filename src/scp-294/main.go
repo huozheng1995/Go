@@ -11,7 +11,7 @@ import (
 func init() {
 	logger.Init("scp294.log")
 	common.Connect()
-	common.InitDatabases()
+	//common.InitDatabases()
 }
 
 func main() {
