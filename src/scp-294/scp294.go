@@ -8,13 +8,15 @@ import (
 	"net/http"
 )
 
-func init() {
-	logger.Init("scp294.log")
-	common.Connect()
-	//common.InitDatabases()
-}
-
 func main() {
+	logger.Init("scp294.log")
+	err := common.Connect()
+	if err != nil {
+		logger.Log(err.Error())
+		return
+	}
+	common.InitDatabases(false)
+
 	server := http.Server{
 		Addr: common.HttpAddr,
 	}
@@ -25,6 +27,6 @@ func main() {
 	http.Handle("/img/", fileServer)
 	controller.RegisterRoutes()
 
-	logger.Log("Server starting...")
+	logger.Log("Server started!")
 	server.ListenAndServe()
 }

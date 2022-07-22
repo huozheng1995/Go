@@ -1,0 +1,9 @@
+Linux:
+#set CC=C:\TDM-GCC-64\bin\x86_64-w64-mingw32-c++
+#set CXX=C:\TDM-GCC-64\bin\x86_64-w64-mingw32-g++
+set CGO_ENABLED=0
+set GOOS=linux
+set GOARCH=amd64
+go build -a scp294.go
+
+env CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ GOOS=windows GOARCH=amd64  go build
