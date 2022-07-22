@@ -23,18 +23,18 @@
             </select>
         </div>
         <button class="rowBtn" onclick="convert()">Convert</button>
-        <button class="rowBtn" onclick="clearText()">Clear</button>
+        <button class="rowBtn" onclick="addRecord()">Save</button>
     </div>
-    <button onclick="addRecord()">Save</button>
+    <div>
+        <button onclick="clearText()">Clear</button>
+    </div>
 </div>
 
-<div class="rowDiv" style="display: flex;justify-content: space-between">
+<div class="rowDiv">
     <textarea id="input" placeholder="input..."></textarea>
-    <textarea id="output" placeholder="output..."></textarea>
 </div>
-
-<div>
-    <a id="message"></a>
+<div class="rowDiv">
+    <textarea id="output" placeholder="output..."></textarea>
 </div>
 </body>
 </html>

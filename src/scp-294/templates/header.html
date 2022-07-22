@@ -1,15 +1,18 @@
 {{ define "header" }}
-<div class="rowDiv" style="display: flex;">
-    <div class="selectDiv">
-        <label>Group: </label>
-        <select id="selectGroup" onchange="changeGroup()">
-            {{range $key, $group := .Groups}}
-            <option value={{$group.Id}}>{{$group.Name}}</option>
-            {{end}}
-        </select>
+<div class="rowDiv" style="display: flex;justify-content: space-between">
+    <div style="display: flex;">
+        <div class="selectDiv">
+            <label>Group: </label>
+            <select id="selectGroup" onchange="changeGroup()">
+                {{range $key, $group := .Groups}}
+                <option value={{$group.Id}}>{{$group.Name}}</option>
+                {{end}}
+            </select>
+        </div>
+        <button class="rowBtn" onclick="createGroup()">Create</button>
+        <button class="rowBtn" onclick="deleteGroup()">Delete</button>
     </div>
-    <button class="rowBtn" onclick="createGroup()">Create</button>
-    <button class="rowBtn" onclick="deleteGroup()">Delete</button>
+    <a id="message"></a>
 </div>
 <div class="rowDiv" style="display: flex;">
     <div class="selectDiv">

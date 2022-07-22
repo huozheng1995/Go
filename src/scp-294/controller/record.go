@@ -46,11 +46,13 @@ func loadRecord(w http.ResponseWriter, r *http.Request) {
 		id, ok := query["RecordId"]
 		if !ok {
 			common.ResponseError(w, "Failed to get parameter 'RecordId'")
+			return
 		}
 		record, err := model.GetRecord(id[0])
 		if err != nil {
 			logger.Log(err.Error())
 			common.ResponseError(w, "Failed to get record, error: "+err.Error())
+			return
 		}
 
 		enc := json.NewEncoder(w)
@@ -77,11 +79,13 @@ func deleteRecord(w http.ResponseWriter, r *http.Request) {
 		id, ok := query["RecordId"]
 		if !ok {
 			common.ResponseError(w, "Failed to get parameter 'RecordId'")
+			return
 		}
 		err := model.DeleteRecord(id[0])
 		if err != nil {
 			logger.Log(err.Error())
 			common.ResponseError(w, "Failed to delete record, error: "+err.Error())
+			return
 		} else {
 			reloadHeader(w)
 		}

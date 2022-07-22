@@ -3,7 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"github.com/edward/scp-294/common"
-	"github.com/edward/scp-294/funcs"
+	"github.com/edward/scp-294/converter"
 	"github.com/edward/scp-294/logger"
 	"github.com/edward/scp-294/model"
 	"html/template"
@@ -27,13 +27,13 @@ func loadMainPage(w http.ResponseWriter, r *http.Request) {
 
 	convertTypes := []string{
 		"HexToDec",
-		"HexArrayToDecArray",
 		"DecToHex",
-		"DecArrayToHexArray",
-		"HexByteArrayToDecByteArray",
-		"HexByteArrayToInt8Array",
-		"DecByteArrayToHexByteArray",
-		"Int8ArrayToHexByteArray",
+		"BinToDec",
+		"DecToBin",
+		"HexByteToDecByte",
+		"DecByteToHexByte",
+		"HexByteToInt8",
+		"Int8ToHexByte",
 	}
 	groups, err := model.ListGroups()
 	if err != nil {
@@ -69,18 +69,22 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		}
 		var outputData string
 		switch convertReq.ConvertType {
-		case "HexToDec", "HexArrayToDecArray":
-			outputData = funcs.DecArrayToString(funcs.HexArrayToDecArray(convertReq.InputData))
-		case "DecToHex", "DecArrayToHexArray":
-			outputData = funcs.HexArrayToString(funcs.DecArrayToHexArray(convertReq.InputData))
-		case "HexByteArrayToDecByteArray":
-			outputData = funcs.ByteArrayToString(funcs.HexByteArrayToDecByteArray(convertReq.InputData))
-		case "HexByteArrayToInt8Array":
-			outputData = funcs.Int8ArrayToString(funcs.HexByteArrayToInt8Array(convertReq.InputData))
-		case "DecByteArrayToHexByteArray":
-			outputData = funcs.HexByteArrayToString(funcs.DecByteArrayToHexByteArray(convertReq.InputData))
-		case "Int8ArrayToHexByteArray":
-			outputData = funcs.HexByteArrayToString(funcs.Int8ArrayToHexByteArray(convertReq.InputData))
+		case "HexToDec":
+			outputData = converter.DecArrayToString(converter.HexArrayToDecArray(convertReq.InputData))
+		case "DecToHex":
+			outputData = converter.HexArrayToString(converter.DecArrayToHexArray(convertReq.InputData))
+		case "BinToDec":
+			outputData = converter.DecArrayToString(converter.BinArrayToDecArray(convertReq.InputData))
+		case "DecToBin":
+			outputData = converter.BinArrayToString(converter.DecArrayToBinArray(convertReq.InputData))
+		case "HexByteToDecByte":
+			outputData = converter.ByteArrayToString(converter.HexByteArrayToDecByteArray(convertReq.InputData))
+		case "DecByteToHexByte":
+			outputData = converter.HexByteArrayToString(converter.DecByteArrayToHexByteArray(convertReq.InputData))
+		case "HexByteToInt8":
+			outputData = converter.Int8ArrayToString(converter.HexByteArrayToInt8Array(convertReq.InputData))
+		case "Int8ToHexByte":
+			outputData = converter.HexByteArrayToString(converter.Int8ArrayToHexByteArray(convertReq.InputData))
 		default:
 			outputData = convertReq.InputData
 		}

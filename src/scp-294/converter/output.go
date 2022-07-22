@@ -1,4 +1,4 @@
-package funcs
+package converter
 
 import (
 	"fmt"
@@ -24,9 +24,9 @@ func ByteArrayToString(arr []byte) string {
 		if rowIndex == totalRow-1 {
 			rowCount = lastRowCount
 		}
-		builder.WriteString(fmt.Sprintf("row%s(%s, %s): %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
+		builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
 			utils.Fill0(strconv.Itoa(byteIndex), printLen), utils.Fill0(strconv.Itoa(byteIndex+8), printLen),
-			utils.ByteArrayToLine(arr[byteIndex:byteIndex+rowCount])))
+			utils.ByteArrayToLine(arr[byteIndex:byteIndex+rowCount]), utils.ByteArrayToCharLine(arr[byteIndex:byteIndex+rowCount])))
 	}
 	return builder.String()
 }
@@ -46,9 +46,9 @@ func Int8ArrayToString(arr []int8) string {
 		if rowIndex == totalRow-1 {
 			rowCount = lastRowCount
 		}
-		builder.WriteString(fmt.Sprintf("row%s(%s, %s): %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
+		builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
 			utils.Fill0(strconv.Itoa(byteIndex), printLen), utils.Fill0(strconv.Itoa(byteIndex+8), printLen),
-			utils.Int8ArrayToLine(arr[byteIndex:byteIndex+rowCount])))
+			utils.Int8ArrayToLine(arr[byteIndex:byteIndex+rowCount]), utils.Int8ArrayToCharLine(arr[byteIndex:byteIndex+rowCount])))
 	}
 	return builder.String()
 }
@@ -68,14 +68,23 @@ func HexByteArrayToString(arr []string) string {
 		if rowIndex == totalRow-1 {
 			rowCount = lastRowCount
 		}
-		builder.WriteString(fmt.Sprintf("row%s(%s, %s): %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
+		builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
 			utils.Fill0(strconv.Itoa(byteIndex), printLen), utils.Fill0(strconv.Itoa(byteIndex+8), printLen),
-			utils.HexByteArrayToLine(arr[byteIndex:byteIndex+rowCount])))
+			utils.HexByteArrayToLine(arr[byteIndex:byteIndex+rowCount]), utils.HexByteArrayToCharLine(arr[byteIndex:byteIndex+rowCount])))
 	}
 	return builder.String()
 }
 
 func HexArrayToString(arr []string) string {
+	var builder strings.Builder
+	for _, val := range arr {
+		builder.WriteString(val)
+		builder.WriteString(", ")
+	}
+	return builder.String()
+}
+
+func BinArrayToString(arr []string) string {
 	var builder strings.Builder
 	for _, val := range arr {
 		builder.WriteString(val)

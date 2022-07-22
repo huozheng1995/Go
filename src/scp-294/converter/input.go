@@ -1,4 +1,4 @@
-package funcs
+package converter
 
 import (
 	"github.com/edward/scp-294/utils"
@@ -59,6 +59,26 @@ func Int8ArrayToHexByteArray(input string) []string {
 	for _, str := range strArray {
 		val, _ := strconv.ParseInt(str, 10, 8)
 		arr = append(arr, utils.DecToHex(val))
+	}
+	return arr
+}
+
+func BinArrayToDecArray(input string) []int64 {
+	strArray := SplitInputString(input)
+	arr := make([]int64, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 2, 64)
+		arr = append(arr, val)
+	}
+	return arr
+}
+
+func DecArrayToBinArray(input string) []string {
+	strArray := SplitInputString(input)
+	arr := make([]string, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 10, 64)
+		arr = append(arr, utils.DecToBin(val))
 	}
 	return arr
 }

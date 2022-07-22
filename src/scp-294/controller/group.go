@@ -45,16 +45,19 @@ func deleteGroup(w http.ResponseWriter, r *http.Request) {
 		id, ok := query["GroupId"]
 		if !ok {
 			common.ResponseError(w, "Failed to get parameter 'GroupId'")
+			return
 		}
 		err := model.DeleteRecordsByGroupId(id[0])
 		if err != nil {
 			logger.Log(err.Error())
 			common.ResponseError(w, "Failed to delete records, error: "+err.Error())
+			return
 		}
 		err = model.DeleteGroup(id[0])
 		if err != nil {
 			logger.Log(err.Error())
 			common.ResponseError(w, "Failed to delete group, error: "+err.Error())
+			return
 		} else {
 			reloadHeader(w)
 		}

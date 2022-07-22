@@ -29,11 +29,18 @@ func main() {
 	//fmt.Printf(utils.BytesToString(byteArray))
 	//utils.PrintByteArray(byteArray)
 	//fmt.Printf(hex)
-	var a int64
-	a = 9223372036854775807
-	fmt.Println(a)
-	fmt.Println(byte(a))
-	fmt.Println(int8(a))
+
+	//var a int64
+	//a = 9223372036854775807
+	//fmt.Println(byte(a))
+	//fmt.Println(int8(a))
+
+	fmt.Println(byte('0'))
+	fmt.Println(byte('9'))
+	fmt.Println(byte('a'))
+	fmt.Println(byte('z'))
+	fmt.Println(byte('A'))
+	fmt.Println(byte('Z'))
 
 }
 

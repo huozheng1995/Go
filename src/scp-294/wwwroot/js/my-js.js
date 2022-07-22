@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function convert() {
     let input = document.getElementById("input");
-    let output = document.getElementById("output");
     let selectType = document.getElementById("selectType");
     let inputModel = {
         ConvertType: selectType.value,
@@ -19,7 +18,7 @@ function convert() {
     }).then(re => {
         if (re.ok) return re.json();
     }).then(re => {
-        output.value = re.Data.OutputData;
+        setOutput(re.Data.OutputData);
         updateMessage(re)
     })
 }
@@ -29,6 +28,7 @@ function clearText() {
     let output = document.getElementById("output");
     input.value = null;
     output.value = null;
+    updateMessageValue(null);
 }
 
 function loadRecord() {
@@ -39,15 +39,16 @@ function loadRecord() {
     }).then(re => {
         if (re.ok) return re.json();
     }).then(re => {
-        updateMessage(re)
         if (re.Success) {
+            let selectGroup = document.getElementById("selectGroup");
             let selectType = document.getElementById("selectType");
             let input = document.getElementById("input");
-            let output = document.getElementById("output");
+            selectGroup.value = re.Data.GroupId;
             selectType.value = re.Data.ConvertType;
             input.value = re.Data.InputData;
-            output.value = re.Data.OutputData;
+            setOutput(re.Data.OutputData);
         }
+        updateMessage(re)
     })
 }
 
@@ -79,22 +80,14 @@ function addRecord() {
     }).then(re => {
         let divHeader = document.getElementById("divHeader");
         divHeader.innerHTML = re;
-        let messageElement = document.getElementById("message");
-        messageElement.innerText = "Record was saved!";
-        let selectGroup = document.getElementById("selectGroup");
-        for (let option of selectGroup.options) {
-            if (option.value == groupId) {
-                option.selected = true;
-                changeGroup();
-                break;
-            }
-        }
+        reloadGroup(groupId);
+        updateMessageValue("Record was saved!")
     })
 }
 
 function deleteRecord() {
     if (!confirm("Delete it?")) {
-       return;
+        return;
     }
     let selectRecord = document.getElementById("selectRecord");
     let groupId = document.getElementById("selectGroup").value;
@@ -106,16 +99,8 @@ function deleteRecord() {
     }).then(re => {
         let divHeader = document.getElementById("divHeader");
         divHeader.innerHTML = re;
-        let messageElement = document.getElementById("message");
-        messageElement.innerText = "Record was deleted!";
-        let selectGroup = document.getElementById("selectGroup");
-        for (let option of selectGroup.options) {
-            if (option.value == groupId) {
-                option.selected = true;
-                changeGroup();
-                break;
-            }
-        }
+        reloadGroup(groupId);
+        updateMessageValue("Record was deleted!")
     })
 }
 
@@ -138,8 +123,7 @@ function createGroup() {
     }).then(re => {
         let divHeader = document.getElementById("divHeader");
         divHeader.innerHTML = re;
-        let messageElement = document.getElementById("message");
-        messageElement.innerText = "Group was added!";
+        updateMessageValue("Group was added!")
     })
 }
 
@@ -156,9 +140,19 @@ function deleteGroup() {
     }).then(re => {
         let divHeader = document.getElementById("divHeader");
         divHeader.innerHTML = re;
-        let messageElement = document.getElementById("message");
-        messageElement.innerText = "Group was deleted!";
+        updateMessageValue("Group was deleted!")
     })
+}
+
+function reloadGroup(groupId) {
+    let selectGroup = document.getElementById("selectGroup");
+    for (let option of selectGroup.options) {
+        if (option.value == groupId) {
+            option.selected = true;
+            changeGroup();
+            break;
+        }
+    }
 }
 
 function changeGroup() {
@@ -177,13 +171,30 @@ function changeGroup() {
             option.style.display = "none";
         }
     }
+    if (!selected) {
+        selectRecord.selectedIndex = -1;
+    }
+}
+
+function setOutput(data) {
+    let output = document.getElementById("output");
+    output.value = data;
+    if (output.scrollHeight > 200) {
+        output.style.height = '200px';
+        output.style.height = output.scrollHeight + 64 + 'px';
+    }
 }
 
 function updateMessage(re) {
-    if (re.Success) {
-        let messageElement = document.getElementById("message");
-        messageElement.innerText = re.Message;
-    } else {
-        alert(re.Message)
+    let element = document.getElementById("message");
+    element.innerText = re.Message;
+    element.style.color = re.Success ? "green" : "red";
+}
+
+function updateMessageValue(value) {
+    let element = document.getElementById("message");
+    element.innerText = value;
+    if (value != null) {
+        element.style.color = "green";
     }
 }

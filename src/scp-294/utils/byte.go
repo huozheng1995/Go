@@ -2,7 +2,6 @@ package utils
 
 import (
 	"encoding/binary"
-	"fmt"
 	"golang.org/x/text/encoding/charmap"
 	"math"
 	"strconv"
@@ -130,6 +129,67 @@ func HexByteArrayToLine(arr []string) string {
 	return result
 }
 
+func ByteArrayToCharLine(arr []byte) string {
+	var result string
+	count := 0
+	for _, val := range arr {
+		var charVal string
+		if val >= 32 && val <= 126 {
+			charVal = string(val)
+		} else {
+			charVal = string(0)
+		}
+		count++
+		if count%8 == 0 {
+			result = result + charVal + ", "
+		} else {
+			result = result + charVal + " "
+		}
+	}
+	return result
+}
+
+func Int8ArrayToCharLine(arr []int8) string {
+	var result string
+	count := 0
+	for _, val := range arr {
+		var charVal string
+		if val >= 32 && val <= 126 {
+			charVal = string(val)
+		} else {
+			charVal = string(0)
+		}
+		count++
+		if count%8 == 0 {
+			result = result + charVal + ", "
+		} else {
+			result = result + charVal + " "
+		}
+	}
+	return result
+}
+
+func HexByteArrayToCharLine(arr []string) string {
+	var result string
+	count := 0
+	for _, val := range arr {
+		var byteVal = byte(HexToDec(val))
+		var charVal string
+		if byteVal >= 32 && byteVal <= 126 {
+			charVal = string(byteVal)
+		} else {
+			charVal = string(0)
+		}
+		count++
+		if count%8 == 0 {
+			result = result + charVal + ", "
+		} else {
+			result = result + charVal + " "
+		}
+	}
+	return result
+}
+
 func ByteArrayToHex(arr []byte) string {
 	var result string
 	count := 0
@@ -142,10 +202,6 @@ func ByteArrayToHex(arr []byte) string {
 		}
 	}
 	return result
-}
-
-func PrintStringBytes(val string) {
-	fmt.Println(ByteArrayToLine(StringToBytes(val)))
 }
 
 func FillChar(val string, expectedLen int, char rune) string {
