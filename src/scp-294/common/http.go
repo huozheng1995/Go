@@ -12,8 +12,9 @@ type ResData struct {
 }
 
 type ConvertReq struct {
-	ConvertType string `json:"ConvertType"`
-	InputData   string `json:"InputData"`
+	InputType  string `json:"InputType"`
+	OutputType string `json:"OutputType"`
+	InputData  string `json:"InputData"`
 }
 
 type ConvertRes struct {

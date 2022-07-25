@@ -1,4 +1,4 @@
-const httpRoot = "http://localhost:294";
+const httpRoot = "http://localhost:8294";
 
 document.addEventListener("DOMContentLoaded", () => {
     changeGroup();
@@ -6,9 +6,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function convert() {
     let input = document.getElementById("input");
-    let selectType = document.getElementById("selectType");
+    let inputType = document.getElementById("inputType");
+    let outputType = document.getElementById("outputType");
     let inputModel = {
-        ConvertType: selectType.value,
+        InputType: inputType.value,
+        OutputType: outputType.value,
         InputData: input.value
     }
     fetch(httpRoot + "/convert", {
@@ -18,7 +20,9 @@ function convert() {
     }).then(re => {
         if (re.ok) return re.json();
     }).then(re => {
-        setOutput(re.Data.OutputData);
+        if (re.Success) {
+            setOutput(re.Data.OutputData);
+        }
         updateMessage(re)
     })
 }
@@ -33,6 +37,10 @@ function clearText() {
 
 function loadRecord() {
     let selectRecord = document.getElementById("selectRecord");
+    if (selectRecord.value == null || selectRecord.value == "") {
+        alert("Record id cannot be empty")
+        return;
+    }
     fetch(httpRoot + "/loadRecord?RecordId=" + selectRecord.value, {
         method: "GET",
         headers: {"Content-Type": "application/json;charset=UTF-8",},
@@ -41,10 +49,12 @@ function loadRecord() {
     }).then(re => {
         if (re.Success) {
             let selectGroup = document.getElementById("selectGroup");
-            let selectType = document.getElementById("selectType");
+            let inputType = document.getElementById("inputType");
+            let outputType = document.getElementById("outputType");
             let input = document.getElementById("input");
             selectGroup.value = re.Data.GroupId;
-            selectType.value = re.Data.ConvertType;
+            inputType.value = re.Data.InputType;
+            outputType.value = re.Data.OutputType;
             input.value = re.Data.InputData;
             setOutput(re.Data.OutputData);
         }
@@ -59,13 +69,15 @@ function addRecord() {
         return;
     }
     let selectGroup = document.getElementById("selectGroup");
-    let selectType = document.getElementById("selectType");
+    let inputType = document.getElementById("inputType");
+    let outputType = document.getElementById("outputType");
     let input = document.getElementById("input");
     let output = document.getElementById("output");
     let record = {
         Id: 0,
         Name: recordName,
-        ConvertType: selectType.value,
+        InputType: inputType.value,
+        OutputType: outputType.value,
         InputData: input.value,
         OutputData: output.value,
         GroupId: Number(selectGroup.value),
@@ -90,6 +102,10 @@ function deleteRecord() {
         return;
     }
     let selectRecord = document.getElementById("selectRecord");
+    if (selectRecord.value == null || selectRecord.value == "") {
+        alert("Record id cannot be empty")
+        return;
+    }
     let groupId = document.getElementById("selectGroup").value;
     fetch(httpRoot + "/deleteRecord?RecordId=" + selectRecord.value, {
         method: "DELETE",
@@ -132,6 +148,10 @@ function deleteGroup() {
         return;
     }
     let selectGroup = document.getElementById("selectGroup");
+    if (selectGroup.value == null || selectGroup.value == "") {
+        alert("Group id cannot be empty")
+        return;
+    }
     fetch(httpRoot + "/deleteGroup?GroupId=" + selectGroup.value, {
         method: "DELETE",
         headers: {"Content-Type": "text/html; charset=utf-8",},

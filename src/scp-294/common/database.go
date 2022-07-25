@@ -38,10 +38,11 @@ func InitDatabases(forceClean bool) {
 		Db.Exec(`CREATE TABLE IF NOT EXISTS record(
 			Id INTEGER PRIMARY KEY AUTOINCREMENT,
 			Name VARCHAR(32) NOT NULL,
-			ConvertType VARCHAR(32) NOT NULL,
+			GroupId INTEGER,
+			InputType VARCHAR(32) NOT NULL,
+			OutputType VARCHAR(32) NOT NULL,
 			InputData TEXT,
-			OutputData TEXT, 
-			GroupId INTEGER
+			OutputData TEXT
 		)`)
 		Db.Exec(`CREATE UNIQUE INDEX recordIndex ON record (GroupId, Name);`)
 	}

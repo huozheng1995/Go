@@ -9,9 +9,57 @@ import (
 )
 
 func RegisterRoutes() {
-	registerRoutes()
+	http.HandleFunc("/", loadMainPage)
+	registerConverterRoutes()
 	registerGroupRoutes()
 	registerRecordRoutes()
+}
+
+func loadMainPage(w http.ResponseWriter, r *http.Request) {
+	t := template.New("layout")
+	t, err := t.ParseFiles("./templates/layout.html", "./templates/header.html")
+	if err != nil {
+		logger.Log(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	inputTypes := []string{
+		"Hex",
+		"Dec",
+		"Bin",
+		"HexByteArray",
+		"ByteArray",
+		"Int8Array",
+	}
+	outputTypes := []string{
+		"Hex",
+		"Dec",
+		"Bin",
+		"HexByteArray",
+		"ByteArray",
+		"Int8Array",
+	}
+	groups, err := model.ListGroups()
+	if err != nil {
+		logger.Log(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	records, err := model.ListRecords()
+	if err != nil {
+		logger.Log(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	data := struct {
+		ProjName    string
+		InputTypes  []string
+		OutputTypes []string
+		Groups      []model.Group
+		Records     []model.Record
+	}{common.ProjName, inputTypes, outputTypes, groups, records}
+	t.ExecuteTemplate(w, "layout", data)
 }
 
 func reloadHeader(w http.ResponseWriter) {

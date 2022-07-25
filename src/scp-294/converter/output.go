@@ -85,12 +85,7 @@ func HexArrayToString(arr []string) string {
 }
 
 func BinArrayToString(arr []string) string {
-	var builder strings.Builder
-	for _, val := range arr {
-		builder.WriteString(val)
-		builder.WriteString(", ")
-	}
-	return builder.String()
+	return HexArrayToString(arr)
 }
 
 func DecArrayToString(arr []int64) string {

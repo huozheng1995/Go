@@ -15,9 +15,17 @@
 <div class="rowDiv" style="display: flex;justify-content: space-between">
     <div style="display: flex;">
         <div class="selectDiv">
-            <label>Type: </label>
-            <select id="selectType">
-                {{range $key, $value := .ConvertTypes}}
+            <label>InputType: </label>
+            <select id="inputType">
+                {{range $key, $value := .InputTypes}}
+                <option value={{$value}}>{{$value}}</option>
+                {{end}}
+            </select>
+        </div>
+        <div class="selectDiv">
+            <label>OutputType: </label>
+            <select id="outputType">
+                {{range $key, $value := .OutputTypes}}
                 <option value={{$value}}>{{$value}}</option>
                 {{end}}
             </select>

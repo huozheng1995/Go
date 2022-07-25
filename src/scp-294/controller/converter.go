@@ -5,55 +5,11 @@ import (
 	"github.com/edward/scp-294/common"
 	"github.com/edward/scp-294/converter"
 	"github.com/edward/scp-294/logger"
-	"github.com/edward/scp-294/model"
-	"html/template"
 	"net/http"
 )
 
-func registerRoutes() {
-	http.HandleFunc("/", loadMainPage)
-	http.HandleFunc("/loadMainPage", loadMainPage)
+func registerConverterRoutes() {
 	http.HandleFunc("/convert", convert)
-}
-
-func loadMainPage(w http.ResponseWriter, r *http.Request) {
-	t := template.New("layout")
-	t, err := t.ParseFiles("./templates/layout.html", "./templates/header.html")
-	if err != nil {
-		logger.Log(err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	convertTypes := []string{
-		"HexToDec",
-		"DecToHex",
-		"BinToDec",
-		"DecToBin",
-		"HexByteToDecByte",
-		"DecByteToHexByte",
-		"HexByteToInt8",
-		"Int8ToHexByte",
-	}
-	groups, err := model.ListGroups()
-	if err != nil {
-		logger.Log(err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	records, err := model.ListRecords()
-	if err != nil {
-		logger.Log(err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	data := struct {
-		ProjName     string
-		ConvertTypes []string
-		Groups       []model.Group
-		Records      []model.Record
-	}{common.ProjName, convertTypes, groups, records}
-	t.ExecuteTemplate(w, "layout", data)
 }
 
 func convert(w http.ResponseWriter, r *http.Request) {
@@ -67,26 +23,85 @@ func convert(w http.ResponseWriter, r *http.Request) {
 			common.ResponseError(w, "Failed to decode data, error: "+err.Error())
 			return
 		}
+
 		var outputData string
-		switch convertReq.ConvertType {
-		case "HexToDec":
-			outputData = converter.DecArrayToString(converter.HexArrayToDecArray(convertReq.InputData))
-		case "DecToHex":
-			outputData = converter.HexArrayToString(converter.DecArrayToHexArray(convertReq.InputData))
-		case "BinToDec":
-			outputData = converter.DecArrayToString(converter.BinArrayToDecArray(convertReq.InputData))
-		case "DecToBin":
-			outputData = converter.BinArrayToString(converter.DecArrayToBinArray(convertReq.InputData))
-		case "HexByteToDecByte":
-			outputData = converter.ByteArrayToString(converter.HexByteArrayToDecByteArray(convertReq.InputData))
-		case "DecByteToHexByte":
-			outputData = converter.HexByteArrayToString(converter.DecByteArrayToHexByteArray(convertReq.InputData))
-		case "HexByteToInt8":
-			outputData = converter.Int8ArrayToString(converter.HexByteArrayToInt8Array(convertReq.InputData))
-		case "Int8ToHexByte":
-			outputData = converter.HexByteArrayToString(converter.Int8ArrayToHexByteArray(convertReq.InputData))
+		var strings = converter.SplitInputString(convertReq.InputData)
+		switch convertReq.InputType {
+		case "Hex":
+			switch convertReq.OutputType {
+			case "Hex":
+				outputData = converter.HexArrayToString(strings)
+			case "Dec":
+				outputData = converter.DecArrayToString(converter.HexArrayToDecArray(strings))
+			case "Bin":
+				outputData = converter.BinArrayToString(converter.HexArrayToBinArray(strings))
+			default:
+				common.ResponseError(w, "Cannot convert '"+convertReq.InputType+"' to '"+convertReq.OutputType+"'")
+				return
+			}
+		case "Dec":
+			switch convertReq.OutputType {
+			case "Hex":
+				outputData = converter.HexArrayToString(converter.DecArrayToHexArray(strings))
+			case "Dec":
+				outputData = converter.DecArrayToString(converter.DecArrayToDecArray(strings))
+			case "Bin":
+				outputData = converter.BinArrayToString(converter.DecArrayToBinArray(strings))
+			default:
+				common.ResponseError(w, "Cannot convert '"+convertReq.InputType+"' to '"+convertReq.OutputType+"'")
+				return
+			}
+		case "Bin":
+			switch convertReq.OutputType {
+			case "Hex":
+				outputData = converter.HexArrayToString(converter.BinArrayToHexArray(strings))
+			case "Dec":
+				outputData = converter.DecArrayToString(converter.BinArrayToDecArray(strings))
+			case "Bin":
+				outputData = converter.BinArrayToString(strings)
+			default:
+				common.ResponseError(w, "Cannot convert '"+convertReq.InputType+"' to '"+convertReq.OutputType+"'")
+				return
+			}
+		case "HexByteArray":
+			switch convertReq.OutputType {
+			case "HexByteArray":
+				outputData = converter.HexByteArrayToString(strings)
+			case "ByteArray":
+				outputData = converter.ByteArrayToString(converter.HexByteArrayToDecByteArray(strings))
+			case "Int8Array":
+				outputData = converter.Int8ArrayToString(converter.HexByteArrayToInt8Array(strings))
+			default:
+				common.ResponseError(w, "Cannot convert '"+convertReq.InputType+"' to '"+convertReq.OutputType+"'")
+				return
+			}
+		case "ByteArray":
+			switch convertReq.OutputType {
+			case "HexByteArray":
+				outputData = converter.HexByteArrayToString(converter.DecByteArrayToHexByteArray(strings))
+			case "ByteArray":
+				outputData = converter.ByteArrayToString(converter.DecByteArrayToDecByteArray(strings))
+			case "Int8Array":
+				outputData = converter.Int8ArrayToString(converter.DecByteArrayToInt8Array(strings))
+			default:
+				common.ResponseError(w, "Cannot convert '"+convertReq.InputType+"' to '"+convertReq.OutputType+"'")
+				return
+			}
+		case "Int8Array":
+			switch convertReq.OutputType {
+			case "HexByteArray":
+				outputData = converter.HexByteArrayToString(converter.Int8ArrayToHexByteArray(strings))
+			case "ByteArray":
+				outputData = converter.ByteArrayToString(converter.Int8ArrayToDecByteArray(strings))
+			case "Int8Array":
+				outputData = converter.Int8ArrayToString(converter.Int8ArrayToInt8Array(strings))
+			default:
+				common.ResponseError(w, "Cannot convert '"+convertReq.InputType+"' to '"+convertReq.OutputType+"'")
+				return
+			}
 		default:
-			outputData = convertReq.InputData
+			common.ResponseError(w, "Unknown input type: '"+convertReq.InputType+"'")
+			return
 		}
 
 		enc := json.NewEncoder(w)

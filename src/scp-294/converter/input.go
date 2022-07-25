@@ -6,79 +6,132 @@ import (
 	"strings"
 )
 
-func HexArrayToDecArray(input string) []int64 {
-	strArray := SplitInputString(input)
+func HexArrayToDecArray(strArray []string) []int64 {
 	arr := make([]int64, 0, len(strArray))
 	for _, str := range strArray {
-		arr = append(arr, utils.HexToDec(str))
-	}
-	return arr
-}
-
-func HexByteArrayToDecByteArray(input string) []byte {
-	strArray := SplitInputString(input)
-	arr := make([]byte, 0, len(strArray))
-	for _, str := range strArray {
-		arr = append(arr, byte(utils.HexToDec(str)))
-	}
-	return arr
-}
-
-func HexByteArrayToInt8Array(input string) []int8 {
-	strArray := SplitInputString(input)
-	arr := make([]int8, 0, len(strArray))
-	for _, str := range strArray {
-		arr = append(arr, int8(utils.HexToDec(str)))
-	}
-	return arr
-}
-
-func DecArrayToHexArray(input string) []string {
-	strArray := SplitInputString(input)
-	arr := make([]string, 0, len(strArray))
-	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 10, 64)
-		arr = append(arr, utils.DecToHex(val))
-	}
-	return arr
-}
-
-func DecByteArrayToHexByteArray(input string) []string {
-	strArray := SplitInputString(input)
-	arr := make([]string, 0, len(strArray))
-	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 10, 8)
-		arr = append(arr, utils.DecToHex(val))
-	}
-	return arr
-}
-
-func Int8ArrayToHexByteArray(input string) []string {
-	strArray := SplitInputString(input)
-	arr := make([]string, 0, len(strArray))
-	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 10, 8)
-		arr = append(arr, utils.DecToHex(val))
-	}
-	return arr
-}
-
-func BinArrayToDecArray(input string) []int64 {
-	strArray := SplitInputString(input)
-	arr := make([]int64, 0, len(strArray))
-	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 2, 64)
+		val, _ := strconv.ParseInt(str, 16, 64)
 		arr = append(arr, val)
 	}
 	return arr
 }
 
-func DecArrayToBinArray(input string) []string {
-	strArray := SplitInputString(input)
+func HexArrayToBinArray(strArray []string) []string {
+	arr := make([]string, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 16, 64)
+		arr = append(arr, utils.DecToBin(val))
+	}
+	return arr
+}
+
+func HexByteArrayToDecByteArray(strArray []string) []byte {
+	arr := make([]byte, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 16, 8)
+		arr = append(arr, byte(val))
+	}
+	return arr
+}
+
+func HexByteArrayToInt8Array(strArray []string) []int8 {
+	arr := make([]int8, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 16, 8)
+		arr = append(arr, int8(byte(val)))
+	}
+	return arr
+}
+
+func DecArrayToHexArray(strArray []string) []string {
+	arr := make([]string, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 10, 64)
+		arr = append(arr, utils.DecToHex(val))
+	}
+	return arr
+}
+
+func DecArrayToDecArray(strArray []string) []int64 {
+	arr := make([]int64, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 10, 64)
+		arr = append(arr, val)
+	}
+	return arr
+}
+
+func DecArrayToBinArray(strArray []string) []string {
 	arr := make([]string, 0, len(strArray))
 	for _, str := range strArray {
 		val, _ := strconv.ParseInt(str, 10, 64)
 		arr = append(arr, utils.DecToBin(val))
+	}
+	return arr
+}
+
+func DecByteArrayToHexByteArray(strArray []string) []string {
+	arr := make([]string, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 10, 8)
+		arr = append(arr, utils.DecToHex(val))
+	}
+	return arr
+}
+
+func DecByteArrayToDecByteArray(strArray []string) []byte {
+	arr := make([]byte, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 10, 8)
+		arr = append(arr, byte(val))
+	}
+	return arr
+}
+
+func DecByteArrayToInt8Array(strArray []string) []int8 {
+	arr := make([]int8, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 10, 8)
+		arr = append(arr, int8(byte(val)))
+	}
+	return arr
+}
+
+func Int8ArrayToHexByteArray(strArray []string) []string {
+	return DecByteArrayToHexByteArray(strArray)
+}
+
+func Int8ArrayToDecByteArray(strArray []string) []byte {
+	arr := make([]byte, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 10, 8)
+		arr = append(arr, byte(val))
+	}
+	return arr
+}
+
+func Int8ArrayToInt8Array(strArray []string) []int8 {
+	arr := make([]int8, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 10, 8)
+		arr = append(arr, int8(byte(val)))
+	}
+	return arr
+}
+
+func BinArrayToHexArray(strArray []string) []string {
+	arr := make([]string, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 2, 64)
+		arr = append(arr, utils.DecToHex(val))
+	}
+	return arr
+}
+
+func BinArrayToDecArray(strArray []string) []int64 {
+	arr := make([]int64, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 2, 64)
+		arr = append(arr, val)
 	}
 	return arr
 }
