@@ -16,25 +16,25 @@
     <div style="display: flex;">
         <div class="selectDiv">
             <label>InputType: </label>
-            <select id="inputType">
+            <select id="inputType" title="inputType">
                 {{range $key, $value := .InputTypes}}
-                <option value={{$value}}>{{$value}}</option>
+                <option value={{$value}} title="Example: {{ (index $.InputCases $key) }}">{{$value}}</option>
                 {{end}}
             </select>
         </div>
         <div class="selectDiv">
             <label>OutputType: </label>
-            <select id="outputType">
+            <select id="outputType" title="outputType">
                 {{range $key, $value := .OutputTypes}}
                 <option value={{$value}}>{{$value}}</option>
                 {{end}}
             </select>
         </div>
-        <button class="rowBtn" onclick="convert()">Convert</button>
-        <button class="rowBtn" onclick="addRecord()">Save</button>
+        <button type="button" class="rowBtn" onclick="convert()">Convert</button>
+        <button type="button" class="rowBtn" onclick="addRecord()">Save</button>
     </div>
     <div>
-        <button onclick="clearText()">Clear</button>
+        <button type="button" onclick="clearText()">Clear</button>
     </div>
 </div>
 

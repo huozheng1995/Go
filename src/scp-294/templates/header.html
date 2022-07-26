@@ -3,27 +3,27 @@
     <div style="display: flex;">
         <div class="selectDiv">
             <label>Group: </label>
-            <select id="selectGroup" onchange="changeGroup()">
+            <select id="selectGroup" title="selectGroup" onchange="changeGroup()">
                 {{range $key, $group := .Groups}}
                 <option value={{$group.Id}}>{{$group.Name}}</option>
                 {{end}}
             </select>
         </div>
-        <button class="rowBtn" onclick="createGroup()">Create</button>
-        <button class="rowBtn" onclick="deleteGroup()">Delete</button>
+        <button type="button" class="rowBtn" onclick="createGroup()">Create</button>
+        <button type="button" class="rowBtn" onclick="deleteGroup()">Delete</button>
     </div>
     <a id="message"></a>
 </div>
 <div class="rowDiv" style="display: flex;">
     <div class="selectDiv">
         <label>Record: </label>
-        <select id="selectRecord">
+        <select id="selectRecord" title="selectRecord">
             {{range $key, $record := .Records}}
             <option value={{$record.Id}} groupId={{$record.GroupId}}>{{$record.Name}}</option>
             {{end}}
         </select>
     </div>
-    <button class="rowBtn" onclick="loadRecord()">Load</button>
-    <button class="rowBtn" onclick="deleteRecord()">Delete</button>
+    <button type="button" class="rowBtn" onclick="loadRecord()">Load</button>
+    <button type="button" class="rowBtn" onclick="deleteRecord()">Delete</button>
 </div>
 {{ end }}
