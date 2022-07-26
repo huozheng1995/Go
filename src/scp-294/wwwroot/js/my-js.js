@@ -31,6 +31,17 @@ function convert() {
     })
 }
 
+function upload() {
+    let inputFile = document.getElementById("inputFile");
+    let files = inputFile.files;
+    if (files != null && files.length > 0) {
+        for (let file of files) {
+
+        }
+    }
+
+}
+
 function clearText() {
     let input = document.getElementById("input");
     let output = document.getElementById("output");
