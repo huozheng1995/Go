@@ -31,6 +31,7 @@ func loadMainPage(w http.ResponseWriter, r *http.Request) {
 		"HexByteArray",
 		"ByteArray",
 		"Int8Array",
+		"File",
 	}
 	outputTypes := []string{
 		"Hex",
@@ -47,6 +48,7 @@ func loadMainPage(w http.ResponseWriter, r *http.Request) {
 		"AB, EF,56 75,,CC  2C, DC, BB, FE, FF",
 		"171, 239,86 117,,204  44, 220, 187, 254, 255",
 		"-85, -17,86 117,,-52  44, -36, -69, -2, -1",
+		"Select a file to parse",
 	}
 	groups, err := model.ListGroups()
 	if err != nil {

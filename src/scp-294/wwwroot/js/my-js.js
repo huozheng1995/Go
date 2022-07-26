@@ -5,6 +5,42 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function convert() {
+    let inputType = document.getElementById("inputType");
+    let outputType = document.getElementById("outputType");
+    let input = document.getElementById("input");
+    if (input.value == null || input.value == "") {
+        alert("Nothing to convert")
+        return;
+    }
+    let formData = new FormData();
+    formData.append("InputType", inputType.value);
+    formData.append("OutputType", outputType.value);
+    formData.append("InputData", input.value);
+    if (inputType.value == "File") {
+        let inputFile = document.getElementById("inputFile");
+        let files = inputFile.files;
+        if (files != null && files.length > 0) {
+            formData.append("InputFile", files[0]);
+        } else {
+            alert("No file to convert")
+            return;
+        }
+    }
+
+    fetch(httpRoot + "/convert", {
+        method: "POST",
+        body: formData,
+    }).then(re => {
+        if (re.ok) return re.json();
+    }).then(re => {
+        if (re.Success) {
+            setOutput(re.Data.OutputData);
+        }
+        updateMessage(re)
+    })
+}
+
+function convertOld() {
     let input = document.getElementById("input");
     let inputType = document.getElementById("inputType");
     let outputType = document.getElementById("outputType");
@@ -29,17 +65,6 @@ function convert() {
         }
         updateMessage(re)
     })
-}
-
-function upload() {
-    let inputFile = document.getElementById("inputFile");
-    let files = inputFile.files;
-    if (files != null && files.length > 0) {
-        for (let file of files) {
-
-        }
-    }
-
 }
 
 function clearText() {
