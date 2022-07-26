@@ -8,6 +8,10 @@ function convert() {
     let input = document.getElementById("input");
     let inputType = document.getElementById("inputType");
     let outputType = document.getElementById("outputType");
+    if (input.value == null || input.value == "") {
+        alert("Nothing to convert")
+        return;
+    }
     let inputModel = {
         InputType: inputType.value,
         OutputType: outputType.value,

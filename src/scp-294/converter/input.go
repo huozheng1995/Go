@@ -27,7 +27,7 @@ func HexArrayToBinArray(strArray []string) []string {
 func HexByteArrayToDecByteArray(strArray []string) []byte {
 	arr := make([]byte, 0, len(strArray))
 	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 16, 8)
+		val, _ := strconv.ParseInt(str, 16, 64)
 		arr = append(arr, byte(val))
 	}
 	return arr
@@ -36,7 +36,7 @@ func HexByteArrayToDecByteArray(strArray []string) []byte {
 func HexByteArrayToInt8Array(strArray []string) []int8 {
 	arr := make([]int8, 0, len(strArray))
 	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 16, 8)
+		val, _ := strconv.ParseInt(str, 16, 64)
 		arr = append(arr, int8(byte(val)))
 	}
 	return arr
@@ -72,7 +72,7 @@ func DecArrayToBinArray(strArray []string) []string {
 func DecByteArrayToHexByteArray(strArray []string) []string {
 	arr := make([]string, 0, len(strArray))
 	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 10, 8)
+		val, _ := strconv.ParseInt(str, 10, 64)
 		arr = append(arr, utils.DecToHex(val))
 	}
 	return arr
@@ -81,7 +81,7 @@ func DecByteArrayToHexByteArray(strArray []string) []string {
 func DecByteArrayToDecByteArray(strArray []string) []byte {
 	arr := make([]byte, 0, len(strArray))
 	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 10, 8)
+		val, _ := strconv.ParseInt(str, 10, 64)
 		arr = append(arr, byte(val))
 	}
 	return arr
@@ -90,7 +90,7 @@ func DecByteArrayToDecByteArray(strArray []string) []byte {
 func DecByteArrayToInt8Array(strArray []string) []int8 {
 	arr := make([]int8, 0, len(strArray))
 	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 10, 8)
+		val, _ := strconv.ParseInt(str, 10, 64)
 		arr = append(arr, int8(byte(val)))
 	}
 	return arr
@@ -103,7 +103,7 @@ func Int8ArrayToHexByteArray(strArray []string) []string {
 func Int8ArrayToDecByteArray(strArray []string) []byte {
 	arr := make([]byte, 0, len(strArray))
 	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 10, 8)
+		val, _ := strconv.ParseInt(str, 10, 64)
 		arr = append(arr, byte(val))
 	}
 	return arr
@@ -112,7 +112,7 @@ func Int8ArrayToDecByteArray(strArray []string) []byte {
 func Int8ArrayToInt8Array(strArray []string) []int8 {
 	arr := make([]int8, 0, len(strArray))
 	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 10, 8)
+		val, _ := strconv.ParseInt(str, 10, 64)
 		arr = append(arr, int8(byte(val)))
 	}
 	return arr
