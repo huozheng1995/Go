@@ -1,9 +1,38 @@
-Linux:
-#set CC=C:\TDM-GCC-64\bin\x86_64-w64-mingw32-c++
-#set CXX=C:\TDM-GCC-64\bin\x86_64-w64-mingw32-g++
-set CGO_ENABLED=0
-set GOOS=linux
-set GOARCH=amd64
-go build -a scp294.go
+build: go build -a scp294.go
 
-env CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ GOOS=windows GOARCH=amd64  go build
+# linux install go:
+mkdir ~/go && cd ~/go
+wget https://go.dev/dl/go1.18.4.linux-amd64.tar.gz
+tar -C /usr/local -zxvf  go1.18.4.linux-amd64.tar.gz
+vi ~/.bashrc
+export GOROOT=/usr/local/go
+export PATH=$PATH:$GOROOT/bin
+source ~/.bashrc
+go version
+
+firewall settings:
+  start: systemctl start firewalld.service
+  stop: systemctl stop firewalld.service
+  restart: systemctl restart firewalld.service
+  reload: firewall-cmd --reload
+  list all: firewall-cmd --list-all
+firewall zone:
+  list zone: firewall-cmd --get-zones
+  get default zone: firewall-cmd --get-default-zone
+  get network zone: firewall-cmd --get-zone-of-interface=ens33
+  add network to zone: firewall-cmd --zone=public --add-interface=ens33 --permanent
+  add protocol to zone: firewall-cmd --zone=public --add-protocol=tcp --permanent
+  list all network zone: firewall-cmd --get-active-zones
+firewall service:
+  list all service: firewall-cmd --get-service
+  list default zone service: firewall-cmd --list-service
+  list zone service: firewall-cmd --zone=work --list-service
+  add service to zone: firewall-cmd --zone=public --add-service=http --permanent
+  get service zone: firewall-cmd --get-zone-of-interface=http
+firewall port:
+  list port: firewall-cmd --list-port
+  add port: firewall-cmd --add-port=1000-20000/tcp --permanent
+  remove port: firewall-cmd --remove-port=1000-20000/tcp --permanent
+
+
+
