@@ -1,4 +1,4 @@
-const httpRoot = "http://localhost:8294";
+const httpRoot = "";
 
 document.addEventListener("DOMContentLoaded", () => {
     changeGroup();

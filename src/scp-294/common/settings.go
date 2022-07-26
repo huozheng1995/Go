@@ -1,4 +1,4 @@
 package common
 
 const ProjName = "SCP-294"
-const HttpAddr = "localhost:8294"
+const HttpAddr = ":8294"
