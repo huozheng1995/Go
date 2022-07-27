@@ -12,7 +12,14 @@ function convert() {
     let formData = new FormData();
     formData.append("InputType", inputType.value);
     formData.append("OutputType", outputType.value);
-    if (inputType.value == "File") {
+    if (inputType.value != "File") {
+        if (input.value != null && input.value != "") {
+            formData.append("InputData", input.value);
+        } else {
+            alert("Nothing to convert")
+            return;
+        }
+    } else {
         let inputFile = document.getElementById("inputFile");
         let files = inputFile.files;
         if (files != null && files.length > 0) {
@@ -21,25 +28,49 @@ function convert() {
             alert("No file to convert")
             return;
         }
-    } else {
-        if (input.value != null && input.value != "") {
-            formData.append("InputData", input.value);
-        } else {
-            alert("Nothing to convert")
-            return;
-        }
     }
 
     fetch(httpRoot + "/convert", {
         method: "POST",
         body: formData,
     }).then(re => {
-        if (re.ok) return re.json();
-    }).then(re => {
-        if (re.Success) {
-            setOutput(re.Data.OutputData);
+        if (re.ok) {
+            if (inputType.value != "File") {
+                return re.json();
+            } else {
+                return re;
+                // return getStream(re.body.getReader());
+            }
         }
-        updateMessage(re)
+    }).then(re => {
+        if (inputType.value != "File") {
+            if (re.Success) {
+                setOutput(re.Data.OutputData);
+            }
+            updateMessage(re)
+        } else {
+            let output = document.getElementById("output");
+            let contentLength = re.headers.get('Content-Length');
+            getStream(output, re.body.getReader(), contentLength)
+        }
+    })
+}
+
+function getStream(output, reader, contentLength) {
+    let progress = 0;
+    reader.read().then(result => {
+        if (result.done) {
+            return;
+        }
+        let chunk = result.value;
+        let text = '';
+        for (let i = 0; i < chunk.byteLength; i++) {
+            text += String.fromCharCode(chunk[i]);
+        }
+        output.innerHTML += text;
+        progress += chunk.byteLength;
+        console.log(((progress / contentLength) * 100) + '%');
+        return getStream(output, reader, contentLength);
     })
 }
 

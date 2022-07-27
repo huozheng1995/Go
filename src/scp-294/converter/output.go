@@ -96,3 +96,51 @@ func DecArrayToString(arr []int64) string {
 	}
 	return builder.String()
 }
+
+//func printFileBytes(fileName string, file multipart.File, beginIndex int, len int) {
+//	const BufferSize = 32
+//	defer file.Close()
+//
+//	buffer := make([]byte, BufferSize)
+//
+//	if beginIndex < 1 {
+//		beginIndex = 1
+//	}
+//	var rowIndex = 1
+//	for {
+//		count, err := file.Read(buffer)
+//		if err != nil {
+//			if err != io.EOF {
+//				log.Fatal(err.Error())
+//			}
+//			break
+//		}
+//
+//		switch PrintState {
+//		case beforePrint:
+//			if rowIndex >= beginIndex {
+//				PrintState = printing
+//			}
+//		case printing:
+//			if len > 0 && rowIndex >= beginIndex+len {
+//				return
+//			}
+//		}
+//
+//		if PrintState == printing {
+//			byteIndex := (rowIndex - 1) * BufferSize
+//			if count < BufferSize {
+//				fmt.Printf("row%s(%s, %s, %s, %s): %s\n", Fill0(strconv.Itoa(rowIndex), printLen),
+//					Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
+//					Fill0(strconv.Itoa(byteIndex+16), printLen), Fill0(strconv.Itoa(byteIndex+24), printLen),
+//					bytesDataToNum(buffer[:count]))
+//			} else {
+//				fmt.Printf("row%s(%s, %s, %s, %s): %s\n", Fill0(strconv.Itoa(rowIndex), printLen),
+//					Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
+//					Fill0(strconv.Itoa(byteIndex+16), printLen), Fill0(strconv.Itoa(byteIndex+24), printLen),
+//					bytesDataToNum(buffer))
+//			}
+//		}
+//		rowIndex++
+//	}
+//}

@@ -6,7 +6,8 @@ import (
 	"github.com/edward/scp-294/common"
 	"github.com/edward/scp-294/converter"
 	"github.com/edward/scp-294/logger"
-	"io/ioutil"
+	"io"
+	"mime/multipart"
 	"net/http"
 )
 
@@ -36,14 +37,20 @@ func convert(w http.ResponseWriter, r *http.Request) {
 				InputData = values[0]
 			}
 		}
-		for key, files := range form.File {
-			if key == "InputFile" {
-				fmt.Println("fileName   :", files[0].Filename)
-				fmt.Println("part-header:", files[0].Header)
-				file, _ := files[0].Open()
-				buf, _ := ioutil.ReadAll(file)
-				fmt.Println("file-content", string(buf))
+		if InputType == "File" {
+			var file multipart.File
+			var fileName string
+			for key, files := range form.File {
+				if key == "InputFile" {
+					fileName = files[0].Filename
+					file, _ = files[0].Open()
+				}
 			}
+			exitChan, dataChan := receiveFile(file)
+			sendBody(w, dataChan)
+			println(fileName)
+			close(exitChan)
+			return
 		}
 
 		var outputData string
@@ -143,6 +150,47 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		}
 	default:
 		common.ResponseError(w, "Failed to convert data")
+	}
+}
+
+func receiveFile(file multipart.File) (exitChan chan struct{}, dataChan chan []byte) {
+	exitChan = make(chan struct{})
+	dataChan = make(chan []byte, 10)
+	go func() {
+		defer close(dataChan)
+		defer file.Close()
+		for {
+			select {
+			case <-exitChan:
+				fmt.Println("exit receive data!")
+				return
+			default:
+				buf := make([]byte, 4096)
+				n, err := file.Read(buf)
+				if err != nil && err != io.EOF {
+					fmt.Println("receive data error!")
+					return
+				} else {
+					dataChan <- buf[:n]
+				}
+			}
+		}
+	}()
+	return
+}
+
+func sendBody(w http.ResponseWriter, dataChan <-chan []byte) {
+	for {
+		data, ok := <-dataChan
+		if !ok {
+			fmt.Println("receive data error!")
+			break
+		}
+		n, err := w.Write(data)
+		if err != nil || n == 0 {
+			fmt.Println("send data error!")
+			break
+		}
 	}
 }
 
