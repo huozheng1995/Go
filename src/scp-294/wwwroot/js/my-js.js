@@ -12,7 +12,8 @@ function convert() {
     let formData = new FormData();
     formData.append("InputType", inputType.value);
     formData.append("OutputType", outputType.value);
-    if (inputType.value != "File") {
+    let isFile = inputType.value == "File";
+    if (!isFile) {
         if (input.value != null && input.value != "") {
             formData.append("InputData", input.value);
         } else {
@@ -35,76 +36,54 @@ function convert() {
         body: formData,
     }).then(re => {
         if (re.ok) {
-            if (inputType.value != "File") {
+            if (!isFile) {
                 return re.json();
             } else {
-                return re;
-                // return getStream(re.body.getReader());
+                return readTextStream(re);
             }
         }
-    }).then(re => {
-        if (inputType.value != "File") {
-            if (re.Success) {
-                setOutput(re.Data.OutputData);
-            }
-            updateMessage(re)
-        } else {
-            let output = document.getElementById("output");
-            let contentLength = re.headers.get('Content-Length');
-            getStream(output, re.body.getReader(), contentLength)
-        }
-    })
-}
-
-function getStream(output, reader, contentLength) {
-    let progress = 0;
-    reader.read().then(result => {
-        if (result.done) {
-            return;
-        }
-        let chunk = result.value;
-        let text = '';
-        for (let i = 0; i < chunk.byteLength; i++) {
-            text += String.fromCharCode(chunk[i]);
-        }
-        output.innerHTML += text;
-        progress += chunk.byteLength;
-        console.log(((progress / contentLength) * 100) + '%');
-        return getStream(output, reader, contentLength);
-    })
-}
-
-function convertOld() {
-    let input = document.getElementById("input");
-    let inputType = document.getElementById("inputType");
-    let outputType = document.getElementById("outputType");
-    if (input.value == null || input.value == "") {
-        alert("Nothing to convert")
-        return;
-    }
-    let inputModel = {
-        InputType: inputType.value,
-        OutputType: outputType.value,
-        InputData: input.value
-    }
-    fetch(httpRoot + "/convert", {
-        method: "POST",
-        body: JSON.stringify(inputModel),
-        headers: {"Content-Type": "application/json;charset=UTF-8",},
-    }).then(re => {
-        if (re.ok) return re.json();
     }).then(re => {
         if (re.Success) {
-            setOutput(re.Data.OutputData);
+            setOutput(re.Data);
         }
         updateMessage(re)
     })
 }
 
+async function readTextStream(re) {
+    let decoder = new TextDecoderStream('ascii', {ignoreBOM: true});
+    let textStream = re.body.pipeThrough(decoder);
+    let reader = textStream.getReader();
+    let outputArr = [];
+    let transferSize = 0;
+    let done = false;
+    while (!done) {
+        done = await reader.read().then(result => {
+            if (result.value != null && result.value.length > 0) {
+                outputArr.push(result.value);
+                transferSize += result.value.length;
+                updateMessageValue("Transfer size: " + (transferSize >>> 10) + "KB", "blue");
+            }
+            if (result.done) {
+                updateMessageValue("Transfer done, size: " + (transferSize >>> 10) + "KB", "green");
+                return true;
+            }
+            return false;
+        });
+    }
+    return {
+        Success: true,
+        Message: "Data was converted!",
+        Data: outputArr.join("")
+    };
+}
+
 function clearText() {
     let input = document.getElementById("input");
+    let inputFile = document.getElementById("inputFile");
     let output = document.getElementById("output");
     input.value = null;
+    inputFile.value = null;
     output.value = null;
     updateMessageValue(null);
 }
@@ -286,7 +265,7 @@ function setOutput(data) {
     output.value = data;
     if (output.scrollHeight > 200) {
         output.style.height = '200px';
-        output.style.height = output.scrollHeight + 64 + 'px';
+        output.style.height = output.scrollHeight + 100 + 'px';
     }
 }
 
@@ -296,10 +275,12 @@ function updateMessage(re) {
     element.style.color = re.Success ? "green" : "red";
 }
 
-function updateMessageValue(value) {
+function updateMessageValue(value, color) {
     let element = document.getElementById("message");
     element.innerText = value;
-    if (value != null) {
+    if (color != null) {
+        element.style.color = color;
+    } else if (value != null) {
         element.style.color = "green";
     }
 }

@@ -17,10 +17,6 @@ type ConvertReq struct {
 	InputData  string `json:"InputData"`
 }
 
-type ConvertRes struct {
-	OutputData string `json:"OutputData"`
-}
-
 func ResponseError(w http.ResponseWriter, message string) {
 	enc := json.NewEncoder(w)
 	resData := ResData{

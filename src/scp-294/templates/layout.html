@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/css/my-css.css">
     <script src="/js/my-js.js"></script>
 </head>
-<body style="width: 90%">
+<body>
 <div id="divHeader">
     {{ template "header" . }}
 </div>
@@ -42,7 +42,7 @@
     <textarea id="input" placeholder="input..."></textarea>
     <div id="inputFileDiv">
         <label>InputFile: </label>
-        <input id="inputFile" type="file"/>
+        <input id="inputFile" title="inputFile" type="file"/>
     </div>
 </div>
 <div class="rowDiv">
