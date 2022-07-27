@@ -16,7 +16,7 @@
     <div style="display: flex;">
         <div class="selectDiv">
             <label>InputType: </label>
-            <select id="inputType" title="inputType">
+            <select id="inputType" title="inputType" onchange="onInputTypeChange()">
                 {{range $key, $value := .InputTypes}}
                 <option value={{$value}} title="Example: {{ (index $.InputCases $key) }}">{{$value}}</option>
                 {{end}}
@@ -41,6 +41,7 @@
 <div class="rowDiv">
     <textarea id="input" placeholder="input..."></textarea>
     <div id="inputFileDiv">
+        <label>InputFile: </label>
         <input id="inputFile" type="file"/>
     </div>
 </div>

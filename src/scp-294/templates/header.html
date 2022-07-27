@@ -3,7 +3,7 @@
     <div style="display: flex;">
         <div class="selectDiv">
             <label>Group: </label>
-            <select id="selectGroup" title="selectGroup" onchange="changeGroup()">
+            <select id="selectGroup" title="selectGroup" onchange="onGroupChange()">
                 {{range $key, $group := .Groups}}
                 <option value={{$group.Id}}>{{$group.Name}}</option>
                 {{end}}

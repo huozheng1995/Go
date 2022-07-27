@@ -36,7 +36,6 @@ func convert(w http.ResponseWriter, r *http.Request) {
 				InputData = values[0]
 			}
 		}
-
 		for key, files := range form.File {
 			if key == "InputFile" {
 				fmt.Println("fileName   :", files[0].Filename)

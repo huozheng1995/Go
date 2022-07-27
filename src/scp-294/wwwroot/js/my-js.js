@@ -1,21 +1,17 @@
 const httpRoot = "";
 
 document.addEventListener("DOMContentLoaded", () => {
-    changeGroup();
+    onGroupChange();
+    onInputTypeChange();
 });
 
 function convert() {
     let inputType = document.getElementById("inputType");
     let outputType = document.getElementById("outputType");
     let input = document.getElementById("input");
-    if (input.value == null || input.value == "") {
-        alert("Nothing to convert")
-        return;
-    }
     let formData = new FormData();
     formData.append("InputType", inputType.value);
     formData.append("OutputType", outputType.value);
-    formData.append("InputData", input.value);
     if (inputType.value == "File") {
         let inputFile = document.getElementById("inputFile");
         let files = inputFile.files;
@@ -23,6 +19,13 @@ function convert() {
             formData.append("InputFile", files[0]);
         } else {
             alert("No file to convert")
+            return;
+        }
+    } else {
+        if (input.value != null && input.value != "") {
+            formData.append("InputData", input.value);
+        } else {
+            alert("Nothing to convert")
             return;
         }
     }
@@ -83,19 +86,19 @@ function loadRecord() {
     }
     fetch(httpRoot + "/loadRecord?RecordId=" + selectRecord.value, {
         method: "GET",
-        headers: {"Content-Type": "application/json;charset=UTF-8",},
     }).then(re => {
         if (re.ok) return re.json();
     }).then(re => {
         if (re.Success) {
-            let selectGroup = document.getElementById("selectGroup");
             let inputType = document.getElementById("inputType");
             let outputType = document.getElementById("outputType");
-            let input = document.getElementById("input");
-            selectGroup.value = re.Data.GroupId;
             inputType.value = re.Data.InputType;
             outputType.value = re.Data.OutputType;
-            input.value = re.Data.InputData;
+            if (inputType.value != "File") {
+                let input = document.getElementById("input");
+                input.value = re.Data.InputData;
+            }
+            onInputTypeChange();
             setOutput(re.Data.OutputData);
         }
         updateMessage(re)
@@ -126,13 +129,13 @@ function addRecord() {
     fetch(httpRoot + "/addRecord", {
         method: "POST",
         body: JSON.stringify(record),
-        headers: {"Content-Type": "text/html; charset=utf-8",},
+        headers: {"Content-Type": "application/json;charset=UTF-8",},
     }).then(re => {
         if (re.ok) return re.text();
     }).then(re => {
         let divHeader = document.getElementById("divHeader");
         divHeader.innerHTML = re;
-        reloadGroup(groupId);
+        switchGroup(groupId);
         updateMessageValue("Record was saved!")
     })
 }
@@ -149,13 +152,12 @@ function deleteRecord() {
     let groupId = document.getElementById("selectGroup").value;
     fetch(httpRoot + "/deleteRecord?RecordId=" + selectRecord.value, {
         method: "DELETE",
-        headers: {"Content-Type": "text/html; charset=utf-8",},
     }).then(re => {
         if (re.ok) return re.text();
     }).then(re => {
         let divHeader = document.getElementById("divHeader");
         divHeader.innerHTML = re;
-        reloadGroup(groupId);
+        switchGroup(groupId);
         updateMessageValue("Record was deleted!")
     })
 }
@@ -173,7 +175,7 @@ function createGroup() {
     fetch(httpRoot + "/addGroup", {
         method: "POST",
         body: JSON.stringify(group),
-        headers: {"Content-Type": "text/html; charset=utf-8",},
+        headers: {"Content-Type": "application/json;charset=UTF-8",},
     }).then(re => {
         if (re.ok) return re.text();
     }).then(re => {
@@ -194,7 +196,6 @@ function deleteGroup() {
     }
     fetch(httpRoot + "/deleteGroup?GroupId=" + selectGroup.value, {
         method: "DELETE",
-        headers: {"Content-Type": "text/html; charset=utf-8",},
     }).then(re => {
         if (re.ok) return re.text();
     }).then(re => {
@@ -204,18 +205,18 @@ function deleteGroup() {
     })
 }
 
-function reloadGroup(groupId) {
+function switchGroup(groupId) {
     let selectGroup = document.getElementById("selectGroup");
     for (let option of selectGroup.options) {
         if (option.value == groupId) {
             option.selected = true;
-            changeGroup();
+            onGroupChange();
             break;
         }
     }
 }
 
-function changeGroup() {
+function onGroupChange() {
     let selectGroup = document.getElementById("selectGroup");
     let selectRecord = document.getElementById("selectRecord");
     let selected = false;
@@ -233,6 +234,19 @@ function changeGroup() {
     }
     if (!selected) {
         selectRecord.selectedIndex = -1;
+    }
+}
+
+function onInputTypeChange() {
+    let inputType = document.getElementById("inputType");
+    let input = document.getElementById("input");
+    let inputFileDiv = document.getElementById("inputFileDiv");
+    if (inputType.value != "File") {
+        input.style.display = null;
+        inputFileDiv.style.display = "none";
+    } else {
+        input.style.display = "none";
+        inputFileDiv.style.display = null;
     }
 }
 
