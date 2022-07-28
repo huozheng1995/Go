@@ -51,21 +51,19 @@ function convert() {
 }
 
 async function readTextStream(re) {
-    let decoder = new TextDecoderStream('ascii', {ignoreBOM: true});
-    let textStream = re.body.pipeThrough(decoder);
-    let reader = textStream.getReader();
-    let outputArr = [];
+    let reader = re.body.getReader();
+    let myTypedArray = new MyTypedArray(Uint8Array, 4096);
     let transferSize = 0;
     let done = false;
     while (!done) {
         done = await reader.read().then(result => {
-            if (result.value != null && result.value.length > 0) {
-                outputArr.push(result.value);
-                transferSize += result.value.length;
+            if (result.value != null && result.value.byteLength > 0) {
+                myTypedArray.pushArray(result.value);
+                transferSize += result.value.byteLength;
                 updateMessageValue("Transfer size: " + (transferSize >>> 10) + "KB", "blue");
             }
             if (result.done) {
-                updateMessageValue("Transfer done, size: " + (transferSize >>> 10) + "KB", "green");
+                updateMessageValue("Transfer done, total size: " + (transferSize >>> 10) + "KB", "green");
                 return true;
             }
             return false;
@@ -73,9 +71,47 @@ async function readTextStream(re) {
     }
     return {
         Success: true,
-        Message: "Data was converted!",
-        Data: outputArr.join("")
+        Message: "Data was converted! Total size: " + (transferSize >>> 10) + "KB",
+        Data: myTypedArray.toString()
     };
+}
+
+class MyTypedArray {
+    constructor(typedArrayClass, cap) {
+        this.typedArrayClass = typedArrayClass;
+        this.off = 0;
+        this.cap = cap;
+        this.arrayBuffer = new ArrayBuffer(this.cap);
+        this.typedArray = new this.typedArrayClass(this.arrayBuffer);
+    }
+
+    pushArray(valArr) {
+        for (let val of valArr) {
+            this.push(val);
+        }
+    }
+
+    push(val) {
+        if (this.off < this.cap) {
+            this.typedArray[this.off++] = val;
+            return;
+        }
+        this.cap *= 2;
+        let newArrayBuffer = new ArrayBuffer(this.cap);
+        let newTypedArray = new this.typedArrayClass(newArrayBuffer);
+        newTypedArray.set(this.typedArray, 0);
+        this.arrayBuffer = newArrayBuffer;
+        this.typedArray = newTypedArray;
+        this.push(val);
+    }
+
+    toString(charset) {
+        if (charset == null) {
+            charset = "ascii";
+        }
+        let decoder = new TextDecoder(charset, {ignoreBOM: true})
+        return decoder.decode(new this.typedArrayClass(this.arrayBuffer, 0, this.off));
+    }
 }
 
 function clearText() {
