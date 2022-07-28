@@ -159,7 +159,7 @@ func receiveFile(file multipart.File) (exitChan chan struct{}, dataChan chan []b
 		for {
 			select {
 			case <-exitChan:
-				fmt.Println("exit receive data!")
+				fmt.Println("exit channel")
 				return
 			default:
 				buf := make([]byte, 4096)

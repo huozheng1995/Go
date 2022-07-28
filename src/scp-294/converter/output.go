@@ -10,67 +10,67 @@ import (
 const printLen = 5
 
 func ByteArrayToString(arr []byte) string {
-	rowCount := 16
+	rowSize := 16
 
-	totalRow := len(arr) / rowCount
-	lastRowCount := len(arr) % rowCount
+	totalRow := len(arr) / rowSize
+	lastRowCount := len(arr) % rowSize
 	if lastRowCount > 0 {
 		totalRow++
 	}
 
 	var builder strings.Builder
 	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
-		byteIndex := rowIndex * rowCount
+		byteIndex := rowIndex * rowSize
 		if rowIndex == totalRow-1 {
-			rowCount = lastRowCount
+			rowSize = lastRowCount
 		}
 		builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
 			utils.Fill0(strconv.Itoa(byteIndex), printLen), utils.Fill0(strconv.Itoa(byteIndex+8), printLen),
-			utils.ByteArrayToLine(arr[byteIndex:byteIndex+rowCount]), utils.ByteArrayToCharLine(arr[byteIndex:byteIndex+rowCount])))
+			utils.ByteArrayToLine(arr, byteIndex, rowSize), utils.ByteArrayToCharLine(arr, byteIndex, rowSize)))
 	}
 	return builder.String()
 }
 
 func Int8ArrayToString(arr []int8) string {
-	rowCount := 16
+	rowSize := 16
 
-	totalRow := len(arr) / rowCount
-	lastRowCount := len(arr) % rowCount
+	totalRow := len(arr) / rowSize
+	lastRowCount := len(arr) % rowSize
 	if lastRowCount > 0 {
 		totalRow++
 	}
 
 	var builder strings.Builder
 	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
-		byteIndex := rowIndex * rowCount
+		byteIndex := rowIndex * rowSize
 		if rowIndex == totalRow-1 {
-			rowCount = lastRowCount
+			rowSize = lastRowCount
 		}
 		builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
 			utils.Fill0(strconv.Itoa(byteIndex), printLen), utils.Fill0(strconv.Itoa(byteIndex+8), printLen),
-			utils.Int8ArrayToLine(arr[byteIndex:byteIndex+rowCount]), utils.Int8ArrayToCharLine(arr[byteIndex:byteIndex+rowCount])))
+			utils.Int8ArrayToLine(arr[byteIndex:byteIndex+rowSize]), utils.Int8ArrayToCharLine(arr[byteIndex:byteIndex+rowSize])))
 	}
 	return builder.String()
 }
 
 func HexByteArrayToString(arr []string) string {
-	rowCount := 16
+	rowSize := 16
 
-	totalRow := len(arr) / rowCount
-	lastRowCount := len(arr) % rowCount
+	totalRow := len(arr) / rowSize
+	lastRowCount := len(arr) % rowSize
 	if lastRowCount > 0 {
 		totalRow++
 	}
 
 	var builder strings.Builder
 	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
-		byteIndex := rowIndex * rowCount
+		byteIndex := rowIndex * rowSize
 		if rowIndex == totalRow-1 {
-			rowCount = lastRowCount
+			rowSize = lastRowCount
 		}
 		builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
 			utils.Fill0(strconv.Itoa(byteIndex), printLen), utils.Fill0(strconv.Itoa(byteIndex+8), printLen),
-			utils.HexByteArrayToLine(arr[byteIndex:byteIndex+rowCount]), utils.HexByteArrayToCharLine(arr[byteIndex:byteIndex+rowCount])))
+			utils.HexByteArrayToLine(arr[byteIndex:byteIndex+rowSize]), utils.HexByteArrayToCharLine(arr[byteIndex:byteIndex+rowSize])))
 	}
 	return builder.String()
 }
@@ -97,50 +97,44 @@ func DecArrayToString(arr []int64) string {
 	return builder.String()
 }
 
-//func printFileBytes(fileName string, file multipart.File, beginIndex int, len int) {
-//	const BufferSize = 32
-//	defer file.Close()
-//
-//	buffer := make([]byte, BufferSize)
-//
-//	if beginIndex < 1 {
-//		beginIndex = 1
-//	}
-//	var rowIndex = 1
-//	for {
-//		count, err := file.Read(buffer)
-//		if err != nil {
-//			if err != io.EOF {
-//				log.Fatal(err.Error())
-//			}
-//			break
-//		}
-//
-//		switch PrintState {
-//		case beforePrint:
-//			if rowIndex >= beginIndex {
-//				PrintState = printing
-//			}
-//		case printing:
-//			if len > 0 && rowIndex >= beginIndex+len {
-//				return
-//			}
-//		}
-//
-//		if PrintState == printing {
-//			byteIndex := (rowIndex - 1) * BufferSize
-//			if count < BufferSize {
-//				fmt.Printf("row%s(%s, %s, %s, %s): %s\n", Fill0(strconv.Itoa(rowIndex), printLen),
-//					Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
-//					Fill0(strconv.Itoa(byteIndex+16), printLen), Fill0(strconv.Itoa(byteIndex+24), printLen),
-//					bytesDataToNum(buffer[:count]))
-//			} else {
-//				fmt.Printf("row%s(%s, %s, %s, %s): %s\n", Fill0(strconv.Itoa(rowIndex), printLen),
-//					Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
-//					Fill0(strconv.Itoa(byteIndex+16), printLen), Fill0(strconv.Itoa(byteIndex+24), printLen),
-//					bytesDataToNum(buffer))
-//			}
-//		}
-//		rowIndex++
-//	}
-//}
+func FileByteArrayToString(arr []byte, isLastPacket bool, preArr []byte, preArrLen int) (str string, nextArr []byte, nextArrLen int) {
+	rowSize := 16
+	totalLen := preArrLen + len(arr)
+	totalRow := totalLen / rowSize
+	lastRowCount := totalLen % rowSize
+	if lastRowCount > 0 {
+		totalRow++
+	}
+
+	var builder strings.Builder
+	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
+		byteIndex := rowIndex * rowSize
+		if rowIndex == totalRow-1 {
+			if !isLastPacket && lastRowCount > 0 {
+				break
+			}
+			rowSize = lastRowCount
+		}
+		if rowIndex == 0 {
+			builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
+				utils.Fill0(strconv.Itoa(byteIndex), printLen), utils.Fill0(strconv.Itoa(byteIndex+8), printLen),
+				utils.TwoByteArraysToLine(preArr, 0, preArrLen, arr, byteIndex, rowSize),
+				utils.TwoBytesArrayToCharLine(preArr, 0, preArrLen, arr, byteIndex, rowSize)))
+		} else {
+			builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
+				utils.Fill0(strconv.Itoa(byteIndex), printLen), utils.Fill0(strconv.Itoa(byteIndex+8), printLen),
+				utils.ByteArrayToLine(arr, byteIndex, rowSize),
+				utils.ByteArrayToCharLine(arr, byteIndex, rowSize)))
+		}
+	}
+
+	if !isLastPacket && lastRowCount > 0 {
+		for i, j := totalRow*rowSize, 0; i < len(arr); i, j = i+1, j+1 {
+			preArr[j] = arr[i]
+		}
+		nextArr = preArr
+		nextArrLen = lastRowCount
+	}
+
+	return builder.String(), nextArr, nextArrLen
+}

@@ -2,7 +2,6 @@ package utils
 
 import (
 	"encoding/binary"
-	"golang.org/x/text/encoding/charmap"
 	"math"
 	"strconv"
 	"strings"
@@ -62,11 +61,6 @@ func BytesToString(arr []byte) string {
 	return string(arr)
 }
 
-func BytesToStringISO8859_1(arr []byte) string {
-	encoded, _ := charmap.ISO8859_1.NewDecoder().Bytes(arr)
-	return string(encoded)
-}
-
 type BytesDataToNum func(arr []byte) string
 
 func ByteArrayToInt8Array(arr []byte) []int8 {
@@ -87,18 +81,52 @@ func Int8ArrayToByteArray(arr []int8) []byte {
 	return result
 }
 
-func ByteArrayToLine(arr []byte) string {
-	var result string
+func ByteArrayToLine(arr []byte, off int, len int) string {
+	var result strings.Builder
 	count := 0
-	for _, val := range arr {
-		count++
-		if count%8 == 0 {
-			result = result + FillSpace(strconv.Itoa(int(val)), 3) + ", "
-		} else {
-			result = result + FillSpace(strconv.Itoa(int(val)), 3) + " "
+	if arr != nil {
+		for i := off; i < off+len; i++ {
+			count++
+			if count%8 == 0 {
+				result.WriteString(FillSpace(strconv.Itoa(int(arr[i])), 3))
+				result.WriteString(", ")
+			} else {
+				result.WriteString(FillSpace(strconv.Itoa(int(arr[i])), 3))
+				result.WriteString(" ")
+			}
 		}
 	}
-	return result
+	return result.String()
+}
+
+func TwoByteArraysToLine(arr1 []byte, off1 int, len1 int, arr2 []byte, off2 int, len2 int) string {
+	var result strings.Builder
+	count := 0
+	if arr1 != nil {
+		for i := off1; i < off1+len1; i++ {
+			count++
+			if count%8 == 0 {
+				result.WriteString(FillSpace(strconv.Itoa(int(arr1[i])), 3))
+				result.WriteString(", ")
+			} else {
+				result.WriteString(FillSpace(strconv.Itoa(int(arr1[i])), 3))
+				result.WriteString(" ")
+			}
+		}
+	}
+	if arr2 != nil {
+		for i := off2; i < off2+len2; i++ {
+			count++
+			if count%8 == 0 {
+				result.WriteString(FillSpace(strconv.Itoa(int(arr1[i])), 3))
+				result.WriteString(", ")
+			} else {
+				result.WriteString(FillSpace(strconv.Itoa(int(arr1[i])), 3))
+				result.WriteString(" ")
+			}
+		}
+	}
+	return result.String()
 }
 
 func Int8ArrayToLine(arr []int8) string {
@@ -129,24 +157,62 @@ func HexByteArrayToLine(arr []string) string {
 	return result
 }
 
-func ByteArrayToCharLine(arr []byte) string {
-	var result string
+func ByteArrayToCharLine(arr []byte, off int, len int) string {
+	var result strings.Builder
 	count := 0
-	for _, val := range arr {
-		var charVal string
-		if val >= 32 && val <= 126 {
-			charVal = string(val)
-		} else {
-			charVal = string(0)
-		}
-		count++
-		if count%8 == 0 {
-			result = result + charVal + ", "
-		} else {
-			result = result + charVal + " "
+	if arr != nil {
+		for i := off; i < off+len; i++ {
+			count++
+			if arr[i] >= 32 && arr[i] <= 126 {
+				result.WriteByte(arr[i])
+			} else {
+				result.WriteByte(0)
+			}
+			if count%8 == 0 {
+				result.WriteString(", ")
+			} else {
+				result.WriteString(" ")
+			}
 		}
 	}
-	return result
+	return result.String()
+}
+
+func TwoBytesArrayToCharLine(arr1 []byte, off1 int, len1 int, arr2 []byte, off2 int, len2 int) string {
+	var result strings.Builder
+	count := 0
+
+	if arr1 != nil {
+		for i := off1; i < off1+len1; i++ {
+			count++
+			if arr1[i] >= 32 && arr1[i] <= 126 {
+				result.WriteByte(arr1[i])
+			} else {
+				result.WriteByte(0)
+			}
+			if count%8 == 0 {
+				result.WriteString(", ")
+			} else {
+				result.WriteString(" ")
+			}
+		}
+	}
+	if arr2 != nil {
+		for i := off2; i < off2+len2; i++ {
+			count++
+			if arr1[i] >= 32 && arr1[i] <= 126 {
+				result.WriteByte(arr1[i])
+			} else {
+				result.WriteByte(0)
+			}
+			if count%8 == 0 {
+				result.WriteString(", ")
+			} else {
+				result.WriteString(" ")
+			}
+		}
+	}
+	return result.String()
 }
 
 func Int8ArrayToCharLine(arr []int8) string {

@@ -67,14 +67,6 @@ func DecToHex(n int64) string {
 	return s
 }
 
-func DecArrayToHexArray(intArr []int64) string {
-	s := ""
-	for _, val := range intArr {
-		s += DecToHex(val) + ", "
-	}
-	return s
-}
-
 func BinToDec(b string) (n int64) {
 	s := strings.Split(b, "")
 	l := len(s)
@@ -126,64 +118,6 @@ func HexToDec(h string) (n int64) {
 		d += f * math.Pow(16, float64(l-i-1))
 	}
 	return int64(d)
-}
-
-func DecArrayToByteArray(intArr []int64) []byte {
-	byteArray := make([]byte, len(intArr))
-	for i := 0; i < len(intArr); i++ {
-		byteArray[i] = Int64ToBytes(intArr[i])[7]
-	}
-	return byteArray
-}
-
-func PrintByteArray(arr []byte) {
-	rowCount := 32
-
-	totalRow := len(arr) / rowCount
-	lastRowCount := len(arr) % rowCount
-	if lastRowCount > 0 {
-		totalRow++
-	}
-
-	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
-		byteIndex := rowIndex * rowCount
-		if rowIndex == totalRow-1 {
-			rowCount = lastRowCount
-		}
-		fmt.Printf("row%s(%s, %s, %s, %s): %s\n", Fill0(strconv.Itoa(rowIndex), printLen),
-			Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
-			Fill0(strconv.Itoa(byteIndex+16), printLen), Fill0(strconv.Itoa(byteIndex+24), printLen),
-			ByteArrayToLine(arr[byteIndex:byteIndex+rowCount]))
-	}
-}
-
-func PrintInt8ArrayWithComma(arr []int8) {
-	str := ""
-	for _, val := range arr {
-		str = str + strconv.Itoa(int(val)) + ", "
-	}
-	fmt.Println(str)
-}
-
-func PrintInt8Array(arr []int8) {
-	rowCount := 32
-
-	totalRow := len(arr) / rowCount
-	lastRowCount := len(arr) % rowCount
-	if lastRowCount > 0 {
-		totalRow++
-	}
-
-	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
-		byteIndex := rowIndex * rowCount
-		if rowIndex == totalRow-1 {
-			rowCount = lastRowCount
-		}
-		fmt.Printf("row%s(%s, %s, %s, %s): %s\n", Fill0(strconv.Itoa(rowIndex), printLen),
-			Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
-			Fill0(strconv.Itoa(byteIndex+16), printLen), Fill0(strconv.Itoa(byteIndex+24), printLen),
-			Int8ArrayToLine(arr[byteIndex:byteIndex+rowCount]))
-	}
 }
 
 func OctToBin(o int64) string {
