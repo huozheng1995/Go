@@ -99,36 +99,6 @@ func ByteArrayToLine(arr []byte, off int, len int) string {
 	return result.String()
 }
 
-func TwoByteArraysToLine(arr1 []byte, off1 int, len1 int, arr2 []byte, off2 int, len2 int) string {
-	var result strings.Builder
-	count := 0
-	if arr1 != nil {
-		for i := off1; i < off1+len1; i++ {
-			count++
-			if count%8 == 0 {
-				result.WriteString(FillSpace(strconv.Itoa(int(arr1[i])), 3))
-				result.WriteString(", ")
-			} else {
-				result.WriteString(FillSpace(strconv.Itoa(int(arr1[i])), 3))
-				result.WriteString(" ")
-			}
-		}
-	}
-	if arr2 != nil {
-		for i := off2; i < off2+len2; i++ {
-			count++
-			if count%8 == 0 {
-				result.WriteString(FillSpace(strconv.Itoa(int(arr1[i])), 3))
-				result.WriteString(", ")
-			} else {
-				result.WriteString(FillSpace(strconv.Itoa(int(arr1[i])), 3))
-				result.WriteString(" ")
-			}
-		}
-	}
-	return result.String()
-}
-
 func Int8ArrayToLine(arr []int8) string {
 	var result string
 	count := 0
@@ -165,43 +135,6 @@ func ByteArrayToCharLine(arr []byte, off int, len int) string {
 			count++
 			if arr[i] >= 32 && arr[i] <= 126 {
 				result.WriteByte(arr[i])
-			} else {
-				result.WriteByte(0)
-			}
-			if count%8 == 0 {
-				result.WriteString(", ")
-			} else {
-				result.WriteString(" ")
-			}
-		}
-	}
-	return result.String()
-}
-
-func TwoBytesArrayToCharLine(arr1 []byte, off1 int, len1 int, arr2 []byte, off2 int, len2 int) string {
-	var result strings.Builder
-	count := 0
-
-	if arr1 != nil {
-		for i := off1; i < off1+len1; i++ {
-			count++
-			if arr1[i] >= 32 && arr1[i] <= 126 {
-				result.WriteByte(arr1[i])
-			} else {
-				result.WriteByte(0)
-			}
-			if count%8 == 0 {
-				result.WriteString(", ")
-			} else {
-				result.WriteString(" ")
-			}
-		}
-	}
-	if arr2 != nil {
-		for i := off2; i < off2+len2; i++ {
-			count++
-			if arr1[i] >= 32 && arr1[i] <= 126 {
-				result.WriteByte(arr1[i])
 			} else {
 				result.WriteByte(0)
 			}

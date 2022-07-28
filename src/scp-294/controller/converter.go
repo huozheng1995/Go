@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/edward/scp-294/common"
 	"github.com/edward/scp-294/converter"
@@ -39,16 +40,19 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		}
 		if InputType == "File" {
 			var file multipart.File
-			var fileName string
 			for key, files := range form.File {
 				if key == "InputFile" {
-					fileName = files[0].Filename
 					file, _ = files[0].Open()
 				}
 			}
 			exitChan, dataChan := receiveFile(file)
-			sendBody(w, dataChan)
-			println(fileName)
+			err := sendBody(w, dataChan)
+			if err != nil {
+				close(exitChan)
+				logger.Log(err.Error())
+				common.ResponseError(w, "Failed to parse file data, error: "+err.Error())
+				return
+			}
 			close(exitChan)
 			return
 		}
@@ -176,24 +180,32 @@ func receiveFile(file multipart.File) (exitChan chan struct{}, dataChan chan []b
 	return
 }
 
-func sendBody(w http.ResponseWriter, dataChan <-chan []byte) {
-	var transferSize = 0
+func sendBody(w http.ResponseWriter, dataChan <-chan []byte) error {
+	transferSize := 0
+	globalRowIndex := 0
+	var outputArr []byte
+	rowArr := make([]byte, converter.GlobalRowSize)
+	rowArrLen := 0
 	for {
 		data, ok := <-dataChan
 		if !ok {
-			fmt.Println("receive data error!")
-			break
+			return errors.New("Failed to receive data from channel. ")
 		}
-		n, err := w.Write(data)
+		if len(data) > 0 {
+			outputArr, rowArr, rowArrLen = converter.StreamByteArrayToStringByteArray(data, false, rowArr, rowArrLen, &globalRowIndex)
+		} else {
+			outputArr, _, _ = converter.StreamByteArrayToStringByteArray(data, true, rowArr, rowArrLen, &globalRowIndex)
+
+		}
+		n, err := w.Write(outputArr)
 		if err != nil {
-			fmt.Println("send data error!")
-			break
-		}
-		if n == 0 {
-			fmt.Println("Transfer done, size: ", transferSize>>10, "KB")
-			break
+			return err
 		}
 		transferSize += n
 		fmt.Println("Transfer size: ", transferSize>>10, "KB")
+		if len(data) <= 0 {
+			fmt.Println("Transfer done, size: ", transferSize>>10, "KB")
+			return nil
+		}
 	}
 }

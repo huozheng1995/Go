@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/edward/scp-294/utils"
 	"strconv"
@@ -8,9 +9,10 @@ import (
 )
 
 const printLen = 5
+const GlobalRowSize = 16
 
 func ByteArrayToString(arr []byte) string {
-	rowSize := 16
+	rowSize := GlobalRowSize
 
 	totalRow := len(arr) / rowSize
 	lastRowCount := len(arr) % rowSize
@@ -32,7 +34,7 @@ func ByteArrayToString(arr []byte) string {
 }
 
 func Int8ArrayToString(arr []int8) string {
-	rowSize := 16
+	rowSize := GlobalRowSize
 
 	totalRow := len(arr) / rowSize
 	lastRowCount := len(arr) % rowSize
@@ -54,7 +56,7 @@ func Int8ArrayToString(arr []int8) string {
 }
 
 func HexByteArrayToString(arr []string) string {
-	rowSize := 16
+	rowSize := GlobalRowSize
 
 	totalRow := len(arr) / rowSize
 	lastRowCount := len(arr) % rowSize
@@ -97,51 +99,68 @@ func DecArrayToString(arr []int64) string {
 	return builder.String()
 }
 
-const GlobalRowSize = 16
-
-func FileByteArrayToString(arr []byte, isLastPacket bool, preArr []byte, preArrLen int, globalRowIndex *int) (str string, nextArr []byte, nextArrLen int) {
+func StreamByteArrayToStringByteArray(inputArr []byte, isLastPacket bool, preArr []byte, preArrLen int, globalRowIndex *int) (outputArr []byte, nextArr []byte, nextArrLen int) {
+	buffer := new(bytes.Buffer)
+	buffer.Grow(4096)
+	arrOff := 0
+	//Handle the previous bytes
+	if preArrLen > 0 {
+		if preArrLen+len(inputArr) > GlobalRowSize {
+			for i, j := preArrLen, 0; i < GlobalRowSize; i, j = i+1, j+1 {
+				preArr[i] = inputArr[j]
+				arrOff++
+			}
+			appendStreamByteArrayToBuffer(preArr, 0, GlobalRowSize, *globalRowIndex, buffer)
+			*globalRowIndex++
+		} else {
+			rowSize := preArrLen
+			for i, j := preArrLen, 0; i < preArrLen+len(inputArr); i, j = i+1, j+1 {
+				preArr[i] = inputArr[j]
+				rowSize++
+				arrOff++
+			}
+			appendStreamByteArrayToBuffer(preArr, 0, rowSize, *globalRowIndex, buffer)
+			*globalRowIndex++
+			outputArr = buffer.Bytes()
+			return
+		}
+	}
+	nextArr = preArr
+	nextArrLen = 0
+	//Handle input bytes
 	rowSize := GlobalRowSize
-	totalLen := preArrLen + len(arr)
+	totalLen := len(inputArr) - arrOff
 	totalRow := totalLen / rowSize
 	lastRowCount := totalLen % rowSize
 	if lastRowCount > 0 {
 		totalRow++
 	}
 
-	var builder strings.Builder
-	byteIndex := 0
 	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
 		if rowIndex == totalRow-1 && lastRowCount > 0 {
 			if !isLastPacket {
-				for i, j := byteIndex, 0; i < len(arr); i, j = i+1, j+1 {
-					preArr[j] = arr[i]
+				for i, j := arrOff, 0; i < len(inputArr); i, j = i+1, j+1 {
+					preArr[j] = inputArr[i]
 				}
 				nextArr = preArr
 				nextArrLen = lastRowCount
-				break
+				outputArr = buffer.Bytes()
+				return
 			} else {
 				rowSize = lastRowCount
 			}
 		}
+		appendStreamByteArrayToBuffer(inputArr, arrOff, rowSize, *globalRowIndex, buffer)
 		*globalRowIndex++
-		globalByteIndex := *globalRowIndex * GlobalRowSize
-		if rowIndex == 0 {
-			for i, j := preArrLen, 0; i < len(preArr); i, j = i+1, j+1 {
-				preArr[i] = arr[j]
-				byteIndex++
-			}
-			builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(*globalRowIndex), printLen-1),
-				utils.Fill0(strconv.Itoa(globalByteIndex), printLen), utils.Fill0(strconv.Itoa(globalByteIndex+8), printLen),
-				utils.ByteArrayToLine(preArr, 0, rowSize),
-				utils.ByteArrayToCharLine(preArr, 0, rowSize)))
-		} else {
-			builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(*globalRowIndex), printLen-1),
-				utils.Fill0(strconv.Itoa(globalByteIndex), printLen), utils.Fill0(strconv.Itoa(globalByteIndex+8), printLen),
-				utils.ByteArrayToLine(arr, byteIndex, rowSize),
-				utils.ByteArrayToCharLine(arr, byteIndex, rowSize)))
-			byteIndex += rowSize
-		}
+		arrOff += rowSize
 	}
-	str = builder.String()
+	outputArr = buffer.Bytes()
 	return
+}
+
+func appendStreamByteArrayToBuffer(arr []byte, off int, len int, rowIndex int, buffer *bytes.Buffer) {
+	byteIndex := rowIndex * GlobalRowSize
+	buffer.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
+		utils.Fill0(strconv.Itoa(byteIndex), printLen), utils.Fill0(strconv.Itoa(byteIndex+8), printLen),
+		utils.ByteArrayToLine(arr, off, len), utils.ByteArrayToCharLine(arr, off, len)))
 }
