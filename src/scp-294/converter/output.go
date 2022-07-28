@@ -21,7 +21,7 @@ func ByteArrayToString(arr []byte) string {
 	var builder strings.Builder
 	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
 		byteIndex := rowIndex * rowSize
-		if rowIndex == totalRow-1 {
+		if rowIndex == totalRow-1 && lastRowCount > 0 {
 			rowSize = lastRowCount
 		}
 		builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
@@ -43,7 +43,7 @@ func Int8ArrayToString(arr []int8) string {
 	var builder strings.Builder
 	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
 		byteIndex := rowIndex * rowSize
-		if rowIndex == totalRow-1 {
+		if rowIndex == totalRow-1 && lastRowCount > 0 {
 			rowSize = lastRowCount
 		}
 		builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
@@ -65,7 +65,7 @@ func HexByteArrayToString(arr []string) string {
 	var builder strings.Builder
 	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
 		byteIndex := rowIndex * rowSize
-		if rowIndex == totalRow-1 {
+		if rowIndex == totalRow-1 && lastRowCount > 0 {
 			rowSize = lastRowCount
 		}
 		builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
@@ -97,8 +97,10 @@ func DecArrayToString(arr []int64) string {
 	return builder.String()
 }
 
-func FileByteArrayToString(arr []byte, isLastPacket bool, preArr []byte, preArrLen int) (str string, nextArr []byte, nextArrLen int) {
-	rowSize := 16
+const GlobalRowSize = 16
+
+func FileByteArrayToString(arr []byte, isLastPacket bool, preArr []byte, preArrLen int, globalRowIndex *int) (str string, nextArr []byte, nextArrLen int) {
+	rowSize := GlobalRowSize
 	totalLen := preArrLen + len(arr)
 	totalRow := totalLen / rowSize
 	lastRowCount := totalLen % rowSize
@@ -107,34 +109,39 @@ func FileByteArrayToString(arr []byte, isLastPacket bool, preArr []byte, preArrL
 	}
 
 	var builder strings.Builder
+	byteIndex := 0
 	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
-		byteIndex := rowIndex * rowSize
-		if rowIndex == totalRow-1 {
-			if !isLastPacket && lastRowCount > 0 {
+		if rowIndex == totalRow-1 && lastRowCount > 0 {
+			if !isLastPacket {
+				for i, j := byteIndex, 0; i < len(arr); i, j = i+1, j+1 {
+					preArr[j] = arr[i]
+				}
+				nextArr = preArr
+				nextArrLen = lastRowCount
 				break
+			} else {
+				rowSize = lastRowCount
 			}
-			rowSize = lastRowCount
 		}
+		*globalRowIndex++
+		globalByteIndex := *globalRowIndex * GlobalRowSize
 		if rowIndex == 0 {
-			builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
-				utils.Fill0(strconv.Itoa(byteIndex), printLen), utils.Fill0(strconv.Itoa(byteIndex+8), printLen),
-				utils.TwoByteArraysToLine(preArr, 0, preArrLen, arr, byteIndex, rowSize),
-				utils.TwoBytesArrayToCharLine(preArr, 0, preArrLen, arr, byteIndex, rowSize)))
+			for i, j := preArrLen, 0; i < len(preArr); i, j = i+1, j+1 {
+				preArr[i] = arr[j]
+				byteIndex++
+			}
+			builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(*globalRowIndex), printLen-1),
+				utils.Fill0(strconv.Itoa(globalByteIndex), printLen), utils.Fill0(strconv.Itoa(globalByteIndex+8), printLen),
+				utils.ByteArrayToLine(preArr, 0, rowSize),
+				utils.ByteArrayToCharLine(preArr, 0, rowSize)))
 		} else {
-			builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
-				utils.Fill0(strconv.Itoa(byteIndex), printLen), utils.Fill0(strconv.Itoa(byteIndex+8), printLen),
+			builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(*globalRowIndex), printLen-1),
+				utils.Fill0(strconv.Itoa(globalByteIndex), printLen), utils.Fill0(strconv.Itoa(globalByteIndex+8), printLen),
 				utils.ByteArrayToLine(arr, byteIndex, rowSize),
 				utils.ByteArrayToCharLine(arr, byteIndex, rowSize)))
+			byteIndex += rowSize
 		}
 	}
-
-	if !isLastPacket && lastRowCount > 0 {
-		for i, j := totalRow*rowSize, 0; i < len(arr); i, j = i+1, j+1 {
-			preArr[j] = arr[i]
-		}
-		nextArr = preArr
-		nextArrLen = lastRowCount
-	}
-
-	return builder.String(), nextArr, nextArrLen
+	str = builder.String()
+	return
 }
