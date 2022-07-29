@@ -156,13 +156,17 @@ function loadRecord() {
 }
 
 function addRecord() {
+    let inputType = document.getElementById("inputType");
+    if (inputType.value == "File") {
+        alert("Cannot save file record");
+        return;
+    }
     let recordName = prompt("Input a name", "");
     if (recordName == null || recordName == "") {
-        alert("The name cannot be empty")
+        alert("The name cannot be empty");
         return;
     }
     let selectGroup = document.getElementById("selectGroup");
-    let inputType = document.getElementById("inputType");
     let outputType = document.getElementById("outputType");
     let input = document.getElementById("input");
     let output = document.getElementById("output");
