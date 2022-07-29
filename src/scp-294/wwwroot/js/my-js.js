@@ -35,11 +35,15 @@ function convert() {
         method: "POST",
         body: formData,
     }).then(re => {
-        if (re.ok) {
-            if (!isFile) {
+        if (!isFile) {
+            if (re.ok) {
                 return re.json();
-            } else {
+            }
+        } else {
+            if (re.ok) {
                 return readTextStream(re);
+            } else {
+                return re.json();
             }
         }
     }).then(re => {
@@ -60,7 +64,7 @@ async function readTextStream(re) {
             if (result.value != null && result.value.byteLength > 0) {
                 myTypedArray.pushArray(result.value);
                 transferSize += result.value.byteLength;
-                updateMessageValue("Transfer size: " + (transferSize >>> 10) + "KB", "blue");
+                updateMessageValue("Transferred size: " + (transferSize >>> 10) + "KB", "blue");
             }
             if (result.done) {
                 updateMessageValue("Transfer done, total size: " + (transferSize >>> 10) + "KB", "green");

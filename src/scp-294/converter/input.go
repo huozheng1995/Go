@@ -1,7 +1,10 @@
 package converter
 
 import (
+	"github.com/edward/scp-294/logger"
 	"github.com/edward/scp-294/utils"
+	"io"
+	"mime/multipart"
 	"strconv"
 	"strings"
 )
@@ -37,7 +40,7 @@ func HexByteArrayToInt8Array(strArray []string) []int8 {
 	arr := make([]int8, 0, len(strArray))
 	for _, str := range strArray {
 		val, _ := strconv.ParseInt(str, 16, 64)
-		arr = append(arr, int8(byte(val)))
+		arr = append(arr, int8(val))
 	}
 	return arr
 }
@@ -113,7 +116,7 @@ func Int8ArrayToInt8Array(strArray []string) []int8 {
 	arr := make([]int8, 0, len(strArray))
 	for _, str := range strArray {
 		val, _ := strconv.ParseInt(str, 10, 64)
-		arr = append(arr, int8(byte(val)))
+		arr = append(arr, int8(val))
 	}
 	return arr
 }
@@ -157,4 +160,33 @@ func SplitInputString(input string) []string {
 	}
 
 	return strArray
+}
+
+func FileStreamToChannel(file multipart.File, bufferSize int) (exitChan chan struct{}, dataChan chan []byte) {
+	exitChan = make(chan struct{})
+	dataChan = make(chan []byte)
+	go func() {
+		defer file.Close()
+		defer close(dataChan)
+		for {
+			select {
+			case <-exitChan:
+				logger.Log("Exit channel is closed")
+				return
+			default:
+				buffer := make([]byte, bufferSize)
+				n, err := file.Read(buffer)
+				if err != nil {
+					if err != io.EOF {
+						logger.Log("Failed to read file stream, error: " + err.Error())
+					} else {
+						logger.Log("File stream read completed")
+					}
+					return
+				}
+				dataChan <- buffer[:n]
+			}
+		}
+	}()
+	return
 }

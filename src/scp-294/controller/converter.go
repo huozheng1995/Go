@@ -3,13 +3,13 @@ package controller
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/edward/scp-294/common"
 	"github.com/edward/scp-294/converter"
 	"github.com/edward/scp-294/logger"
-	"io"
+	"github.com/edward/scp-294/utils"
 	"mime/multipart"
 	"net/http"
+	"strconv"
 )
 
 func registerConverterRoutes() {
@@ -38,6 +38,8 @@ func convert(w http.ResponseWriter, r *http.Request) {
 				InputData = values[0]
 			}
 		}
+
+		//Handle File
 		if InputType == "File" {
 			var file multipart.File
 			for key, files := range form.File {
@@ -45,11 +47,12 @@ func convert(w http.ResponseWriter, r *http.Request) {
 					file, _ = files[0].Open()
 				}
 			}
-			exitChan, dataChan := receiveFile(file)
-			err := sendBody(w, dataChan)
+			exitChan, dataChan := converter.FileStreamToChannel(file, converter.GlobalRowSize*256)
+			err = readStreamAndSendBody(w, dataChan, OutputType)
 			if err != nil {
 				close(exitChan)
 				logger.Log(err.Error())
+				w.WriteHeader(http.StatusInternalServerError)
 				common.ResponseError(w, "Failed to parse file data, error: "+err.Error())
 				return
 			}
@@ -154,58 +157,29 @@ func convert(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func receiveFile(file multipart.File) (exitChan chan struct{}, dataChan chan []byte) {
-	exitChan = make(chan struct{})
-	dataChan = make(chan []byte)
-	go func() {
-		defer close(dataChan)
-		defer file.Close()
-		for {
-			select {
-			case <-exitChan:
-				fmt.Println("exit channel")
-				return
-			default:
-				buf := make([]byte, 4096)
-				n, err := file.Read(buf)
-				if err != nil && err != io.EOF {
-					fmt.Println("receive data error!")
-					return
-				} else {
-					dataChan <- buf[:n]
-				}
-			}
-		}
-	}()
-	return
-}
-
-func sendBody(w http.ResponseWriter, dataChan <-chan []byte) error {
+func readStreamAndSendBody(w http.ResponseWriter, dataChan <-chan []byte, outputType string) error {
 	transferSize := 0
 	globalRowIndex := 0
-	var outputArr []byte
-	rowArr := make([]byte, converter.GlobalRowSize)
-	rowArrLen := 0
+	var funcBytesToLine utils.BytesToLine
+	switch outputType {
+	case "HexByteArray":
+		funcBytesToLine = utils.BytesToHexLine
+	case "ByteArray":
+		funcBytesToLine = utils.BytesToByteLine
+	case "Int8Array":
+		funcBytesToLine = utils.BytesToInt8Line
+	default:
+		return errors.New("Cannot convert File to '" + outputType + "'")
+	}
 	for {
 		data, ok := <-dataChan
-		if !ok {
-			return errors.New("Failed to receive data from channel. ")
-		}
-		if len(data) > 0 {
-			outputArr, rowArr, rowArrLen = converter.StreamByteArrayToStringByteArray(data, false, rowArr, rowArrLen, &globalRowIndex)
-		} else {
-			outputArr, _, _ = converter.StreamByteArrayToStringByteArray(data, true, rowArr, rowArrLen, &globalRowIndex)
-
-		}
-		n, err := w.Write(outputArr)
-		if err != nil {
-			return err
-		}
-		transferSize += n
-		fmt.Println("Transfer size: ", transferSize>>10, "KB")
-		if len(data) <= 0 {
-			fmt.Println("Transfer done, size: ", transferSize>>10, "KB")
+		if !ok || len(data) <= 0 {
+			logger.Log("Read stream done, total size: " + strconv.Itoa(transferSize) + "Byte")
 			return nil
 		}
+		outputArr := converter.StreamBytesToStringBytes(data, &globalRowIndex, funcBytesToLine)
+		w.Write(outputArr)
+		transferSize += len(data)
+		logger.Log("Read stream size: " + strconv.Itoa(transferSize) + "Byte")
 	}
 }

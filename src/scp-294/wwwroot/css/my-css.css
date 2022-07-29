@@ -14,7 +14,7 @@ textarea {
 
 #output {
     min-height: 200px;
-    max-height: 800px;
+    /*max-height: 600px;*/
 }
 
 .rowDiv {

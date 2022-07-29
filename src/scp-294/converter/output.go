@@ -28,7 +28,7 @@ func ByteArrayToString(arr []byte) string {
 		}
 		builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
 			utils.Fill0(strconv.Itoa(byteIndex), printLen), utils.Fill0(strconv.Itoa(byteIndex+8), printLen),
-			utils.ByteArrayToLine(arr, byteIndex, rowSize), utils.ByteArrayToCharLine(arr, byteIndex, rowSize)))
+			utils.BytesToByteLine(arr, byteIndex, rowSize), utils.ByteArrayToCharLine(arr, byteIndex, rowSize)))
 	}
 	return builder.String()
 }
@@ -99,68 +99,29 @@ func DecArrayToString(arr []int64) string {
 	return builder.String()
 }
 
-func StreamByteArrayToStringByteArray(inputArr []byte, isLastPacket bool, preArr []byte, preArrLen int, globalRowIndex *int) (outputArr []byte, nextArr []byte, nextArrLen int) {
-	buffer := new(bytes.Buffer)
-	buffer.Grow(4096)
-	arrOff := 0
-	//Handle the previous bytes
-	if preArrLen > 0 {
-		if preArrLen+len(inputArr) > GlobalRowSize {
-			for i, j := preArrLen, 0; i < GlobalRowSize; i, j = i+1, j+1 {
-				preArr[i] = inputArr[j]
-				arrOff++
-			}
-			appendStreamByteArrayToBuffer(preArr, 0, GlobalRowSize, *globalRowIndex, buffer)
-			*globalRowIndex++
-		} else {
-			rowSize := preArrLen
-			for i, j := preArrLen, 0; i < preArrLen+len(inputArr); i, j = i+1, j+1 {
-				preArr[i] = inputArr[j]
-				rowSize++
-				arrOff++
-			}
-			appendStreamByteArrayToBuffer(preArr, 0, rowSize, *globalRowIndex, buffer)
-			*globalRowIndex++
-			outputArr = buffer.Bytes()
-			return
-		}
-	}
-	nextArr = preArr
-	nextArrLen = 0
-	//Handle input bytes
+func StreamBytesToStringBytes(inputArr []byte, globalRowIndex *int, funcBytesToLine utils.BytesToLine) (outputArr []byte) {
 	rowSize := GlobalRowSize
-	totalLen := len(inputArr) - arrOff
+
+	totalLen := len(inputArr)
 	totalRow := totalLen / rowSize
 	lastRowCount := totalLen % rowSize
 	if lastRowCount > 0 {
 		totalRow++
 	}
 
+	buffer := new(bytes.Buffer)
+	buffer.Grow(len(inputArr) * 10)
+	inputArrOff := 0
 	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
+		globalByteIndex := *globalRowIndex * GlobalRowSize
 		if rowIndex == totalRow-1 && lastRowCount > 0 {
-			if !isLastPacket {
-				for i, j := arrOff, 0; i < len(inputArr); i, j = i+1, j+1 {
-					preArr[j] = inputArr[i]
-				}
-				nextArr = preArr
-				nextArrLen = lastRowCount
-				outputArr = buffer.Bytes()
-				return
-			} else {
-				rowSize = lastRowCount
-			}
+			rowSize = lastRowCount
 		}
-		appendStreamByteArrayToBuffer(inputArr, arrOff, rowSize, *globalRowIndex, buffer)
+		buffer.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(*globalRowIndex), printLen-1),
+			utils.Fill0(strconv.Itoa(globalByteIndex), printLen), utils.Fill0(strconv.Itoa(globalByteIndex+8), printLen),
+			funcBytesToLine(inputArr, inputArrOff, rowSize), utils.ByteArrayToCharLine(inputArr, inputArrOff, rowSize)))
 		*globalRowIndex++
-		arrOff += rowSize
+		inputArrOff += rowSize
 	}
-	outputArr = buffer.Bytes()
-	return
-}
-
-func appendStreamByteArrayToBuffer(arr []byte, off int, len int, rowIndex int, buffer *bytes.Buffer) {
-	byteIndex := rowIndex * GlobalRowSize
-	buffer.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
-		utils.Fill0(strconv.Itoa(byteIndex), printLen), utils.Fill0(strconv.Itoa(byteIndex+8), printLen),
-		utils.ByteArrayToLine(arr, off, len), utils.ByteArrayToCharLine(arr, off, len)))
+	return buffer.Bytes()
 }

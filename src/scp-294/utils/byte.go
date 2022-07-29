@@ -2,86 +2,31 @@ package utils
 
 import (
 	"encoding/binary"
-	"math"
 	"strconv"
 	"strings"
 )
 
 var Endian = binary.BigEndian
+var HexMap = map[byte]byte{0: 48, 1: 49, 2: 50, 3: 51, 4: 52, 5: 53, 6: 54, 7: 55, 8: 56, 9: 57, 10: 65, 11: 66, 12: 67, 13: 68, 14: 69, 15: 70}
 
-func FloatToBytes(val float32) []byte {
-	bits := math.Float32bits(val)
-	arr := make([]byte, 4)
-	Endian.PutUint32(arr, bits)
-	return arr
-}
-
-func Float64ToBytes(val float64) []byte {
-	bits := math.Float64bits(val)
-	arr := make([]byte, 8)
-	Endian.PutUint64(arr, bits)
-	return arr
-}
-
-func IntToBytes(val int64) []byte {
-	var arr = make([]byte, 4)
-	Endian.PutUint32(arr, uint32(val))
-	return arr
-}
-
-func Int64ToBytes(val int64) []byte {
-	var arr = make([]byte, 8)
-	Endian.PutUint64(arr, uint64(val))
-	return arr
-}
-
-func StringToBytes(val string) []byte {
-	return []byte(val)
-}
-
-func BytesToFloat(arr []byte) float32 {
-	bits := Endian.Uint32(arr)
-	return math.Float32frombits(bits)
-}
-
-func BytesToFloat64(arr []byte) float64 {
-	bits := Endian.Uint64(arr)
-	return math.Float64frombits(bits)
-}
-
-func BytesToInt(arr []byte) int {
-	return int(Endian.Uint32(arr))
-}
-
-func BytesToInt64(arr []byte) int64 {
-	return int64(Endian.Uint64(arr))
-}
-
-func BytesToString(arr []byte) string {
-	return string(arr)
-}
-
-type BytesDataToNum func(arr []byte) string
-
-func ByteArrayToInt8Array(arr []byte) []int8 {
-	len := len(arr)
-	var result = make([]int8, len)
-	for i := 0; i < len; i++ {
-		result[i] = int8(arr[i])
+func ByteToHex(val byte) string {
+	if val == 0 {
+		return "00"
 	}
-	return result
-}
-
-func Int8ArrayToByteArray(arr []int8) []byte {
-	len := len(arr)
-	var result = make([]byte, len)
-	for i := 0; i < len; i++ {
-		result[i] = byte(arr[i])
+	s := ""
+	for q := val; q > 0; q = q >> 4 {
+		m := q % 16
+		s = string(HexMap[m]) + s
 	}
-	return result
+	if val>>4 == 0 {
+		return "0" + s
+	}
+	return s
 }
 
-func ByteArrayToLine(arr []byte, off int, len int) string {
+type BytesToLine func(arr []byte, off int, len int) string
+
+func BytesToByteLine(arr []byte, off int, len int) string {
 	var result strings.Builder
 	count := 0
 	if arr != nil {
@@ -92,6 +37,42 @@ func ByteArrayToLine(arr []byte, off int, len int) string {
 				result.WriteString(", ")
 			} else {
 				result.WriteString(FillSpace(strconv.Itoa(int(arr[i])), 3))
+				result.WriteString(" ")
+			}
+		}
+	}
+	return result.String()
+}
+
+func BytesToInt8Line(arr []byte, off int, len int) string {
+	var result strings.Builder
+	count := 0
+	if arr != nil {
+		for i := off; i < off+len; i++ {
+			count++
+			if count%8 == 0 {
+				result.WriteString(FillSpace(strconv.Itoa(int(int8(arr[i]))), 3))
+				result.WriteString(", ")
+			} else {
+				result.WriteString(FillSpace(strconv.Itoa(int(int8(arr[i]))), 3))
+				result.WriteString(" ")
+			}
+		}
+	}
+	return result.String()
+}
+
+func BytesToHexLine(arr []byte, off int, len int) string {
+	var result strings.Builder
+	count := 0
+	if arr != nil {
+		for i := off; i < off+len; i++ {
+			count++
+			if count%8 == 0 {
+				result.WriteString(FillSpace(ByteToHex(arr[i]), 3))
+				result.WriteString(", ")
+			} else {
+				result.WriteString(FillSpace(ByteToHex(arr[i]), 3))
 				result.WriteString(" ")
 			}
 		}
@@ -184,20 +165,6 @@ func HexByteArrayToCharLine(arr []string) string {
 			result = result + charVal + ", "
 		} else {
 			result = result + charVal + " "
-		}
-	}
-	return result
-}
-
-func ByteArrayToHex(arr []byte) string {
-	var result string
-	count := 0
-	for _, val := range arr {
-		count++
-		if count%8 == 0 {
-			result = result + DecToHex(int64(val)) + ", "
-		} else {
-			result = result + DecToHex(int64(val)) + " "
 		}
 	}
 	return result
