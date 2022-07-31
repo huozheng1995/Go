@@ -11,7 +11,7 @@ import (
 const printLen = 5
 const GlobalRowSize = 16
 
-func ByteArrayToString(arr []byte) string {
+func ByteArrayToRows(arr []byte) string {
 	rowSize := GlobalRowSize
 
 	totalRow := len(arr) / rowSize
@@ -28,12 +28,12 @@ func ByteArrayToString(arr []byte) string {
 		}
 		builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
 			utils.Fill0(strconv.Itoa(byteIndex), printLen), utils.Fill0(strconv.Itoa(byteIndex+8), printLen),
-			utils.BytesToByteLine(arr, byteIndex, rowSize), utils.ByteArrayToCharLine(arr, byteIndex, rowSize)))
+			utils.BytesToByteRow(arr, byteIndex, rowSize), utils.ByteArrayToCharRow(arr, byteIndex, rowSize)))
 	}
 	return builder.String()
 }
 
-func Int8ArrayToString(arr []int8) string {
+func Int8ArrayToRows(arr []int8) string {
 	rowSize := GlobalRowSize
 
 	totalRow := len(arr) / rowSize
@@ -50,12 +50,12 @@ func Int8ArrayToString(arr []int8) string {
 		}
 		builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
 			utils.Fill0(strconv.Itoa(byteIndex), printLen), utils.Fill0(strconv.Itoa(byteIndex+8), printLen),
-			utils.Int8ArrayToLine(arr[byteIndex:byteIndex+rowSize]), utils.Int8ArrayToCharLine(arr[byteIndex:byteIndex+rowSize])))
+			utils.Int8ArrayToRow(arr, byteIndex, rowSize), utils.Int8ArrayToCharRow(arr, byteIndex, rowSize)))
 	}
 	return builder.String()
 }
 
-func HexByteArrayToString(arr []string) string {
+func HexByteArrayToRows(arr []string) string {
 	rowSize := GlobalRowSize
 
 	totalRow := len(arr) / rowSize
@@ -72,9 +72,35 @@ func HexByteArrayToString(arr []string) string {
 		}
 		builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(rowIndex), printLen-1),
 			utils.Fill0(strconv.Itoa(byteIndex), printLen), utils.Fill0(strconv.Itoa(byteIndex+8), printLen),
-			utils.HexByteArrayToLine(arr[byteIndex:byteIndex+rowSize]), utils.HexByteArrayToCharLine(arr[byteIndex:byteIndex+rowSize])))
+			utils.HexByteArrayToRow(arr, byteIndex, rowSize), utils.HexByteArrayToCharRow(arr, byteIndex, rowSize)))
 	}
 	return builder.String()
+}
+
+func StreamBytesToRowsBytes(arr []byte, globalRowIndex *int, funcBytesToRow utils.BytesToRow) []byte {
+	rowSize := GlobalRowSize
+
+	totalLen := len(arr)
+	totalRow := totalLen / rowSize
+	lastRowCount := totalLen % rowSize
+	if lastRowCount > 0 {
+		totalRow++
+	}
+
+	buffer := new(bytes.Buffer)
+	buffer.Grow(len(arr) * 10)
+	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
+		globalByteIndex := *globalRowIndex * GlobalRowSize
+		byteIndex := rowIndex * rowSize
+		if rowIndex == totalRow-1 && lastRowCount > 0 {
+			rowSize = lastRowCount
+		}
+		buffer.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(*globalRowIndex), printLen-1),
+			utils.Fill0(strconv.Itoa(globalByteIndex), printLen), utils.Fill0(strconv.Itoa(globalByteIndex+8), printLen),
+			funcBytesToRow(arr, byteIndex, rowSize), utils.ByteArrayToCharRow(arr, byteIndex, rowSize)))
+		*globalRowIndex++
+	}
+	return buffer.Bytes()
 }
 
 func HexArrayToString(arr []string) string {
@@ -97,31 +123,4 @@ func DecArrayToString(arr []int64) string {
 		builder.WriteString(", ")
 	}
 	return builder.String()
-}
-
-func StreamBytesToStringBytes(inputArr []byte, globalRowIndex *int, funcBytesToLine utils.BytesToLine) (outputArr []byte) {
-	rowSize := GlobalRowSize
-
-	totalLen := len(inputArr)
-	totalRow := totalLen / rowSize
-	lastRowCount := totalLen % rowSize
-	if lastRowCount > 0 {
-		totalRow++
-	}
-
-	buffer := new(bytes.Buffer)
-	buffer.Grow(len(inputArr) * 10)
-	inputArrOff := 0
-	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
-		globalByteIndex := *globalRowIndex * GlobalRowSize
-		if rowIndex == totalRow-1 && lastRowCount > 0 {
-			rowSize = lastRowCount
-		}
-		buffer.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", utils.Fill0(strconv.Itoa(*globalRowIndex), printLen-1),
-			utils.Fill0(strconv.Itoa(globalByteIndex), printLen), utils.Fill0(strconv.Itoa(globalByteIndex+8), printLen),
-			funcBytesToLine(inputArr, inputArrOff, rowSize), utils.ByteArrayToCharLine(inputArr, inputArrOff, rowSize)))
-		*globalRowIndex++
-		inputArrOff += rowSize
-	}
-	return buffer.Bytes()
 }

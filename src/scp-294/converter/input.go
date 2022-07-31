@@ -27,24 +27,6 @@ func HexArrayToBinArray(strArray []string) []string {
 	return arr
 }
 
-func HexByteArrayToDecByteArray(strArray []string) []byte {
-	arr := make([]byte, 0, len(strArray))
-	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 16, 64)
-		arr = append(arr, byte(val))
-	}
-	return arr
-}
-
-func HexByteArrayToInt8Array(strArray []string) []int8 {
-	arr := make([]int8, 0, len(strArray))
-	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 16, 64)
-		arr = append(arr, int8(val))
-	}
-	return arr
-}
-
 func DecArrayToHexArray(strArray []string) []string {
 	arr := make([]string, 0, len(strArray))
 	for _, str := range strArray {
@@ -72,55 +54,6 @@ func DecArrayToBinArray(strArray []string) []string {
 	return arr
 }
 
-func DecByteArrayToHexByteArray(strArray []string) []string {
-	arr := make([]string, 0, len(strArray))
-	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 10, 64)
-		arr = append(arr, utils.DecToHex(val))
-	}
-	return arr
-}
-
-func DecByteArrayToDecByteArray(strArray []string) []byte {
-	arr := make([]byte, 0, len(strArray))
-	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 10, 64)
-		arr = append(arr, byte(val))
-	}
-	return arr
-}
-
-func DecByteArrayToInt8Array(strArray []string) []int8 {
-	arr := make([]int8, 0, len(strArray))
-	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 10, 64)
-		arr = append(arr, int8(byte(val)))
-	}
-	return arr
-}
-
-func Int8ArrayToHexByteArray(strArray []string) []string {
-	return DecByteArrayToHexByteArray(strArray)
-}
-
-func Int8ArrayToDecByteArray(strArray []string) []byte {
-	arr := make([]byte, 0, len(strArray))
-	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 10, 64)
-		arr = append(arr, byte(val))
-	}
-	return arr
-}
-
-func Int8ArrayToInt8Array(strArray []string) []int8 {
-	arr := make([]int8, 0, len(strArray))
-	for _, str := range strArray {
-		val, _ := strconv.ParseInt(str, 10, 64)
-		arr = append(arr, int8(val))
-	}
-	return arr
-}
-
 func BinArrayToHexArray(strArray []string) []string {
 	arr := make([]string, 0, len(strArray))
 	for _, str := range strArray {
@@ -135,6 +68,73 @@ func BinArrayToDecArray(strArray []string) []int64 {
 	for _, str := range strArray {
 		val, _ := strconv.ParseInt(str, 2, 64)
 		arr = append(arr, val)
+	}
+	return arr
+}
+
+func HexByteArrayToDecByteArray(strArray []string) []byte {
+	arr := make([]byte, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 16, 64)
+		arr = append(arr, byte(val))
+	}
+	return arr
+}
+
+func HexByteArrayToInt8Array(strArray []string) []int8 {
+	arr := make([]int8, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 16, 64)
+		arr = append(arr, int8(val))
+	}
+	return arr
+}
+
+func DecByteArrayToHexByteArray(strArray []string) []string {
+	arr := make([]string, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 10, 64)
+		arr = append(arr, utils.ByteToHex(byte(val)))
+	}
+	return arr
+}
+
+func DecByteArrayToDecByteArray(strArray []string) []byte {
+	arr := make([]byte, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 10, 64)
+		arr = append(arr, byte(val))
+	}
+	return arr
+}
+
+func DecByteArrayToDecInt8Array(strArray []string) []int8 {
+	arr := make([]int8, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 10, 64)
+		arr = append(arr, int8(val))
+	}
+	return arr
+}
+
+func DecInt8ArrayToHexByteArray(strArray []string) []string {
+	return DecByteArrayToHexByteArray(strArray)
+}
+
+func DecInt8ArrayToDecByteArray(strArray []string) []byte {
+	arr := make([]byte, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 10, 64)
+		arr = append(arr, byte(val))
+	}
+	return arr
+}
+
+func DecInt8ArrayToDecInt8Array(strArray []string) []int8 {
+	arr := make([]int8, 0, len(strArray))
+	for _, str := range strArray {
+		val, _ := strconv.ParseInt(str, 10, 64)
+		arr = append(arr, int8(val))
 	}
 	return arr
 }
