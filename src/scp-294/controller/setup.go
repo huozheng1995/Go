@@ -77,19 +77,16 @@ func reloadHeader(w http.ResponseWriter) {
 	t := template.New("reloadHeader")
 	t, err := t.ParseFiles("./templates/header.html")
 	if err != nil {
-		logger.Log(err.Error())
 		common.ResponseError(w, "Failed to parse files, error: "+err.Error())
 		return
 	}
 	groups, err := model.ListGroups()
 	if err != nil {
-		logger.Log(err.Error())
 		common.ResponseError(w, "Failed to list groups, error: "+err.Error())
 		return
 	}
 	records, err := model.ListRecords()
 	if err != nil {
-		logger.Log(err.Error())
 		common.ResponseError(w, "Failed to list records, error: "+err.Error())
 		return
 	}

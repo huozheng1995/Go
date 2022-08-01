@@ -22,7 +22,7 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		var err error
 		err = r.ParseMultipartForm(100)
 		if err != nil {
-			logger.Log(err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
 			common.ResponseError(w, "Failed to parse form data, error: "+err.Error())
 			return
 		}
@@ -44,14 +44,18 @@ func convert(w http.ResponseWriter, r *http.Request) {
 			var file multipart.File
 			for key, files := range form.File {
 				if key == "InputFile" {
-					file, _ = files[0].Open()
+					file, err = files[0].Open()
+					if err != nil {
+						w.WriteHeader(http.StatusInternalServerError)
+						common.ResponseError(w, "Failed to open file, error: "+err.Error())
+						return
+					}
 				}
 			}
 			exitChan, dataChan := converter.FileStreamToChannel(file, converter.GlobalRowSize*256)
 			err = readStreamAndSendBody(w, dataChan, OutputType)
 			if err != nil {
 				close(exitChan)
-				logger.Log(err.Error())
 				w.WriteHeader(http.StatusInternalServerError)
 				common.ResponseError(w, "Failed to parse file data, error: "+err.Error())
 				return
@@ -148,7 +152,6 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		}
 		err = enc.Encode(resData)
 		if err != nil {
-			logger.Log(err.Error())
 			common.ResponseError(w, "Failed to encode data, error: "+err.Error())
 			return
 		}

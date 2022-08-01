@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/json"
+	"github.com/edward/scp-294/logger"
 	"net/http"
 )
 
@@ -18,6 +19,7 @@ type ConvertReq struct {
 }
 
 func ResponseError(w http.ResponseWriter, message string) {
+	logger.Log(message)
 	enc := json.NewEncoder(w)
 	resData := ResData{
 		Success: false,

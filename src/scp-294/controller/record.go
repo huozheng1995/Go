@@ -3,7 +3,6 @@ package controller
 import (
 	"encoding/json"
 	"github.com/edward/scp-294/common"
-	"github.com/edward/scp-294/logger"
 	"github.com/edward/scp-294/model"
 	"net/http"
 )
@@ -21,14 +20,12 @@ func addRecord(w http.ResponseWriter, r *http.Request) {
 		record := model.Record{}
 		err := dec.Decode(&record)
 		if err != nil {
-			logger.Log(err.Error())
 			common.ResponseError(w, "Failed to decode data, error: "+err.Error())
 			return
 		}
 
 		err = record.Insert()
 		if err != nil {
-			logger.Log(err.Error())
 			common.ResponseError(w, "Failed to insert record, error: "+err.Error())
 			return
 		} else {
@@ -50,7 +47,6 @@ func loadRecord(w http.ResponseWriter, r *http.Request) {
 		}
 		record, err := model.GetRecord(id[0])
 		if err != nil {
-			logger.Log(err.Error())
 			common.ResponseError(w, "Failed to get record, error: "+err.Error())
 			return
 		}
@@ -63,7 +59,6 @@ func loadRecord(w http.ResponseWriter, r *http.Request) {
 		}
 		err = enc.Encode(resData)
 		if err != nil {
-			logger.Log(err.Error())
 			common.ResponseError(w, "Failed to encode data, error: "+err.Error())
 			return
 		}
@@ -83,7 +78,6 @@ func deleteRecord(w http.ResponseWriter, r *http.Request) {
 		}
 		err := model.DeleteRecord(id[0])
 		if err != nil {
-			logger.Log(err.Error())
 			common.ResponseError(w, "Failed to delete record, error: "+err.Error())
 			return
 		} else {
