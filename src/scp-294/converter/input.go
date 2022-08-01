@@ -31,7 +31,7 @@ func DecArrayToHexArray(strArray []string) []string {
 	arr := make([]string, 0, len(strArray))
 	for _, str := range strArray {
 		val, _ := strconv.ParseInt(str, 10, 64)
-		arr = append(arr, utils.DecToHex(val))
+		arr = append(arr, utils.Int64ToHex(val))
 	}
 	return arr
 }
@@ -58,7 +58,7 @@ func BinArrayToHexArray(strArray []string) []string {
 	arr := make([]string, 0, len(strArray))
 	for _, str := range strArray {
 		val, _ := strconv.ParseInt(str, 2, 64)
-		arr = append(arr, utils.DecToHex(val))
+		arr = append(arr, utils.Int64ToHex(val))
 	}
 	return arr
 }

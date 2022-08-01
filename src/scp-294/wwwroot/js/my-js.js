@@ -111,7 +111,7 @@ class MyTypedArray {
 
     toString(charset) {
         if (charset == null) {
-            charset = "ascii";
+            charset = "utf-8";
         }
         let decoder = new TextDecoder(charset, {ignoreBOM: true})
         return decoder.decode(this.typedArray);

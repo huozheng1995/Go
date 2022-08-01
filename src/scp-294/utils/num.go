@@ -7,7 +7,7 @@ import (
 var Endian = binary.BigEndian
 var ByteHexMap = map[byte]byte{0: 48, 1: 49, 2: 50, 3: 51, 4: 52, 5: 53, 6: 54, 7: 55, 8: 56, 9: 57, 10: 65, 11: 66, 12: 67, 13: 68, 14: 69, 15: 70}
 var ByteBinMap = map[byte]byte{0: 48, 1: 49}
-var nullByte = byte(126)
+var CharNULL = "·"
 
 func ByteToHex(val byte) string {
 	if val == 0 {
@@ -23,7 +23,7 @@ func ByteToHex(val byte) string {
 	return result
 }
 
-func DecToHex(int64Val int64) string {
+func Int64ToHex(int64Val int64) string {
 	val := uint64(int64Val)
 	if val == 0 {
 		return "00"

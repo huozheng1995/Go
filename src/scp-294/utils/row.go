@@ -95,7 +95,7 @@ func ByteArrayToCharRow(arr []byte, off int, len int) string {
 		if arr[i] >= 32 && arr[i] <= 126 {
 			result.WriteByte(arr[i])
 		} else {
-			result.WriteByte(nullByte)
+			result.WriteString(CharNULL)
 		}
 		if count%8 == 0 {
 			result.WriteString(", ")
@@ -112,7 +112,7 @@ func Int8ArrayToCharRow(arr []int8, off int, len int) string {
 		if arr[i] >= 32 && arr[i] <= 126 {
 			result.WriteByte(byte(arr[i]))
 		} else {
-			result.WriteByte(nullByte)
+			result.WriteString(CharNULL)
 		}
 		if count%8 == 0 {
 			result.WriteString(", ")
@@ -131,7 +131,7 @@ func HexByteArrayToCharRow(arr []string, off int, len int) string {
 		if byteVal >= 32 && byteVal <= 126 {
 			result.WriteByte(byteVal)
 		} else {
-			result.WriteByte(nullByte)
+			result.WriteString(CharNULL)
 		}
 		if count%8 == 0 {
 			result.WriteString(", ")
