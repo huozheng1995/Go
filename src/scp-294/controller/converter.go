@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/edward/scp-294/common"
 	"github.com/edward/scp-294/converter"
 	"github.com/edward/scp-294/logger"
@@ -52,14 +51,21 @@ func convert(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			exitChan, dataChan := converter.FileStreamToChannel(file, converter.GlobalRowSize*256)
-			err = readStreamAndSendBody(w, dataChan, OutputType)
-			if err != nil {
-				close(exitChan)
+			var funcBytesToRow utils.BytesToRow
+			switch OutputType {
+			case "HexByteArray":
+				funcBytesToRow = utils.BytesToHexRow
+			case "ByteArray":
+				funcBytesToRow = utils.BytesToByteRow
+			case "Int8Array":
+				funcBytesToRow = utils.BytesToInt8Row
+			default:
 				w.WriteHeader(http.StatusInternalServerError)
-				common.ResponseError(w, "Failed to parse file data, error: "+err.Error())
+				common.ResponseError(w, "Cannot convert File to '"+OutputType+"'")
 				return
 			}
+			exitChan, dataChan := converter.FileStreamToChannel(file, converter.GlobalRowSize*256)
+			readStreamAndSendBody(w, dataChan, funcBytesToRow)
 			close(exitChan)
 			return
 		}
@@ -160,27 +166,16 @@ func convert(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func readStreamAndSendBody(w http.ResponseWriter, dataChan <-chan []byte, outputType string) error {
+func readStreamAndSendBody(w http.ResponseWriter, dataChan <-chan []byte, funcBytesToRow utils.BytesToRow) {
 	transferSize := 0
 	globalRowIndex := 0
-	var funcBytesToLine utils.BytesToRow
-	switch outputType {
-	case "HexByteArray":
-		funcBytesToLine = utils.BytesToHexRow
-	case "ByteArray":
-		funcBytesToLine = utils.BytesToByteRow
-	case "Int8Array":
-		funcBytesToLine = utils.BytesToInt8Row
-	default:
-		return errors.New("Cannot convert File to '" + outputType + "'")
-	}
 	for {
 		data, ok := <-dataChan
 		if !ok || len(data) <= 0 {
 			logger.Log("Read stream done, total size: " + strconv.Itoa(transferSize) + "Byte")
-			return nil
+			return
 		}
-		rowsBytes := converter.StreamBytesToRowsBytes(data, &globalRowIndex, funcBytesToLine)
+		rowsBytes := converter.StreamBytesToRowsBytes(data, &globalRowIndex, funcBytesToRow)
 		w.Write(rowsBytes)
 		transferSize += len(data)
 		logger.Log("Read stream size: " + strconv.Itoa(transferSize) + "Byte")
