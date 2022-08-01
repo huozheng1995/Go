@@ -114,7 +114,7 @@ class MyTypedArray {
             charset = "utf-8";
         }
         let decoder = new TextDecoder(charset, {ignoreBOM: true})
-        return decoder.decode(this.typedArray);
+        return decoder.decode(new this.typedArrayClass(this.arrayBuffer, 0, this.off));
     }
 }
 
