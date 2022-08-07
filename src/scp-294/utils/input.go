@@ -1,8 +1,7 @@
-package converter
+package utils
 
 import (
 	"github.com/edward/scp-294/logger"
-	"github.com/edward/scp-294/utils"
 	"io"
 	"mime/multipart"
 	"strconv"
@@ -22,7 +21,7 @@ func HexArrayToBinArray(strArray []string) []string {
 	arr := make([]string, 0, len(strArray))
 	for _, str := range strArray {
 		val, _ := strconv.ParseInt(str, 16, 64)
-		arr = append(arr, utils.DecToBin(val))
+		arr = append(arr, DecToBin(val))
 	}
 	return arr
 }
@@ -31,7 +30,7 @@ func DecArrayToHexArray(strArray []string) []string {
 	arr := make([]string, 0, len(strArray))
 	for _, str := range strArray {
 		val, _ := strconv.ParseInt(str, 10, 64)
-		arr = append(arr, utils.Int64ToHex(val))
+		arr = append(arr, Int64ToHex(val))
 	}
 	return arr
 }
@@ -49,7 +48,7 @@ func DecArrayToBinArray(strArray []string) []string {
 	arr := make([]string, 0, len(strArray))
 	for _, str := range strArray {
 		val, _ := strconv.ParseInt(str, 10, 64)
-		arr = append(arr, utils.DecToBin(val))
+		arr = append(arr, DecToBin(val))
 	}
 	return arr
 }
@@ -58,7 +57,7 @@ func BinArrayToHexArray(strArray []string) []string {
 	arr := make([]string, 0, len(strArray))
 	for _, str := range strArray {
 		val, _ := strconv.ParseInt(str, 2, 64)
-		arr = append(arr, utils.Int64ToHex(val))
+		arr = append(arr, Int64ToHex(val))
 	}
 	return arr
 }
@@ -94,7 +93,7 @@ func DecByteArrayToHexByteArray(strArray []string) []string {
 	arr := make([]string, 0, len(strArray))
 	for _, str := range strArray {
 		val, _ := strconv.ParseInt(str, 10, 64)
-		arr = append(arr, utils.ByteToHex(byte(val)))
+		arr = append(arr, ByteToHex(byte(val)))
 	}
 	return arr
 }

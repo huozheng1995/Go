@@ -3,7 +3,6 @@ package controller
 import (
 	"encoding/json"
 	"github.com/edward/scp-294/common"
-	"github.com/edward/scp-294/converter"
 	"github.com/edward/scp-294/logger"
 	"github.com/edward/scp-294/utils"
 	"mime/multipart"
@@ -64,23 +63,23 @@ func convert(w http.ResponseWriter, r *http.Request) {
 				common.ResponseError(w, "Cannot convert File to '"+OutputType+"'")
 				return
 			}
-			exitChan, dataChan := converter.FileStreamToChannel(file, converter.GlobalRowSize*256)
+			exitChan, dataChan := utils.FileStreamToChannel(file, utils.GlobalRowSize*256)
 			readStreamAndSendBody(w, dataChan, funcBytesToRow)
 			close(exitChan)
 			return
 		}
 
 		var outputData string
-		var strings = converter.SplitInputString(InputData)
+		var strings = utils.SplitInputString(InputData)
 		switch InputType {
 		case "Hex":
 			switch OutputType {
 			case "Hex":
-				outputData = converter.HexArrayToString(strings)
+				outputData = utils.HexArrayToString(strings)
 			case "Dec":
-				outputData = converter.DecArrayToString(converter.HexArrayToDecArray(strings))
+				outputData = utils.DecArrayToString(utils.HexArrayToDecArray(strings))
 			case "Bin":
-				outputData = converter.BinArrayToString(converter.HexArrayToBinArray(strings))
+				outputData = utils.BinArrayToString(utils.HexArrayToBinArray(strings))
 			default:
 				common.ResponseError(w, "Cannot convert '"+InputType+"' to '"+OutputType+"'")
 				return
@@ -88,11 +87,11 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		case "Dec":
 			switch OutputType {
 			case "Hex":
-				outputData = converter.HexArrayToString(converter.DecArrayToHexArray(strings))
+				outputData = utils.HexArrayToString(utils.DecArrayToHexArray(strings))
 			case "Dec":
-				outputData = converter.DecArrayToString(converter.DecArrayToDecArray(strings))
+				outputData = utils.DecArrayToString(utils.DecArrayToDecArray(strings))
 			case "Bin":
-				outputData = converter.BinArrayToString(converter.DecArrayToBinArray(strings))
+				outputData = utils.BinArrayToString(utils.DecArrayToBinArray(strings))
 			default:
 				common.ResponseError(w, "Cannot convert '"+InputType+"' to '"+OutputType+"'")
 				return
@@ -100,11 +99,11 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		case "Bin":
 			switch OutputType {
 			case "Hex":
-				outputData = converter.HexArrayToString(converter.BinArrayToHexArray(strings))
+				outputData = utils.HexArrayToString(utils.BinArrayToHexArray(strings))
 			case "Dec":
-				outputData = converter.DecArrayToString(converter.BinArrayToDecArray(strings))
+				outputData = utils.DecArrayToString(utils.BinArrayToDecArray(strings))
 			case "Bin":
-				outputData = converter.BinArrayToString(strings)
+				outputData = utils.BinArrayToString(strings)
 			default:
 				common.ResponseError(w, "Cannot convert '"+InputType+"' to '"+OutputType+"'")
 				return
@@ -112,11 +111,11 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		case "HexByteArray":
 			switch OutputType {
 			case "HexByteArray":
-				outputData = converter.HexByteArrayToRows(strings)
+				outputData = utils.HexByteArrayToRows(strings)
 			case "ByteArray":
-				outputData = converter.ByteArrayToRows(converter.HexByteArrayToDecByteArray(strings))
+				outputData = utils.ByteArrayToRows(utils.HexByteArrayToDecByteArray(strings))
 			case "Int8Array":
-				outputData = converter.Int8ArrayToRows(converter.HexByteArrayToInt8Array(strings))
+				outputData = utils.Int8ArrayToRows(utils.HexByteArrayToInt8Array(strings))
 			default:
 				common.ResponseError(w, "Cannot convert '"+InputType+"' to '"+OutputType+"'")
 				return
@@ -124,11 +123,11 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		case "ByteArray":
 			switch OutputType {
 			case "HexByteArray":
-				outputData = converter.HexByteArrayToRows(converter.DecByteArrayToHexByteArray(strings))
+				outputData = utils.HexByteArrayToRows(utils.DecByteArrayToHexByteArray(strings))
 			case "ByteArray":
-				outputData = converter.ByteArrayToRows(converter.DecByteArrayToDecByteArray(strings))
+				outputData = utils.ByteArrayToRows(utils.DecByteArrayToDecByteArray(strings))
 			case "Int8Array":
-				outputData = converter.Int8ArrayToRows(converter.DecByteArrayToDecInt8Array(strings))
+				outputData = utils.Int8ArrayToRows(utils.DecByteArrayToDecInt8Array(strings))
 			default:
 				common.ResponseError(w, "Cannot convert '"+InputType+"' to '"+OutputType+"'")
 				return
@@ -136,11 +135,11 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		case "Int8Array":
 			switch OutputType {
 			case "HexByteArray":
-				outputData = converter.HexByteArrayToRows(converter.DecInt8ArrayToHexByteArray(strings))
+				outputData = utils.HexByteArrayToRows(utils.DecInt8ArrayToHexByteArray(strings))
 			case "ByteArray":
-				outputData = converter.ByteArrayToRows(converter.DecInt8ArrayToDecByteArray(strings))
+				outputData = utils.ByteArrayToRows(utils.DecInt8ArrayToDecByteArray(strings))
 			case "Int8Array":
-				outputData = converter.Int8ArrayToRows(converter.DecInt8ArrayToDecInt8Array(strings))
+				outputData = utils.Int8ArrayToRows(utils.DecInt8ArrayToDecInt8Array(strings))
 			default:
 				common.ResponseError(w, "Cannot convert '"+InputType+"' to '"+OutputType+"'")
 				return
@@ -175,7 +174,7 @@ func readStreamAndSendBody(w http.ResponseWriter, dataChan <-chan []byte, funcBy
 			logger.Log("Read stream done, total size: " + strconv.Itoa(transferSize) + "Byte")
 			return
 		}
-		rowsBytes := converter.StreamBytesToRowsBytes(data, &globalRowIndex, funcBytesToRow)
+		rowsBytes := utils.StreamBytesToRowsBytes(data, &globalRowIndex, funcBytesToRow)
 		w.Write(rowsBytes)
 		transferSize += len(data)
 		logger.Log("Read stream size: " + strconv.Itoa(transferSize) + "Byte")
