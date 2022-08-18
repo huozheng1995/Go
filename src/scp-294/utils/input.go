@@ -6,6 +6,7 @@ import (
 	"mime/multipart"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 func HexArrayToDecArray(strArray []string) []int64 {
@@ -161,7 +162,7 @@ func SplitInputString(input string) []string {
 	return strArray
 }
 
-func FileStreamToChannel(file multipart.File, bufferSize int) (exitChan chan struct{}, dataChan chan []byte) {
+func FileStreamToChannel(file multipart.File, bufferPool *sync.Pool) (exitChan chan struct{}, dataChan chan []byte) {
 	exitChan = make(chan struct{})
 	dataChan = make(chan []byte)
 	go func() {
@@ -173,7 +174,7 @@ func FileStreamToChannel(file multipart.File, bufferSize int) (exitChan chan str
 				logger.Log("Exit channel is closed")
 				return
 			default:
-				buffer := make([]byte, bufferSize)
+				buffer := bufferPool.Get().([]byte)
 				n, err := file.Read(buffer)
 				if err != nil {
 					if err != io.EOF {

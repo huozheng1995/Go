@@ -8,10 +8,17 @@ import (
 	"mime/multipart"
 	"net/http"
 	"strconv"
+	"sync"
 )
 
 func registerConverterRoutes() {
 	http.HandleFunc("/convert", convert)
+}
+
+var fileBytesPool = &sync.Pool{
+	New: func() interface{} {
+		return make([]byte, 4096)
+	},
 }
 
 func convert(w http.ResponseWriter, r *http.Request) {
@@ -63,8 +70,8 @@ func convert(w http.ResponseWriter, r *http.Request) {
 				common.ResponseError(w, "Cannot convert File to '"+OutputType+"'")
 				return
 			}
-			exitChan, dataChan := utils.FileStreamToChannel(file, utils.GlobalRowSize*256)
-			readStreamAndSendBody(w, dataChan, funcBytesToRow)
+			exitChan, dataChan := utils.FileStreamToChannel(file, fileBytesPool)
+			readStreamAndSendBody(w, dataChan, funcBytesToRow, fileBytesPool)
 			close(exitChan)
 			return
 		}
@@ -165,7 +172,8 @@ func convert(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func readStreamAndSendBody(w http.ResponseWriter, dataChan <-chan []byte, funcBytesToRow utils.BytesToRow) {
+func readStreamAndSendBody(w http.ResponseWriter, dataChan <-chan []byte,
+	funcBytesToRow utils.BytesToRow, bufferPool *sync.Pool) {
 	transferSize := 0
 	globalRowIndex := 0
 	for {
@@ -175,6 +183,7 @@ func readStreamAndSendBody(w http.ResponseWriter, dataChan <-chan []byte, funcBy
 			return
 		}
 		rowsBytes := utils.StreamBytesToRowsBytes(data, &globalRowIndex, funcBytesToRow)
+		bufferPool.Put(data)
 		w.Write(rowsBytes)
 		transferSize += len(data)
 		logger.Log("Read stream size: " + strconv.Itoa(transferSize) + "Byte")
