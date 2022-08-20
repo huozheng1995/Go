@@ -9,14 +9,17 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"sync/atomic"
 )
 
 func registerConverterRoutes() {
 	http.HandleFunc("/convert", convert)
 }
 
-var fileBytesPool = &sync.Pool{
+var fileBufferCount int32
+var fileBufferPool = &sync.Pool{
 	New: func() interface{} {
+		atomic.AddInt32(&fileBufferCount, 1)
 		return make([]byte, 4096)
 	},
 }
@@ -70,9 +73,11 @@ func convert(w http.ResponseWriter, r *http.Request) {
 				common.ResponseError(w, "Cannot convert File to '"+OutputType+"'")
 				return
 			}
-			exitChan, dataChan := utils.FileStreamToChannel(file, fileBytesPool)
-			readStreamAndSendBody(w, dataChan, funcBytesToRow, fileBytesPool)
-			close(exitChan)
+			logger.Log("Begin parse, buffer count: " + strconv.Itoa(int(fileBufferCount)))
+			exitChannel, readChan := utils.FileStreamToChannel(file, fileBufferPool)
+			readStreamAndSendBody(w, readChan, funcBytesToRow, fileBufferPool)
+			logger.Log("End parse, buffer count: " + strconv.Itoa(int(fileBufferCount)))
+			close(exitChannel)
 			return
 		}
 
@@ -172,20 +177,23 @@ func convert(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func readStreamAndSendBody(w http.ResponseWriter, dataChan <-chan []byte,
+func readStreamAndSendBody(w http.ResponseWriter, readChan <-chan []byte,
 	funcBytesToRow utils.BytesToRow, bufferPool *sync.Pool) {
-	transferSize := 0
+	readSize := 0
+	writeSize := 0
 	globalRowIndex := 0
 	for {
-		data, ok := <-dataChan
+		data, ok := <-readChan
 		if !ok || len(data) <= 0 {
-			logger.Log("Read stream done, total size: " + strconv.Itoa(transferSize) + "Byte")
+			logger.Log("Read channel done, total size: " + strconv.Itoa(readSize) + "Byte")
+			logger.Log("Write stream done, total size: " + strconv.Itoa(writeSize) + "Byte")
 			return
 		}
 		rowsBytes := utils.StreamBytesToRowsBytes(data, &globalRowIndex, funcBytesToRow)
 		bufferPool.Put(data)
 		w.Write(rowsBytes)
-		transferSize += len(data)
-		logger.Log("Read stream size: " + strconv.Itoa(transferSize) + "Byte")
+		readSize += len(data)
+		writeSize += len(rowsBytes)
+		//logger.Log("Read stream size: " + strconv.Itoa(readSize) + "Byte")
 	}
 }

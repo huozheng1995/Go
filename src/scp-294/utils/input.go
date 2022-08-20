@@ -162,12 +162,12 @@ func SplitInputString(input string) []string {
 	return strArray
 }
 
-func FileStreamToChannel(file multipart.File, bufferPool *sync.Pool) (exitChan chan struct{}, dataChan chan []byte) {
+func FileStreamToChannel(file multipart.File, bufferPool *sync.Pool) (exitChan chan struct{}, readChan chan []byte) {
 	exitChan = make(chan struct{})
-	dataChan = make(chan []byte)
+	readChan = make(chan []byte)
 	go func() {
 		defer file.Close()
-		defer close(dataChan)
+		defer close(readChan)
 		for {
 			select {
 			case <-exitChan:
@@ -180,11 +180,11 @@ func FileStreamToChannel(file multipart.File, bufferPool *sync.Pool) (exitChan c
 					if err != io.EOF {
 						logger.Log("Failed to read file stream, error: " + err.Error())
 					} else {
-						logger.Log("File stream read completed")
+						logger.Log("File stream read done")
 					}
 					return
 				}
-				dataChan <- buffer[:n]
+				readChan <- buffer[:n]
 			}
 		}
 	}()
