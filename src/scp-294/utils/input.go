@@ -22,7 +22,7 @@ func HexArrayToBinArray(strArray []string) []string {
 	arr := make([]string, 0, len(strArray))
 	for _, str := range strArray {
 		val, _ := strconv.ParseInt(str, 16, 64)
-		arr = append(arr, DecToBin(val))
+		arr = append(arr, Int64ToBin(val))
 	}
 	return arr
 }
@@ -49,7 +49,7 @@ func DecArrayToBinArray(strArray []string) []string {
 	arr := make([]string, 0, len(strArray))
 	for _, str := range strArray {
 		val, _ := strconv.ParseInt(str, 10, 64)
-		arr = append(arr, DecToBin(val))
+		arr = append(arr, Int64ToBin(val))
 	}
 	return arr
 }

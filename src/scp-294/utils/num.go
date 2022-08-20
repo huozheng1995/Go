@@ -38,7 +38,8 @@ func Int64ToHex(int64Val int64) string {
 	return result
 }
 
-func DecToBin(val int64) string {
+func Int64ToBin(int64Val int64) string {
+	val := uint64(int64Val)
 	if val == 0 {
 		return "0"
 	}
