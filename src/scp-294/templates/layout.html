@@ -17,16 +17,16 @@
         <div class="selectDiv">
             <label>InputType: </label>
             <select id="inputType" title="inputType" onchange="onInputTypeChange()">
-                {{range $key, $value := .InputTypes}}
-                <option value={{$value}} title="Example: {{ (index $.InputCases $key) }}">{{$value}}</option>
+                {{range $key, $value := .InputTypeMap}}
+                <option value={{$key}} title="{{ (index $.TypeDescMap $key) }}">{{$value}}</option>
                 {{end}}
             </select>
         </div>
         <div class="selectDiv">
             <label>OutputType: </label>
             <select id="outputType" title="outputType">
-                {{range $key, $value := .OutputTypes}}
-                <option value={{$value}}>{{$value}}</option>
+                {{range $key, $value := .OutputTypeMap}}
+                <option value={{$key}}>{{$value}}</option>
                 {{end}}
             </select>
         </div>

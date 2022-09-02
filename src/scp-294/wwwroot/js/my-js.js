@@ -173,8 +173,8 @@ function addRecord() {
     let record = {
         Id: 0,
         Name: recordName,
-        InputType: inputType.value,
-        OutputType: outputType.value,
+        InputType: parseInt(inputType.value),
+        OutputType: parseInt(outputType.value),
         InputData: input.value,
         OutputData: output.value,
         GroupId: Number(selectGroup.value),

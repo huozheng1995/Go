@@ -8,8 +8,8 @@ type Record struct {
 	Id         int
 	Name       string
 	GroupId    int
-	InputType  string
-	OutputType string
+	InputType  int
+	OutputType int
 	InputData  string
 	OutputData string
 }

@@ -36,19 +36,22 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		}
 		form := r.MultipartForm
 
-		var InputType, OutputType, InputData string
+		var InputType, OutputType common.NumType
+		var InputData string
 		for key, values := range form.Value {
 			if key == "InputType" {
-				InputType = values[0]
+				intVal, _ := strconv.Atoi(values[0])
+				InputType = common.NumType(intVal)
 			} else if key == "OutputType" {
-				OutputType = values[0]
+				intVal, _ := strconv.Atoi(values[0])
+				OutputType = common.NumType(intVal)
 			} else if key == "InputData" {
 				InputData = values[0]
 			}
 		}
 
 		//Handle File
-		if InputType == "File" {
+		if InputType == common.File {
 			var file multipart.File
 			for key, files := range form.File {
 				if key == "InputFile" {
@@ -62,15 +65,15 @@ func convert(w http.ResponseWriter, r *http.Request) {
 			}
 			var funcBytesToRow utils.BytesToRow
 			switch OutputType {
-			case "HexByteArray":
+			case common.HexByte:
 				funcBytesToRow = utils.BytesToHexRow
-			case "ByteArray":
+			case common.DecByte:
 				funcBytesToRow = utils.BytesToByteRow
-			case "Int8Array":
+			case common.DecInt8:
 				funcBytesToRow = utils.BytesToInt8Row
 			default:
 				w.WriteHeader(http.StatusInternalServerError)
-				common.ResponseError(w, "Cannot convert File to '"+OutputType+"'")
+				common.ResponseError(w, "Cannot convert '"+common.InputTypeMap[InputType]+"' to '"+common.OutputTypeMap[OutputType]+"'")
 				return
 			}
 			logger.Log("Begin parse, buffer count: " + strconv.Itoa(int(fileBufferCount)))
@@ -84,80 +87,80 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		var outputData string
 		var strings = utils.SplitInputString(InputData)
 		switch InputType {
-		case "Hex":
+		case common.Hex:
 			switch OutputType {
-			case "Hex":
+			case common.Hex:
 				outputData = utils.HexArrayToString(strings)
-			case "Dec":
+			case common.Dec:
 				outputData = utils.DecArrayToString(utils.HexArrayToDecArray(strings))
-			case "Bin":
+			case common.Bin:
 				outputData = utils.BinArrayToString(utils.HexArrayToBinArray(strings))
 			default:
-				common.ResponseError(w, "Cannot convert '"+InputType+"' to '"+OutputType+"'")
+				common.ResponseError(w, "Cannot convert '"+common.InputTypeMap[InputType]+"' to '"+common.OutputTypeMap[OutputType]+"'")
 				return
 			}
-		case "Dec":
+		case common.Dec:
 			switch OutputType {
-			case "Hex":
+			case common.Hex:
 				outputData = utils.HexArrayToString(utils.DecArrayToHexArray(strings))
-			case "Dec":
+			case common.Dec:
 				outputData = utils.DecArrayToString(utils.DecArrayToDecArray(strings))
-			case "Bin":
+			case common.Bin:
 				outputData = utils.BinArrayToString(utils.DecArrayToBinArray(strings))
 			default:
-				common.ResponseError(w, "Cannot convert '"+InputType+"' to '"+OutputType+"'")
+				common.ResponseError(w, "Cannot convert '"+common.InputTypeMap[InputType]+"' to '"+common.OutputTypeMap[OutputType]+"'")
 				return
 			}
-		case "Bin":
+		case common.Bin:
 			switch OutputType {
-			case "Hex":
+			case common.Hex:
 				outputData = utils.HexArrayToString(utils.BinArrayToHexArray(strings))
-			case "Dec":
+			case common.Dec:
 				outputData = utils.DecArrayToString(utils.BinArrayToDecArray(strings))
-			case "Bin":
+			case common.Bin:
 				outputData = utils.BinArrayToString(strings)
 			default:
-				common.ResponseError(w, "Cannot convert '"+InputType+"' to '"+OutputType+"'")
+				common.ResponseError(w, "Cannot convert '"+common.InputTypeMap[InputType]+"' to '"+common.OutputTypeMap[OutputType]+"'")
 				return
 			}
-		case "HexByteArray":
+		case common.HexByte:
 			switch OutputType {
-			case "HexByteArray":
+			case common.HexByte:
 				outputData = utils.HexByteArrayToRows(strings)
-			case "ByteArray":
+			case common.DecByte:
 				outputData = utils.ByteArrayToRows(utils.HexByteArrayToDecByteArray(strings))
-			case "Int8Array":
+			case common.DecInt8:
 				outputData = utils.Int8ArrayToRows(utils.HexByteArrayToInt8Array(strings))
 			default:
-				common.ResponseError(w, "Cannot convert '"+InputType+"' to '"+OutputType+"'")
+				common.ResponseError(w, "Cannot convert '"+common.InputTypeMap[InputType]+"' to '"+common.OutputTypeMap[OutputType]+"'")
 				return
 			}
-		case "ByteArray":
+		case common.DecByte:
 			switch OutputType {
-			case "HexByteArray":
+			case common.HexByte:
 				outputData = utils.HexByteArrayToRows(utils.DecByteArrayToHexByteArray(strings))
-			case "ByteArray":
+			case common.DecByte:
 				outputData = utils.ByteArrayToRows(utils.DecByteArrayToDecByteArray(strings))
-			case "Int8Array":
+			case common.DecInt8:
 				outputData = utils.Int8ArrayToRows(utils.DecByteArrayToDecInt8Array(strings))
 			default:
-				common.ResponseError(w, "Cannot convert '"+InputType+"' to '"+OutputType+"'")
+				common.ResponseError(w, "Cannot convert '"+common.InputTypeMap[InputType]+"' to '"+common.OutputTypeMap[OutputType]+"'")
 				return
 			}
-		case "Int8Array":
+		case common.DecInt8:
 			switch OutputType {
-			case "HexByteArray":
+			case common.HexByte:
 				outputData = utils.HexByteArrayToRows(utils.DecInt8ArrayToHexByteArray(strings))
-			case "ByteArray":
+			case common.DecByte:
 				outputData = utils.ByteArrayToRows(utils.DecInt8ArrayToDecByteArray(strings))
-			case "Int8Array":
+			case common.DecInt8:
 				outputData = utils.Int8ArrayToRows(utils.DecInt8ArrayToDecInt8Array(strings))
 			default:
-				common.ResponseError(w, "Cannot convert '"+InputType+"' to '"+OutputType+"'")
+				common.ResponseError(w, "Cannot convert '"+common.InputTypeMap[InputType]+"' to '"+common.OutputTypeMap[OutputType]+"'")
 				return
 			}
 		default:
-			common.ResponseError(w, "Unknown input type: '"+InputType+"'")
+			common.ResponseError(w, "Unknown input type: '"+common.InputTypeMap[InputType]+"'")
 			return
 		}
 

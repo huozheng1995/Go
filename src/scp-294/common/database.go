@@ -38,9 +38,9 @@ func InitDatabases(forceClean bool) {
 		Db.Exec(`CREATE TABLE IF NOT EXISTS record(
 			Id INTEGER PRIMARY KEY AUTOINCREMENT,
 			Name VARCHAR(32) NOT NULL,
-			GroupId INTEGER,
-			InputType VARCHAR(32) NOT NULL,
-			OutputType VARCHAR(32) NOT NULL,
+			GroupId INTEGER NOT NULL,
+			InputType INTEGER NOT NULL,
+			OutputType INTEGER NOT NULL,
 			InputData TEXT,
 			OutputData TEXT
 		)`)

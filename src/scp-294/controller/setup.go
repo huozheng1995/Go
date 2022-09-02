@@ -23,33 +23,6 @@ func loadMainPage(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	inputTypes := []string{
-		"Hex",
-		"Dec",
-		"Bin",
-		"HexByteArray",
-		"ByteArray",
-		"Int8Array",
-		"File",
-	}
-	outputTypes := []string{
-		"Hex",
-		"Dec",
-		"Bin",
-		"HexByteArray",
-		"ByteArray",
-		"Int8Array",
-	}
-	inputCases := []string{
-		"ABAB5648, 12EF51,56 75,,CCCCCC  2CDD, DC11248, 05, 12, FE, FF",
-		"2880132680, 1240913,86 117,,13421772  11485, 230756936, 5, 18, 254, 255",
-		"10101011101010110101011001001000, 100101110111101010001,1010110 1110101,,110011001100110011001100  10110011011101, 1101110000010001001001001000, 101, 10010, 11111110, 11111111",
-		"AB, EF,56 75,,CC  2C, DC, BB, FE, FF",
-		"171, 239,86 117,,204  44, 220, 187, 254, 255",
-		"-85, -17,86 117,,-52  44, -36, -69, -2, -1",
-		"Select a file to parse",
-	}
 	groups, err := model.ListGroups()
 	if err != nil {
 		logger.Log(err.Error())
@@ -63,13 +36,13 @@ func loadMainPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := struct {
-		ProjName    string
-		InputTypes  []string
-		OutputTypes []string
-		InputCases  []string
-		Groups      []model.Group
-		Records     []model.Record
-	}{common.ProjName, inputTypes, outputTypes, inputCases, groups, records}
+		ProjName      string
+		InputTypeMap  map[common.NumType]string
+		OutputTypeMap map[common.NumType]string
+		TypeDescMap   map[common.NumType]string
+		Groups        []model.Group
+		Records       []model.Record
+	}{common.ProjName, common.InputTypeMap, common.OutputTypeMap, common.TypeDescMap, groups, records}
 	t.ExecuteTemplate(w, "layout", data)
 }
 

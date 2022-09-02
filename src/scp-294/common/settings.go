@@ -1,4 +1,6 @@
 package common
 
-const ProjName = "SCP-294"
-const HttpAddr = ":8294"
+const (
+	ProjName = "SCP-294"
+	HttpAddr = ":8294"
+)
