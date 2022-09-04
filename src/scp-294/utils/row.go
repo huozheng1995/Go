@@ -5,83 +5,98 @@ import (
 	"strings"
 )
 
-type BytesToRow func(arr []byte, off int, len int) string
+type ByteArrayToRow func(arr []byte, off int, len int, format bool) string
 
-func BytesToByteRow(arr []byte, off int, len int) string {
+func ByteArrayToByteRow(arr []byte, off int, len int, format bool) string {
 	var result strings.Builder
 	count := 0
 	for i := off; i < off+len; i++ {
 		count++
-		if count%8 == 0 {
-			result.WriteString(FillSpace(strconv.Itoa(int(arr[i])), 3))
-			result.WriteString(", ")
+		result.WriteString(FillSpace(strconv.Itoa(int(arr[i])), 3))
+		if format {
+			if count%8 == 0 {
+				result.WriteString(", ")
+			} else {
+				result.WriteString(" ")
+			}
 		} else {
-			result.WriteString(FillSpace(strconv.Itoa(int(arr[i])), 3))
-			result.WriteString(" ")
+			result.WriteString(", ")
 		}
 	}
 	return result.String()
 }
 
-func BytesToInt8Row(arr []byte, off int, len int) string {
+func ByteArrayToInt8Row(arr []byte, off int, len int, format bool) string {
 	var result strings.Builder
 	count := 0
 	for i := off; i < off+len; i++ {
 		count++
-		if count%8 == 0 {
-			result.WriteString(FillSpace(strconv.Itoa(int(int8(arr[i]))), 4))
-			result.WriteString(", ")
+		result.WriteString(FillSpace(strconv.Itoa(int(int8(arr[i]))), 4))
+		if format {
+			if count%8 == 0 {
+				result.WriteString(", ")
+			} else {
+				result.WriteString(" ")
+			}
 		} else {
-			result.WriteString(FillSpace(strconv.Itoa(int(int8(arr[i]))), 4))
-			result.WriteString(" ")
+			result.WriteString(", ")
 		}
 	}
 	return result.String()
 }
 
-func BytesToHexRow(arr []byte, off int, len int) string {
+func ByteArrayToHexByteRow(arr []byte, off int, len int, format bool) string {
 	var result strings.Builder
 	count := 0
 	for i := off; i < off+len; i++ {
 		count++
-		if count%8 == 0 {
-			result.WriteString(FillSpace(ByteToHex(arr[i]), 2))
-			result.WriteString(", ")
+		result.WriteString(FillSpace(ByteToHex(arr[i]), 2))
+		if format {
+			if count%8 == 0 {
+				result.WriteString(", ")
+			} else {
+				result.WriteString(" ")
+			}
 		} else {
-			result.WriteString(FillSpace(ByteToHex(arr[i]), 2))
-			result.WriteString(" ")
+			result.WriteString(", ")
 		}
 	}
 	return result.String()
 }
 
-func Int8ArrayToRow(arr []int8, off int, len int) string {
+func Int8ArrayToRow(arr []int8, off int, len int, format bool) string {
 	var result strings.Builder
 	count := 0
 	for i := off; i < off+len; i++ {
 		count++
-		if count%8 == 0 {
-			result.WriteString(FillSpace(strconv.Itoa(int(arr[i])), 4))
-			result.WriteString(", ")
+		result.WriteString(FillSpace(strconv.Itoa(int(arr[i])), 4))
+		if format {
+			if count%8 == 0 {
+				result.WriteString(", ")
+			} else {
+				result.WriteString(" ")
+			}
 		} else {
-			result.WriteString(FillSpace(strconv.Itoa(int(arr[i])), 4))
-			result.WriteString(" ")
+			result.WriteString(", ")
 		}
 	}
 	return result.String()
 }
 
-func HexByteArrayToRow(arr []string, off int, len int) string {
+func HexByteArrayToRow(arr []string, off int, len int, format bool) string {
 	var result strings.Builder
 	count := 0
 	for i := off; i < off+len; i++ {
 		count++
-		if count%8 == 0 {
-			result.WriteString(FillSpace(arr[i], 2))
-			result.WriteString(", ")
+		result.WriteString(FillSpace(arr[i], 2))
+		if format {
+			if count%8 == 0 {
+				result.WriteString(", ")
+			} else {
+				result.WriteString(" ")
+			}
 		} else {
-			result.WriteString(FillSpace(arr[i], 2))
-			result.WriteString(" ")
+			result.WriteString(", ")
 		}
 	}
 	return result.String()

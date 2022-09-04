@@ -63,14 +63,24 @@ func convert(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			var funcBytesToRow utils.BytesToRow
+			var funcBytesToRow utils.ByteArrayToRow
+			var format = false
 			switch OutputType {
 			case common.HexByte:
-				funcBytesToRow = utils.BytesToHexRow
+				funcBytesToRow = utils.ByteArrayToHexByteRow
 			case common.DecByte:
-				funcBytesToRow = utils.BytesToByteRow
+				funcBytesToRow = utils.ByteArrayToByteRow
 			case common.DecInt8:
-				funcBytesToRow = utils.BytesToInt8Row
+				funcBytesToRow = utils.ByteArrayToInt8Row
+			case common.HexByteFormatted:
+				format = true
+				funcBytesToRow = utils.ByteArrayToHexByteRow
+			case common.DecByteFormatted:
+				format = true
+				funcBytesToRow = utils.ByteArrayToByteRow
+			case common.DecInt8Formatted:
+				format = true
+				funcBytesToRow = utils.ByteArrayToInt8Row
 			default:
 				w.WriteHeader(http.StatusInternalServerError)
 				common.ResponseError(w, "Cannot convert '"+common.InputTypeMap[InputType]+"' to '"+common.OutputTypeMap[OutputType]+"'")
@@ -78,7 +88,7 @@ func convert(w http.ResponseWriter, r *http.Request) {
 			}
 			logger.Log("Begin parse, buffer count: " + strconv.Itoa(int(fileBufferCount)))
 			exitChannel, readChan := utils.FileStreamToChannel(file, fileBufferPool)
-			readStreamAndSendBody(w, readChan, funcBytesToRow, fileBufferPool)
+			readStreamAndSendBody(w, readChan, funcBytesToRow, format, fileBufferPool)
 			logger.Log("End parse, buffer count: " + strconv.Itoa(int(fileBufferCount)))
 			close(exitChannel)
 			return
@@ -126,11 +136,17 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		case common.HexByte:
 			switch OutputType {
 			case common.HexByte:
-				outputData = utils.HexByteArrayToRows(strings)
+				outputData = utils.HexByteArrayToRows(strings, false)
 			case common.DecByte:
-				outputData = utils.ByteArrayToRows(utils.HexByteArrayToDecByteArray(strings))
+				outputData = utils.ByteArrayToRows(utils.HexByteArrayToDecByteArray(strings), false)
 			case common.DecInt8:
-				outputData = utils.Int8ArrayToRows(utils.HexByteArrayToInt8Array(strings))
+				outputData = utils.Int8ArrayToRows(utils.HexByteArrayToInt8Array(strings), false)
+			case common.HexByteFormatted:
+				outputData = utils.HexByteArrayToRows(strings, true)
+			case common.DecByteFormatted:
+				outputData = utils.ByteArrayToRows(utils.HexByteArrayToDecByteArray(strings), true)
+			case common.DecInt8Formatted:
+				outputData = utils.Int8ArrayToRows(utils.HexByteArrayToInt8Array(strings), true)
 			default:
 				common.ResponseError(w, "Cannot convert '"+common.InputTypeMap[InputType]+"' to '"+common.OutputTypeMap[OutputType]+"'")
 				return
@@ -138,11 +154,17 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		case common.DecByte:
 			switch OutputType {
 			case common.HexByte:
-				outputData = utils.HexByteArrayToRows(utils.DecByteArrayToHexByteArray(strings))
+				outputData = utils.HexByteArrayToRows(utils.DecByteArrayToHexByteArray(strings), false)
 			case common.DecByte:
-				outputData = utils.ByteArrayToRows(utils.DecByteArrayToDecByteArray(strings))
+				outputData = utils.ByteArrayToRows(utils.DecByteArrayToDecByteArray(strings), false)
 			case common.DecInt8:
-				outputData = utils.Int8ArrayToRows(utils.DecByteArrayToDecInt8Array(strings))
+				outputData = utils.Int8ArrayToRows(utils.DecByteArrayToDecInt8Array(strings), false)
+			case common.HexByteFormatted:
+				outputData = utils.HexByteArrayToRows(utils.DecByteArrayToHexByteArray(strings), true)
+			case common.DecByteFormatted:
+				outputData = utils.ByteArrayToRows(utils.DecByteArrayToDecByteArray(strings), true)
+			case common.DecInt8Formatted:
+				outputData = utils.Int8ArrayToRows(utils.DecByteArrayToDecInt8Array(strings), true)
 			default:
 				common.ResponseError(w, "Cannot convert '"+common.InputTypeMap[InputType]+"' to '"+common.OutputTypeMap[OutputType]+"'")
 				return
@@ -150,11 +172,17 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		case common.DecInt8:
 			switch OutputType {
 			case common.HexByte:
-				outputData = utils.HexByteArrayToRows(utils.DecInt8ArrayToHexByteArray(strings))
+				outputData = utils.HexByteArrayToRows(utils.DecInt8ArrayToHexByteArray(strings), false)
 			case common.DecByte:
-				outputData = utils.ByteArrayToRows(utils.DecInt8ArrayToDecByteArray(strings))
+				outputData = utils.ByteArrayToRows(utils.DecInt8ArrayToDecByteArray(strings), false)
 			case common.DecInt8:
-				outputData = utils.Int8ArrayToRows(utils.DecInt8ArrayToDecInt8Array(strings))
+				outputData = utils.Int8ArrayToRows(utils.DecInt8ArrayToDecInt8Array(strings), false)
+			case common.HexByteFormatted:
+				outputData = utils.HexByteArrayToRows(utils.DecInt8ArrayToHexByteArray(strings), true)
+			case common.DecByteFormatted:
+				outputData = utils.ByteArrayToRows(utils.DecInt8ArrayToDecByteArray(strings), true)
+			case common.DecInt8Formatted:
+				outputData = utils.Int8ArrayToRows(utils.DecInt8ArrayToDecInt8Array(strings), true)
 			default:
 				common.ResponseError(w, "Cannot convert '"+common.InputTypeMap[InputType]+"' to '"+common.OutputTypeMap[OutputType]+"'")
 				return
@@ -181,7 +209,7 @@ func convert(w http.ResponseWriter, r *http.Request) {
 }
 
 func readStreamAndSendBody(w http.ResponseWriter, readChan <-chan []byte,
-	funcBytesToRow utils.BytesToRow, bufferPool *sync.Pool) {
+	funcBytesToRow utils.ByteArrayToRow, format bool, bufferPool *sync.Pool) {
 	readSize := 0
 	writeSize := 0
 	globalRowIndex := 0
@@ -192,7 +220,7 @@ func readStreamAndSendBody(w http.ResponseWriter, readChan <-chan []byte,
 			logger.Log("Write stream done, total size: " + strconv.Itoa(writeSize) + "Byte")
 			return
 		}
-		rowsBytes := utils.StreamBytesToRowsBytes(data, &globalRowIndex, funcBytesToRow)
+		rowsBytes := utils.StreamBytesToRowsBytes(data, &globalRowIndex, funcBytesToRow, format)
 		bufferPool.Put(data)
 		w.Write(rowsBytes)
 		readSize += len(data)

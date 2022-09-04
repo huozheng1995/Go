@@ -16,6 +16,9 @@ const (
 	DecByte
 	DecInt8
 	File
+	HexByteFormatted
+	DecByteFormatted
+	DecInt8Formatted
 )
 
 var InputTypeMap = map[NumType]string{
@@ -29,12 +32,15 @@ var InputTypeMap = map[NumType]string{
 }
 
 var OutputTypeMap = map[NumType]string{
-	Hex:     "Hex numbers",
-	Dec:     "Dec numbers",
-	Bin:     "Bin numbers",
-	HexByte: "Hex Byte numbers",
-	DecByte: "Dec Byte numbers",
-	DecInt8: "Dec Int8 numbers",
+	Hex:              "Hex numbers",
+	Dec:              "Dec numbers",
+	Bin:              "Bin numbers",
+	HexByte:          "Hex Byte numbers",
+	DecByte:          "Dec Byte numbers",
+	DecInt8:          "Dec Int8 numbers",
+	HexByteFormatted: "Formatted Hex Byte numbers",
+	DecByteFormatted: "Formatted Dec Byte numbers",
+	DecInt8Formatted: "Formatted Dec Int8 numbers",
 }
 
 var TypeDescMap = map[NumType]string{

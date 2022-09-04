@@ -10,7 +10,7 @@ import (
 const printLen = 5
 const GlobalRowSize = 16
 
-func ByteArrayToRows(arr []byte) string {
+func ByteArrayToRows(arr []byte, format bool) string {
 	rowSize := GlobalRowSize
 
 	totalRow := len(arr) / rowSize
@@ -25,14 +25,19 @@ func ByteArrayToRows(arr []byte) string {
 		if rowIndex == totalRow-1 && lastRowCount > 0 {
 			rowSize = lastRowCount
 		}
-		builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", Fill0(strconv.Itoa(rowIndex), printLen-1),
-			Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
-			BytesToByteRow(arr, byteIndex, rowSize), ByteArrayToCharRow(arr, byteIndex, rowSize)))
+		if format {
+			builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", Fill0(strconv.Itoa(rowIndex), printLen-1),
+				Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
+				ByteArrayToByteRow(arr, byteIndex, rowSize, format), ByteArrayToCharRow(arr, byteIndex, rowSize)))
+		} else {
+			builder.WriteString(ByteArrayToByteRow(arr, byteIndex, rowSize, format))
+			builder.WriteString("\n")
+		}
 	}
 	return builder.String()
 }
 
-func Int8ArrayToRows(arr []int8) string {
+func Int8ArrayToRows(arr []int8, format bool) string {
 	rowSize := GlobalRowSize
 
 	totalRow := len(arr) / rowSize
@@ -47,14 +52,19 @@ func Int8ArrayToRows(arr []int8) string {
 		if rowIndex == totalRow-1 && lastRowCount > 0 {
 			rowSize = lastRowCount
 		}
-		builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", Fill0(strconv.Itoa(rowIndex), printLen-1),
-			Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
-			Int8ArrayToRow(arr, byteIndex, rowSize), Int8ArrayToCharRow(arr, byteIndex, rowSize)))
+		if format {
+			builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", Fill0(strconv.Itoa(rowIndex), printLen-1),
+				Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
+				Int8ArrayToRow(arr, byteIndex, rowSize, format), Int8ArrayToCharRow(arr, byteIndex, rowSize)))
+		} else {
+			builder.WriteString(Int8ArrayToRow(arr, byteIndex, rowSize, format))
+			builder.WriteString("\n")
+		}
 	}
 	return builder.String()
 }
 
-func HexByteArrayToRows(arr []string) string {
+func HexByteArrayToRows(arr []string, format bool) string {
 	rowSize := GlobalRowSize
 
 	totalRow := len(arr) / rowSize
@@ -69,14 +79,19 @@ func HexByteArrayToRows(arr []string) string {
 		if rowIndex == totalRow-1 && lastRowCount > 0 {
 			rowSize = lastRowCount
 		}
-		builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", Fill0(strconv.Itoa(rowIndex), printLen-1),
-			Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
-			HexByteArrayToRow(arr, byteIndex, rowSize), HexByteArrayToCharRow(arr, byteIndex, rowSize)))
+		if format {
+			builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", Fill0(strconv.Itoa(rowIndex), printLen-1),
+				Fill0(strconv.Itoa(byteIndex), printLen), Fill0(strconv.Itoa(byteIndex+8), printLen),
+				HexByteArrayToRow(arr, byteIndex, rowSize, format), HexByteArrayToCharRow(arr, byteIndex, rowSize)))
+		} else {
+			builder.WriteString(HexByteArrayToRow(arr, byteIndex, rowSize, format))
+			builder.WriteString("\n")
+		}
 	}
 	return builder.String()
 }
 
-func StreamBytesToRowsBytes(arr []byte, globalRowIndex *int, funcBytesToRow BytesToRow) []byte {
+func StreamBytesToRowsBytes(arr []byte, globalRowIndex *int, funcBytesToRow ByteArrayToRow, format bool) []byte {
 	rowSize := GlobalRowSize
 
 	totalLen := len(arr)
@@ -94,9 +109,14 @@ func StreamBytesToRowsBytes(arr []byte, globalRowIndex *int, funcBytesToRow Byte
 		if rowIndex == totalRow-1 && lastRowCount > 0 {
 			rowSize = lastRowCount
 		}
-		buffer.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", Fill0(strconv.Itoa(*globalRowIndex), printLen-1),
-			Fill0(strconv.Itoa(globalByteIndex), printLen), Fill0(strconv.Itoa(globalByteIndex+8), printLen),
-			funcBytesToRow(arr, byteIndex, rowSize), ByteArrayToCharRow(arr, byteIndex, rowSize)))
+		if format {
+			buffer.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", Fill0(strconv.Itoa(*globalRowIndex), printLen-1),
+				Fill0(strconv.Itoa(globalByteIndex), printLen), Fill0(strconv.Itoa(globalByteIndex+8), printLen),
+				funcBytesToRow(arr, byteIndex, rowSize, format), ByteArrayToCharRow(arr, byteIndex, rowSize)))
+		} else {
+			buffer.WriteString(funcBytesToRow(arr, byteIndex, rowSize, format))
+			buffer.WriteString("\n")
+		}
 		*globalRowIndex++
 	}
 	return buffer.Bytes()
@@ -119,6 +139,24 @@ func DecArrayToString(arr []int64) string {
 	var builder strings.Builder
 	for _, val := range arr {
 		builder.WriteString(strconv.FormatInt(val, 10))
+		builder.WriteString(", ")
+	}
+	return builder.String()
+}
+
+func ByteArrayToString(arr []byte) string {
+	var builder strings.Builder
+	for _, val := range arr {
+		builder.WriteString(strconv.Itoa(int(val)))
+		builder.WriteString(", ")
+	}
+	return builder.String()
+}
+
+func Int8ArrayToString(arr []int8) string {
+	var builder strings.Builder
+	for _, val := range arr {
+		builder.WriteString(strconv.Itoa(int(val)))
 		builder.WriteString(", ")
 	}
 	return builder.String()
