@@ -3,6 +3,8 @@ const httpRoot = "";
 document.addEventListener("DOMContentLoaded", () => {
     onGroupChange();
     onInputTypeChange();
+    let inputType = document.getElementById("inputType");
+    window.inputTypeFile = inputType.options[inputType.options.length - 1].value;
 });
 
 function convert() {
@@ -12,7 +14,7 @@ function convert() {
     let formData = new FormData();
     formData.append("InputType", inputType.value);
     formData.append("OutputType", outputType.value);
-    let isFile = inputType.value == inputType.options[inputType.options.length - 1].value;
+    let isFile = inputType.value == window.inputTypeFile;
     if (!isFile) {
         if (input.value != null && input.value != "") {
             formData.append("InputData", input.value);
@@ -144,7 +146,7 @@ function loadRecord() {
             let outputType = document.getElementById("outputType");
             inputType.value = re.Data.InputType;
             outputType.value = re.Data.OutputType;
-            if (inputType.value != inputType.options[inputType.options.length - 1].value) {
+            if (inputType.value != window.inputTypeFile) {
                 let input = document.getElementById("input");
                 input.value = re.Data.InputData;
             }
@@ -157,7 +159,7 @@ function loadRecord() {
 
 function addRecord() {
     let inputType = document.getElementById("inputType");
-    if (inputType.value == inputType.options[inputType.options.length - 1].value) {
+    if (inputType.value == window.inputTypeFile) {
         alert("Cannot save file record");
         return;
     }
@@ -295,7 +297,7 @@ function onInputTypeChange() {
     let inputType = document.getElementById("inputType");
     let input = document.getElementById("input");
     let inputFileDiv = document.getElementById("inputFileDiv");
-    if (inputType.value != inputType.options[inputType.options.length - 1].value) {
+    if (inputType.value != window.inputTypeFile) {
         input.style.display = null;
         inputFileDiv.style.display = "none";
     } else {
