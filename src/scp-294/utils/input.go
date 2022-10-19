@@ -4,7 +4,6 @@ import (
 	"github.com/edward/scp-294/logger"
 	"io"
 	"mime/multipart"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -190,42 +189,4 @@ func FileStreamToChannel(file multipart.File, bufferPool *sync.Pool) (exitChan c
 		}
 	}()
 	return
-}
-
-func ParseFilePatternSimple(srcRootPath string, desRootPath string, fileNames string) ([]FileCopyObj, error) {
-	return ParseFilePattern(srcRootPath, desRootPath, fileNames, "", "")
-}
-
-func ParseFilePattern(srcRootPath string, dirPattern string, excludedDirPattern string, desRootPath string, fileNames string) ([]FileCopyObj, error) {
-	fileNameArr := strings.Split(fileNames, ",")
-	for key := range fileNameArr {
-		fileNameArr[key] = strings.ToLower(strings.TrimSpace(fileNameArr[key]))
-	}
-
-	absFilePaths, relFilePaths, err := GetFilePaths(srcRootPath, "", dirPattern, excludedDirPattern, fileNameArr)
-	if err != nil {
-		return nil, err
-	}
-
-	fileCopyObjs := make([]FileCopyObj, 0, len(absFilePaths))
-	for key, absFilePath := range absFilePaths {
-		exists := false
-		for _, copyObj := range fileCopyObjs {
-			if absFilePath == copyObj.SrcPath {
-				exists = true
-				break
-			}
-		}
-		if exists {
-			continue
-		}
-
-		fileCopyObj := FileCopyObj{
-			SrcPath: absFilePath,
-			DesPath: filepath.Join(desRootPath, relFilePaths[key]),
-		}
-		fileCopyObjs = append(fileCopyObjs, fileCopyObj)
-	}
-
-	return fileCopyObjs, nil
 }

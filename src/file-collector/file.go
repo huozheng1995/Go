@@ -1,6 +1,9 @@
-package utils
+package main
 
 import (
+	"fmt"
+	"github.com/edward/file-collector/logger"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -39,10 +42,15 @@ func GetFilePaths(absDirPath string, relDirPath string, dirPattern string, exclu
 			relFilePaths = append(relFilePaths, relPaths...)
 		} else {
 			if dirPattern == "" || match(dirPattern, filepath.Base(folder.Name())) {
-				for _, fileName := range fileNameArr {
-					if fileName == strings.ToLower(file.Name()) {
-						absFilePaths = append(absFilePaths, absFilePath)
-						relFilePaths = append(relFilePaths, relFilePath)
+				if fileNameArr == nil {
+					absFilePaths = append(absFilePaths, absFilePath)
+					relFilePaths = append(relFilePaths, relFilePath)
+				} else {
+					for _, fileName := range fileNameArr {
+						if fileName == strings.ToLower(file.Name()) {
+							absFilePaths = append(absFilePaths, absFilePath)
+							relFilePaths = append(relFilePaths, relFilePath)
+						}
 					}
 				}
 			}
@@ -89,4 +97,44 @@ func match(pattern string, value string) bool {
 	default:
 		return lowerValue == lowerPattern
 	}
+}
+
+func CopyFile(src, des string) (int64, error) {
+	logger.Log(fmt.Sprintf("Begin to copy, from [%s] to [%s]", src, des))
+	srcState, err := os.Stat(src)
+	if err != nil {
+		return 0, err
+	}
+
+	if !srcState.Mode().IsRegular() {
+		return 0, fmt.Errorf("%s is not a regular file", src)
+	}
+
+	source, err := os.Open(src)
+	if err != nil {
+		return 0, err
+	}
+	defer source.Close()
+
+	_, err = os.Stat(des)
+	if err != nil {
+		if os.IsNotExist(err) {
+			os.MkdirAll(filepath.Dir(des), 0700)
+		} else {
+			return 0, err
+		}
+	}
+
+	destination, err := os.Create(des)
+	if err != nil {
+		return 0, err
+	}
+	defer destination.Close()
+
+	nBytes, err := io.Copy(destination, source)
+	if err != nil {
+		return 0, err
+	}
+	logger.Log("File is copied")
+	return nBytes, err
 }
