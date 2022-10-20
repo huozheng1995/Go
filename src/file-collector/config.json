@@ -4,20 +4,24 @@
     "DesRootPath": "C:\\source\\provider_tests",
     "FileNames": "localtest.java, localtests.java",
     "DirPattern": "test%",
-    "ExcludedDirPattern": "release"
+    "ExcludedDirPattern": "release",
+    "DeleteDesRootBeforeCollect": true
   },
   {
     "SrcRootPath": "C:\\Users\\User\\AppData\\Roaming\\DBeaverData",
     "DesRootPath": "C:\\source\\DBeaverData",
     "FileNames": "",
     "DirPattern": "",
-    "ExcludedDirPattern": ""
+    "ExcludedDirPattern": "",
+    "DeleteDesRootBeforeCollect": true
   },
   {
     "SrcRootPath": "D:\\workspace\\learn-java\\src\\test\\java\\com\\drivers",
     "DesRootPath": "C:\\source\\learn-java",
     "FileNames": "",
     "DirPattern": "",
-    "ExcludedDirPattern": ""
+    "ExcludedDirPattern": "",
+    "DeleteDesRootBeforeCollect": true
   }
 ]
+

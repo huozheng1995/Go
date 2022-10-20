@@ -99,6 +99,14 @@ func match(pattern string, value string) bool {
 	}
 }
 
+func DeleteFolder(desRootPath string) error {
+	err := os.RemoveAll(desRootPath)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func CopyFile(src, des string) (int64, error) {
 	logger.Log(fmt.Sprintf("Begin to copy, from [%s] to [%s]", src, des))
 	srcState, err := os.Stat(src)

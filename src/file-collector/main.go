@@ -29,6 +29,15 @@ func main() {
 			logger.Log(err.Error())
 			return
 		}
+
+		if job.DeleteDesRootBeforeCollect {
+			err := DeleteFolder(job.DesRootPath)
+			if err != nil {
+				logger.Log(err.Error())
+				return
+			}
+		}
+
 		for _, copyObj := range copyObjs {
 			_, err := CopyFile(copyObj.SrcPath, copyObj.DesPath)
 			if err != nil {
@@ -41,11 +50,12 @@ func main() {
 }
 
 type Job struct {
-	SrcRootPath        string `json:"SrcRootPath"`
-	DesRootPath        string `json:"DesRootPath"`
-	FileNames          string `json:"FileNames"`
-	DirPattern         string `json:"DirPattern"`
-	ExcludedDirPattern string `json:"ExcludedDirPattern"`
+	SrcRootPath                string `json:"SrcRootPath"`
+	DesRootPath                string `json:"DesRootPath"`
+	FileNames                  string `json:"FileNames"`
+	DirPattern                 string `json:"DirPattern"`
+	ExcludedDirPattern         string `json:"ExcludedDirPattern"`
+	DeleteDesRootBeforeCollect bool   `json:DeleteDesRootBeforeCollect`
 }
 
 func ReadConfig(configPath string) (jobs []Job, err error) {
