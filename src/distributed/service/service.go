@@ -8,8 +8,7 @@ import (
 	"net/http"
 )
 
-func Start(ctx context.Context, host, port string, reg registry.Registration,
-	registerHandlersFunc func()) (context.Context, error) {
+func Start(ctx context.Context, host, port string, reg registry.Registration, registerHandlersFunc func()) (context.Context, error) {
 	registerHandlersFunc()
 	ctx = startService(ctx, reg.ServiceName, host, port)
 	err := registry.RegisterService(reg)

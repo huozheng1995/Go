@@ -1,4 +1,8 @@
-build: go build -a scp294.go
+build: go build -v -a scp294.go
+
+windows:
+  kill task: taskkill /pid xxx /F
+  delete service: sc delete SCP294
 
 # linux install go:
 mkdir ~/go && cd ~/go

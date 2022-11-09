@@ -55,7 +55,7 @@ type Job struct {
 	FileNames                  string `json:"FileNames"`
 	DirPattern                 string `json:"DirPattern"`
 	ExcludedDirPattern         string `json:"ExcludedDirPattern"`
-	DeleteDesRootBeforeCollect bool   `json:DeleteDesRootBeforeCollect`
+	DeleteDesRootBeforeCollect bool   `json:"DeleteDesRootBeforeCollect"`
 }
 
 func ReadConfig(configPath string) (jobs []Job, err error) {

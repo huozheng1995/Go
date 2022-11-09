@@ -25,3 +25,7 @@ func Init(destination string) {
 func Log(message string) {
 	log.Printf("%v\n", message)
 }
+
+func LogError(params ...interface{}) {
+	log.Fatalf("%v\n", params)
+}
