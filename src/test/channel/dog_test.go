@@ -1,29 +1,30 @@
-package main
+package channel
 
 import (
 	"fmt"
 	"sync"
+	"testing"
 )
 
 //dog cat fish 按这个输出一百句   第一题
 
 var wg sync.WaitGroup
 
-func main() {
+func Test(t *testing.T) {
 	// counter use to count the output
 	var counter int = 3
-	dogch := make(chan struct{}, 1)
-	catch := make(chan struct{}, 1)
-	fishch := make(chan struct{}, 1)
+	dogChannel := make(chan struct{}, 1)
+	catChannel := make(chan struct{}, 1)
+	fishChannel := make(chan struct{}, 1)
 	wg.Add(3)
 	// let run the three goroutine
 
-	// the origin of the goroutine to set dogch <- struct {}{}
-	dogch <- struct{}{}
+	// the origin of the goroutine to set dogChannel <- struct {}{}
+	dogChannel <- struct{}{}
 
-	go dog(dogch, counter, catch)
-	go cat(catch, counter, fishch)
-	go fish(fishch, counter, dogch)
+	go dog(dogChannel, counter, catChannel)
+	go cat(catChannel, counter, fishChannel)
+	go fish(fishChannel, counter, dogChannel)
 
 	wg.Wait()
 }

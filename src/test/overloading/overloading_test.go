@@ -1,9 +1,10 @@
-package main
+package overloading
 
 import (
 	"errors"
 	"fmt"
 	"strconv"
+	"testing"
 )
 
 func isInt(i interface{}) bool {
@@ -42,7 +43,7 @@ func sumAndPrint(vals ...interface{}) error {
 	return nil
 }
 
-func main() {
+func Test(t *testing.T) {
 	sumAndPrint()                 //Prints 0
 	sumAndPrint(1)                //Prints 1
 	sumAndPrint(1, 2)             //Prints 3

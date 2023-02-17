@@ -1,9 +1,10 @@
-package main
+package waitgroup
 
 import (
 	"fmt"
 	"math/rand"
 	"sync"
+	"testing"
 	"time"
 )
 
@@ -60,7 +61,8 @@ func result(done chan bool) {
 	}
 	done <- true
 }
-func main() {
+
+func Test(t *testing.T) {
 	startTime := time.Now()
 	noOfJobs := 100
 	go allocate(noOfJobs)

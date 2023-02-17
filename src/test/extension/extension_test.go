@@ -3,9 +3,10 @@ package extension
 import (
 	"fmt"
 	"strconv"
+	"testing"
 )
 
-type Animaler interface {
+type Animalor interface {
 	eat()
 }
 
@@ -31,20 +32,20 @@ type Dog struct {
 }
 
 // 猫独有的方法
-func (cat Cat) sleep() {
+func (cat *Cat) sleep() {
 	fmt.Println("我叫" + cat.name + "， 我能睡" + strconv.Itoa(cat.time) + "分钟")
 }
 
 // 狗独有的方法
-func (dog Dog) play() {
+func (dog *Dog) play() {
 	fmt.Println("我叫" + dog.name + "我喜欢玩" + dog.plays)
 }
 
-func testInterface(animaler Animaler) {
+func testInterface(animaler Animalor) {
 	animaler.eat()
 }
 
-func main() {
+func Test(t *testing.T) {
 	cat := Cat{Animal: Animal{name: "咪咪", age: 2, food: "鱼"}, time: 8}
 	cat.sleep()
 	testInterface(cat)

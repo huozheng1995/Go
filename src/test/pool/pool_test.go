@@ -1,9 +1,10 @@
-package main
+package pool
 
 import (
 	"fmt"
 	"sync"
 	"sync/atomic"
+	"testing"
 )
 
 // 用来统计实例真正创建的次数
@@ -17,7 +18,7 @@ func createBuffer() interface{} {
 	return &buffer
 }
 
-func main() {
+func Test_1(t *testing.T) {
 	// 创建实例
 	bufferPool := &sync.Pool{
 		New: createBuffer,

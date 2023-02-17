@@ -1,9 +1,10 @@
-package main
+package pool
 
 import (
 	"fmt"
 	"runtime"
 	"sync"
+	"testing"
 	"time"
 )
 
@@ -13,9 +14,9 @@ var pool = sync.Pool{
 	},
 }
 
-func main() {
-	t := pool.Get().(string)
-	fmt.Println(t)
+func Test_2(t *testing.T) {
+	val := pool.Get().(string)
+	fmt.Println(val)
 
 	pool.Put("234")
 	pool.Put("345")

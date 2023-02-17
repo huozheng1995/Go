@@ -1,4 +1,4 @@
-package main
+package drivers
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	_ "github.com/denisenkom/go-mssqldb"
 	"log"
+	"testing"
 )
 
 var db *sql.DB
@@ -23,7 +24,7 @@ type app struct {
 	name string
 }
 
-func main() {
+func Test(t *testing.T) {
 	connStr := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%d;database=%s;",
 		server, user, password, port, database)
 	var err error

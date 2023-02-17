@@ -1,6 +1,9 @@
-package main
+package override
 
-import "fmt"
+import (
+	"fmt"
+	"testing"
+)
 
 type Human struct {
 	name  string
@@ -38,7 +41,7 @@ func (s *Student) SetName(name string) {
 	//s.Human.name = name
 }
 
-func main() {
+func Test(t *testing.T) {
 	s := Student{}
 	s.SetPhone("18755201184")
 	s.SetName("tsong")
