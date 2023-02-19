@@ -2,11 +2,11 @@ package class01
 
 import "testing"
 
-func Test_BSExist(t *testing.T) {
+func Test_04(t *testing.T) {
 
 }
 
-//普通二分法实现，输入数组有序
+//二分法：输入数组有序，找是否存在某个数
 func bsExist(sortedArr []int, num int) bool {
 	if sortedArr == nil || len(sortedArr) == 0 {
 		return false
@@ -29,7 +29,7 @@ func bsExist(sortedArr []int, num int) bool {
 	return sortedArr[left] == num
 }
 
-//一个数组，值可以为[+,-,0]，相邻的两个数不相等，求局部最小值
+//二分法：一个数组，值可以为[+,-,0]，相邻的两个数不相等，求局部最小值
 func bsPartialMinValue(arr []int, num int) int {
 	if arr == nil || len(arr) == 0 {
 		return -1
