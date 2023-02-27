@@ -30,7 +30,7 @@ func bsExist(sortedArr []int, num int) bool {
 }
 
 //二分法：一个数组，值可以为[+,-,0]，相邻的两个数不相等，求局部最小值
-func bsPartialMinValue(arr []int, num int) int {
+func bsPartialMinValue(arr []int) int {
 	if arr == nil || len(arr) == 0 {
 		return -1
 	} else if len(arr) == 1 {

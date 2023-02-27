@@ -7,7 +7,7 @@ func Test_07(t *testing.T) {
 }
 
 //异或运算：arr中，有两个数a和b出现了奇数次，其他数出现了偶数次，找出a和b
-func FindTwoOfOddTimesNum(arr []int) (a, b int) {
+func findTwoOfOddTimesNum(arr []int) (a, b int) {
 	//temp1 == a ^ b
 	temp1 := 0
 	for _, val := range arr {
