@@ -60,18 +60,21 @@ func (m *Mocker) handleConnection(conn net.Conn) {
 
 	reader := bufio.NewReader(conn)
 
-	request, err := reader.ReadBytes('\n')
-	if err != nil {
-		fmt.Println("Error reading request:", err)
-		return
-	}
+	for {
+		request, err := reader.ReadBytes('\n')
+		if err != nil {
+			fmt.Println("Error reading request:", err)
+			return
+		}
 
-	hash := hash(request)
+		hash := hash(request)
 
-	if rr, ok := m.Requests[hash]; ok {
-		conn.Write(rr.Response)
-	} else {
-		fmt.Println("Error: no response found for request:", string(request))
+		if rr, ok := m.Requests[hash]; ok {
+			conn.Write(rr.Response)
+		} else {
+			fmt.Println("Error: no response found for request:", string(request))
+			conn.Write([]byte("Error: no response found"))
+		}
 	}
 }
 
