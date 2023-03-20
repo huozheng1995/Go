@@ -60,3 +60,34 @@ func GenerateRandomArrayKM(maxKinds int, maxValue int, k int, m int) []int {
 
 	return arr
 }
+
+func CopyArray(arr []int) []int {
+	if arr == nil {
+		return nil
+	}
+
+	arr2 := make([]int, len(arr))
+	for i := 0; i < len(arr); i++ {
+		arr2[i] = arr[i]
+	}
+
+	return arr2
+}
+
+func CompareArray(arr1 []int, arr2 []int) bool {
+	if arr1 == nil || arr2 == nil {
+		return false
+	}
+
+	if len(arr1) != len(arr2) {
+		return false
+	}
+
+	for i := 0; i < len(arr1); i++ {
+		if arr1[i] != arr2[i] {
+			return false
+		}
+	}
+
+	return true
+}
