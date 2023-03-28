@@ -91,7 +91,7 @@ func HexByteArrayToRows(arr []string, format bool) string {
 	return builder.String()
 }
 
-func StreamBytesToRowsBytes(arr []byte, globalRowIndex *int, funcBytesToRow ByteArrayToRow, format bool) []byte {
+func StreamBytesToRowsBytes(arr []byte, globalRowIndex *int, funcBytesToRow ByteArrayToRow, withDetails bool) []byte {
 	rowSize := GlobalRowSize
 
 	totalLen := len(arr)
@@ -109,12 +109,12 @@ func StreamBytesToRowsBytes(arr []byte, globalRowIndex *int, funcBytesToRow Byte
 		if rowIndex == totalRow-1 && lastRowCount > 0 {
 			rowSize = lastRowCount
 		}
-		if format {
+		if withDetails {
 			buffer.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n", Fill0(strconv.Itoa(*globalRowIndex), printLen-1),
 				Fill0(strconv.Itoa(globalByteIndex), printLen), Fill0(strconv.Itoa(globalByteIndex+8), printLen),
-				funcBytesToRow(arr, byteIndex, rowSize, format), ByteArrayToCharRow(arr, byteIndex, rowSize)))
+				funcBytesToRow(arr, byteIndex, rowSize, withDetails), ByteArrayToCharRow(arr, byteIndex, rowSize)))
 		} else {
-			buffer.WriteString(funcBytesToRow(arr, byteIndex, rowSize, format))
+			buffer.WriteString(funcBytesToRow(arr, byteIndex, rowSize, withDetails))
 			buffer.WriteString("\n")
 		}
 		*globalRowIndex++

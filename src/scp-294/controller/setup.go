@@ -36,13 +36,26 @@ func loadMainPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := struct {
-		ProjName      string
-		InputTypeMap  map[common.NumType]string
-		OutputTypeMap map[common.NumType]string
-		TypeDescMap   map[common.NumType]string
-		Groups        []model.Group
-		Records       []model.Record
-	}{common.ProjName, common.InputTypeMap, common.OutputTypeMap, common.TypeDescMap, groups, records}
+		ProjName        string
+		InputTypeMap    map[common.NumType]string
+		InputFormatMap  map[common.NumType]string
+		OutputTypeMap   map[common.NumType]string
+		OutputFormatMap map[common.NumType]string
+		TypeDescMap     map[common.NumType]string
+		FormatDescMap   map[common.NumType]string
+		Groups          []model.Group
+		Records         []model.Record
+	}{
+		common.ProjName,
+		common.TypeMap,
+		common.InputFormatMap,
+		common.TypeMap,
+		common.OutputFormatMap,
+		common.TypeDescMap,
+		common.FormatDescMap,
+		groups,
+		records,
+	}
 	t.ExecuteTemplate(w, "layout", data)
 }
 

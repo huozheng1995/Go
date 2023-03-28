@@ -40,7 +40,9 @@ func InitDatabases(forceClean bool) {
 			Name VARCHAR(32) NOT NULL,
 			GroupId INTEGER NOT NULL,
 			InputType INTEGER NOT NULL,
+			InputFormat INTEGER NOT NULL,
 			OutputType INTEGER NOT NULL,
+			OutputFormat INTEGER NOT NULL,
 			InputData TEXT,
 			OutputData TEXT
 		)`)

@@ -10,14 +10,14 @@ document.addEventListener("DOMContentLoaded", () => {
 function convert() {
     let inputType = document.getElementById("inputType");
     let outputType = document.getElementById("outputType");
-    let input = document.getElementById("input");
+    let inputText = document.getElementById("inputText");
     let formData = new FormData();
     formData.append("InputType", inputType.value);
     formData.append("OutputType", outputType.value);
     let isFile = inputType.value == window.inputTypeFile;
     if (!isFile) {
-        if (input.value != null && input.value != "") {
-            formData.append("InputData", input.value);
+        if (inputText.value != null && inputText.value != "") {
+            formData.append("InputData", inputText.value);
         } else {
             alert("Nothing to convert")
             return;
@@ -121,10 +121,10 @@ class MyTypedArray {
 }
 
 function clearText() {
-    let input = document.getElementById("input");
+    let inputText = document.getElementById("inputText");
     let inputFile = document.getElementById("inputFile");
     let output = document.getElementById("output");
-    input.value = null;
+    inputText.value = null;
     inputFile.value = null;
     output.value = null;
     updateMessageValue(null);
@@ -147,8 +147,8 @@ function loadRecord() {
             inputType.value = re.Data.InputType;
             outputType.value = re.Data.OutputType;
             if (inputType.value != window.inputTypeFile) {
-                let input = document.getElementById("input");
-                input.value = re.Data.InputData;
+                let inputText = document.getElementById("inputText");
+                inputText.value = re.Data.InputData;
             }
             onInputTypeChange();
             setOutput(re.Data.OutputData);
@@ -170,14 +170,14 @@ function addRecord() {
     }
     let selectGroup = document.getElementById("selectGroup");
     let outputType = document.getElementById("outputType");
-    let input = document.getElementById("input");
+    let inputText = document.getElementById("inputText");
     let output = document.getElementById("output");
     let record = {
         Id: 0,
         Name: recordName,
         InputType: parseInt(inputType.value),
         OutputType: parseInt(outputType.value),
-        InputData: input.value,
+        InputData: inputText.value,
         OutputData: output.value,
         GroupId: Number(selectGroup.value),
     }
@@ -295,13 +295,13 @@ function onGroupChange() {
 
 function onInputTypeChange() {
     let inputType = document.getElementById("inputType");
-    let input = document.getElementById("input");
+    let inputText = document.getElementById("inputText");
     let inputFileDiv = document.getElementById("inputFileDiv");
     if (inputType.value != window.inputTypeFile) {
-        input.style.display = null;
+        inputText.style.display = null;
         inputFileDiv.style.display = "none";
     } else {
-        input.style.display = "none";
+        inputText.style.display = "none";
         inputFileDiv.style.display = null;
     }
 }

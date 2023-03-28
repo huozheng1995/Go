@@ -3,7 +3,9 @@ package utils
 import (
 	"github.com/edward/scp-294/logger"
 	"io"
+	"log"
 	"mime/multipart"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -163,6 +165,41 @@ func SplitInputString(input string) []string {
 }
 
 func FileStreamToChannel(file multipart.File, bufferPool *sync.Pool) (exitChan chan struct{}, readChan chan []byte) {
+	exitChan = make(chan struct{})
+	readChan = make(chan []byte)
+	go func() {
+		defer file.Close()
+		defer close(readChan)
+		for {
+			select {
+			case <-exitChan:
+				logger.Log("Exit channel is closed")
+				return
+			default:
+				buffer := bufferPool.Get().([]byte)
+				n, err := file.Read(buffer)
+				if err != nil {
+					if err != io.EOF {
+						logger.Log("Failed to read file stream, error: " + err.Error())
+					} else {
+						logger.Log("File stream read done")
+					}
+					return
+				}
+				readChan <- buffer[:n]
+			}
+		}
+	}()
+	return
+}
+
+func LocalFileStreamToChannel(file1 multipart.File, bufferPool *sync.Pool) (exitChan chan struct{}, readChan chan []byte) {
+	file, err := os.Open("C:\\Users\\User\\Downloads\\SAP HANA OOB\\full.log")
+	if err != nil {
+		log.Fatal(err.Error())
+		return
+	}
+
 	exitChan = make(chan struct{})
 	readChan = make(chan []byte)
 	go func() {
