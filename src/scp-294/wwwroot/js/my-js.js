@@ -4,25 +4,22 @@ document.addEventListener("DOMContentLoaded", () => {
     onGroupChange();
     onInputTypeChange();
     let inputType = document.getElementById("inputType");
-    window.inputTypeFile = inputType.options[inputType.options.length - 1].value;
+    window.fileType = inputType.options[inputType.options.length - 1].value;
 });
 
 function convert() {
     let inputType = document.getElementById("inputType");
+    let inputFormat = document.getElementById("inputFormat");
     let outputType = document.getElementById("outputType");
+    let outputFormat = document.getElementById("outputFormat");
     let inputText = document.getElementById("inputText");
     let formData = new FormData();
     formData.append("InputType", inputType.value);
+    formData.append("InputFormat", inputFormat.value);
     formData.append("OutputType", outputType.value);
-    let isFile = inputType.value == window.inputTypeFile;
-    if (!isFile) {
-        if (inputText.value != null && inputText.value != "") {
-            formData.append("InputData", inputText.value);
-        } else {
-            alert("Nothing to convert")
-            return;
-        }
-    } else {
+    formData.append("OutputFormat", outputFormat.value);
+    let inputIsFile = inputType.value == window.fileType;
+    if (inputIsFile) {
         let inputFile = document.getElementById("inputFile");
         let files = inputFile.files;
         if (files != null && files.length > 0) {
@@ -31,22 +28,28 @@ function convert() {
             alert("No file to convert")
             return;
         }
+    } else {
+        if (inputText.value != null && inputText.value != "") {
+            formData.append("InputData", inputText.value);
+        } else {
+            alert("Nothing to convert")
+            return;
+        }
     }
 
     fetch(httpRoot + "/convert", {
         method: "POST",
         body: formData,
     }).then(re => {
-        if (!isFile) {
-            if (re.ok) {
-                return re.json();
-            }
-        } else {
-            if (re.ok) {
+        if (re.ok) {
+            let outputIsFile = outputType.value == window.fileType;
+            if (inputIsFile) {
                 return readTextStream(re);
             } else {
                 return re.json();
             }
+        } else {
+            return re.json();
         }
     }).then(re => {
         if (re.Success) {
@@ -146,7 +149,7 @@ function loadRecord() {
             let outputType = document.getElementById("outputType");
             inputType.value = re.Data.InputType;
             outputType.value = re.Data.OutputType;
-            if (inputType.value != window.inputTypeFile) {
+            if (inputType.value != window.fileType) {
                 let inputText = document.getElementById("inputText");
                 inputText.value = re.Data.InputData;
             }
@@ -159,7 +162,7 @@ function loadRecord() {
 
 function addRecord() {
     let inputType = document.getElementById("inputType");
-    if (inputType.value == window.inputTypeFile) {
+    if (inputType.value == window.fileType) {
         alert("Cannot save file record");
         return;
     }
@@ -297,7 +300,7 @@ function onInputTypeChange() {
     let inputType = document.getElementById("inputType");
     let inputText = document.getElementById("inputText");
     let inputFileDiv = document.getElementById("inputFileDiv");
-    if (inputType.value != window.inputTypeFile) {
+    if (inputType.value != window.fileType) {
         inputText.style.display = null;
         inputFileDiv.style.display = "none";
     } else {
