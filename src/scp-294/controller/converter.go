@@ -5,6 +5,7 @@ import (
 	"github.com/edward/scp-294/common"
 	"github.com/edward/scp-294/logger"
 	"github.com/edward/scp-294/utils"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"strconv"
@@ -76,37 +77,6 @@ func convert(w http.ResponseWriter, r *http.Request) {
 	default:
 		common.ResponseError(w, "Failed to convert data")
 	}
-}
-
-func convertFile(w http.ResponseWriter, file multipart.File, OutputType, InputFormat, OutputFormat common.NumType) {
-	var funcBytesToRow utils.ByteArrayToRow
-	var withDetails = false
-	switch OutputFormat {
-	case common.HexByte:
-		funcBytesToRow = utils.ByteArrayToHexByteRow
-	case common.DecByte:
-		funcBytesToRow = utils.ByteArrayToByteRow
-	case common.DecInt8:
-		funcBytesToRow = utils.ByteArrayToInt8Row
-	case common.HexByteFormatted:
-		withDetails = true
-		funcBytesToRow = utils.ByteArrayToHexByteRow
-	case common.DecByteFormatted:
-		withDetails = true
-		funcBytesToRow = utils.ByteArrayToByteRow
-	case common.DecInt8Formatted:
-		withDetails = true
-		funcBytesToRow = utils.ByteArrayToInt8Row
-	default:
-		w.WriteHeader(http.StatusInternalServerError)
-		common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
-		return
-	}
-	logger.Log("Begin parse, buffer count: " + strconv.Itoa(int(fileBufferCount)))
-	exitChannel, readChan := utils.FileStreamToChannel(file, fileBufferPool)
-	readStreamAndSendBody(w, readChan, funcBytesToRow, withDetails, fileBufferPool)
-	logger.Log("End parse, buffer count: " + strconv.Itoa(int(fileBufferCount)))
-	close(exitChannel)
 }
 
 func convertText(w http.ResponseWriter, InputData string, OutputType, InputFormat, OutputFormat common.NumType) {
@@ -219,6 +189,66 @@ func convertText(w http.ResponseWriter, InputData string, OutputType, InputForma
 		common.ResponseError(w, "Failed to encode data, error: "+err.Error())
 		return
 	}
+}
+
+func convertFile(w http.ResponseWriter, file multipart.File, OutputType, InputFormat, OutputFormat common.NumType) {
+	var funcBytesToRow utils.ByteArrayToRow
+	var withDetails = false
+	switch OutputFormat {
+	case common.HexByte:
+		funcBytesToRow = utils.ByteArrayToHexByteRow
+	case common.DecByte:
+		funcBytesToRow = utils.ByteArrayToByteRow
+	case common.DecInt8:
+		funcBytesToRow = utils.ByteArrayToInt8Row
+	case common.HexByteFormatted:
+		withDetails = true
+		funcBytesToRow = utils.ByteArrayToHexByteRow
+	case common.DecByteFormatted:
+		withDetails = true
+		funcBytesToRow = utils.ByteArrayToByteRow
+	case common.DecInt8Formatted:
+		withDetails = true
+		funcBytesToRow = utils.ByteArrayToInt8Row
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
+		common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
+		return
+	}
+	logger.Log("Begin parse, buffer count: " + strconv.Itoa(int(fileBufferCount)))
+	exitChannel, readChan := fileStreamToChannel(file, fileBufferPool)
+	readStreamAndSendBody(w, readChan, funcBytesToRow, withDetails, fileBufferPool)
+	logger.Log("End parse, buffer count: " + strconv.Itoa(int(fileBufferCount)))
+	close(exitChannel)
+}
+
+func fileStreamToChannel(file multipart.File, bufferPool *sync.Pool) (exitChan chan struct{}, readChan chan []byte) {
+	exitChan = make(chan struct{})
+	readChan = make(chan []byte)
+	go func() {
+		defer file.Close()
+		defer close(readChan)
+		for {
+			select {
+			case <-exitChan:
+				logger.Log("Exit channel is closed")
+				return
+			default:
+				buffer := bufferPool.Get().([]byte)
+				n, err := file.Read(buffer)
+				if err != nil {
+					if err != io.EOF {
+						logger.Log("Failed to read file stream, error: " + err.Error())
+					} else {
+						logger.Log("File stream read done")
+					}
+					return
+				}
+				readChan <- buffer[:n]
+			}
+		}
+	}()
+	return
 }
 
 func readStreamAndSendBody(w http.ResponseWriter, readChan <-chan []byte, funcBytesToRow utils.ByteArrayToRow, withDetails bool, bufferPool *sync.Pool) {

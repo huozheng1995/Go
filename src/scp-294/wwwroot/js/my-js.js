@@ -1,4 +1,5 @@
 const httpRoot = "";
+const DownloadFileName = "scp294-output.txt";
 
 document.addEventListener("DOMContentLoaded", () => {
     onGroupChange();
@@ -19,6 +20,7 @@ function convert() {
     formData.append("OutputType", outputType.value);
     formData.append("OutputFormat", outputFormat.value);
     let inputIsFile = inputType.value == window.fileType;
+    let outputIsFile = outputType.value == window.fileType;
     if (inputIsFile) {
         let inputFile = document.getElementById("inputFile");
         let files = inputFile.files;
@@ -42,7 +44,6 @@ function convert() {
         body: formData,
     }).then(re => {
         if (re.ok) {
-            let outputIsFile = outputType.value == window.fileType;
             if (inputIsFile) {
                 if (outputIsFile) {
                     return streamToFile(re);
@@ -56,9 +57,9 @@ function convert() {
                     return re.json();
                 }
             }
-        } else {
-            return re.json();
         }
+
+        return re.json();
     }).then(re => {
         if (re.Success) {
             setOutput(re.Data);
@@ -102,12 +103,11 @@ async function readStream(re) {
 
 async function streamToFile(re) {
     let result = await readStream(re);
-
-    let file = new File([result.TypedArray.toString()], "scp294-output.txt", {type: "text/plain"});
+    let file = new File([result.TypedArray.toString()], DownloadFileName, {type: "text/plain"});
     let url = URL.createObjectURL(file);
     let a = document.createElement('a');
     a.href = url;
-    a.download = "scp294-output.txt";
+    a.download = DownloadFileName;
     a.click();
     URL.revokeObjectURL(url);
 
@@ -129,12 +129,16 @@ async function streamToText(re) {
 }
 
 async function textToFile(re) {
+    let result = await re.json();
+    let file = new File([result.Data], DownloadFileName, {type: "text/plain"});
+    let url = URL.createObjectURL(file);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = DownloadFileName;
+    a.click();
+    URL.revokeObjectURL(url);
 
-    return {
-        Success: true,
-        Message: "Data was converted! Total size: " + (transferSize >>> 10) + "KB",
-        Data: null
-    };
+    return result;
 }
 
 class MyTypedArray {
