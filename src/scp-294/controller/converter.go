@@ -56,7 +56,6 @@ func convert(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		//Handle File
 		if InputType == common.File {
 			var file multipart.File
 			for key, files := range form.File {

@@ -44,9 +44,17 @@ function convert() {
         if (re.ok) {
             let outputIsFile = outputType.value == window.fileType;
             if (inputIsFile) {
-                return readTextStream(re);
+                if (outputIsFile) {
+                    return streamToFile(re);
+                } else {
+                    return streamToText(re);
+                }
             } else {
-                return re.json();
+                if (outputIsFile) {
+                    return textToFile(re);
+                } else {
+                    return re.json();
+                }
             }
         } else {
             return re.json();
@@ -59,29 +67,73 @@ function convert() {
     })
 }
 
-async function readTextStream(re) {
+async function readStream(re) {
+    let success = true;
+    let errorMessage = null;
+
     let reader = re.body.getReader();
     let myTypedArray = new MyTypedArray(Uint8Array, 4096);
     let transferSize = 0;
     let done = false;
     while (!done) {
-        done = await reader.read().then(result => {
-            if (result.value != null && result.value.byteLength > 0) {
-                myTypedArray.pushArray(result.value);
-                transferSize += result.value.byteLength;
+        done = await reader.read().then(({done, value}) => {
+            if (value != null && value.byteLength > 0) {
+                myTypedArray.pushArray(value);
+                transferSize += value.byteLength;
                 updateMessageValue("Transferred size: " + (transferSize >>> 10) + "KB", "blue");
             }
-            if (result.done) {
+            if (done) {
                 updateMessageValue("Transfer done, total size: " + (transferSize >>> 10) + "KB", "green");
                 return true;
             }
             return false;
+        }).catch(error => {
+            success = false;
+            errorMessage = error.message;
         });
     }
+
+    return {
+        Success: success,
+        Message: success ? "Data was converted! Total size: " + (transferSize >>> 10) + "KB" : errorMessage,
+        TypedArray: myTypedArray
+    };
+}
+
+async function streamToFile(re) {
+    let result = await readStream(re);
+
+    let file = new File([result.TypedArray.toString()], "scp294-output.txt", {type: "text/plain"});
+    let url = URL.createObjectURL(file);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = "scp294-output.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+
+    return {
+        Success: result.Success,
+        Message: result.Message,
+        Data: result.TypedArray.preview()
+    };
+}
+
+async function streamToText(re) {
+    let result = await readStream(re);
+
+    return {
+        Success: result.Success,
+        Message: result.Message,
+        Data: result.TypedArray.toString()
+    };
+}
+
+async function textToFile(re) {
+
     return {
         Success: true,
         Message: "Data was converted! Total size: " + (transferSize >>> 10) + "KB",
-        Data: myTypedArray.toString()
+        Data: null
     };
 }
 
@@ -112,6 +164,14 @@ class MyTypedArray {
         this.arrayBuffer = newArrayBuffer;
         this.typedArray = newTypedArray;
         this.push(val);
+    }
+
+    preview(charset) {
+        if (charset == null) {
+            charset = "utf-8";
+        }
+        let decoder = new TextDecoder(charset, {ignoreBOM: true})
+        return "Preview the first 65536 bytes:\n" + decoder.decode(new this.typedArrayClass(this.arrayBuffer, 0, 65536));
     }
 
     toString(charset) {
