@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+// Hex, Dec, Bin in int64
+
 func HexArrayToDecArray(strArray []string) []int64 {
 	arr := make([]int64, 0, len(strArray))
 	for _, str := range strArray {
@@ -66,6 +68,25 @@ func BinArrayToDecArray(strArray []string) []int64 {
 		arr = append(arr, val)
 	}
 	return arr
+}
+
+// Hex, Dec, Bin in byte
+
+type StrToDecByte func(str string) byte
+
+func HexByteToDecByte(str string) byte {
+	val, _ := strconv.ParseInt(str, 16, 64)
+	return byte(val)
+}
+
+func DecByteToDecByte(str string) byte {
+	val, _ := strconv.ParseInt(str, 10, 64)
+	return byte(val)
+}
+
+func DecInt8ToDecByte(str string) byte {
+	val, _ := strconv.ParseInt(str, 10, 64)
+	return byte(val)
 }
 
 func HexByteArrayToDecByteArray(strArray []string) []byte {

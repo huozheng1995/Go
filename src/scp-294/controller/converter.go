@@ -9,6 +9,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 )
@@ -19,6 +20,14 @@ func registerConverterRoutes() {
 
 var fileBufferCount int32
 var fileBufferPool = &sync.Pool{
+	New: func() interface{} {
+		atomic.AddInt32(&fileBufferCount, 1)
+		return make([]byte, 4096)
+	},
+}
+
+var pageBufferCount int32
+var pageBufferPool = &sync.Pool{
 	New: func() interface{} {
 		atomic.AddInt32(&fileBufferCount, 1)
 		return make([]byte, 4096)
@@ -192,6 +201,24 @@ func convertText(w http.ResponseWriter, InputData string, OutputType, InputForma
 }
 
 func convertFile(w http.ResponseWriter, file multipart.File, OutputType, InputFormat, OutputFormat common.NumType) {
+	var funcStrToDecByte utils.StrToDecByte
+	switch InputFormat {
+	case common.RawBytes:
+	case common.Hex:
+	case common.Dec:
+	case common.Bin:
+	case common.HexByte:
+		funcStrToDecByte = utils.HexByteToDecByte
+	case common.DecByte:
+		funcStrToDecByte = utils.DecByteToDecByte
+	case common.DecInt8:
+		funcStrToDecByte = utils.DecInt8ToDecByte
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
+		common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
+		return
+	}
+
 	var funcBytesToRow utils.ByteArrayToRow
 	var withDetails = false
 	switch OutputFormat {
@@ -215,14 +242,21 @@ func convertFile(w http.ResponseWriter, file multipart.File, OutputType, InputFo
 		common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 		return
 	}
-	logger.Log("Begin parse, buffer count: " + strconv.Itoa(int(fileBufferCount)))
-	exitChannel, readChan := fileStreamToChannel(file, fileBufferPool)
+
+	//logger.Log("Begin parse, buffer count: " + strconv.Itoa(int(fileBufferCount)))
+	//exitChannel, readChan := fileStreamToRawBytes(file, fileBufferPool)
+	//readStreamAndSendBody(w, readChan, funcBytesToRow, withDetails, fileBufferPool)
+	//logger.Log("End parse, buffer count: " + strconv.Itoa(int(fileBufferCount)))
+	//close(exitChannel)
+
+	logger.Log("Begin parse, buffer count: " + strconv.Itoa(int(pageBufferCount)))
+	exitChannel, readChan := fileStreamToPage(file, pageBufferPool, funcStrToDecByte)
 	readStreamAndSendBody(w, readChan, funcBytesToRow, withDetails, fileBufferPool)
-	logger.Log("End parse, buffer count: " + strconv.Itoa(int(fileBufferCount)))
+	logger.Log("End parse, buffer count: " + strconv.Itoa(int(pageBufferCount)))
 	close(exitChannel)
 }
 
-func fileStreamToChannel(file multipart.File, bufferPool *sync.Pool) (exitChan chan struct{}, readChan chan []byte) {
+func fileStreamToRawBytes(file multipart.File, bufferPool *sync.Pool) (exitChan chan struct{}, readChan chan []byte) {
 	exitChan = make(chan struct{})
 	readChan = make(chan []byte)
 	go func() {
@@ -251,62 +285,6 @@ func fileStreamToChannel(file multipart.File, bufferPool *sync.Pool) (exitChan c
 	return
 }
 
-func SplitInputStream(input []byte, off int, length int) [][]byte {
-	bytesArray := make([][]byte, 0, 16)
-	var val byte
-	bytesBuilder := make([]byte, 0, 100)
-	for i := off; i <= off+length; i++ {
-		if i == off+length {
-			val = 0
-		} else {
-			val = input[i]
-		}
-		if (val >= '0' && val <= '9') || (val >= 'a' && val <= 'f') || (val >= 'A' && val <= 'F') || val == '-' {
-			bytesBuilder = append(bytesBuilder, val)
-		} else {
-			if len(bytesBuilder) > 0 {
-				bytesArray = append(bytesArray, bytesBuilder)
-				bytesBuilder = make([]byte, 0, 100)
-			}
-		}
-	}
-
-	return bytesArray
-}
-
-func streamToPageToChannel(file multipart.File, bufferPool *sync.Pool) (exitChan chan struct{}, readChan chan []common.Page) {
-	exitChan = make(chan struct{})
-	readChan = make(chan []common.Page)
-	go func() {
-		defer file.Close()
-		defer close(readChan)
-		for {
-			select {
-			case <-exitChan:
-				logger.Log("Exit channel is closed")
-				return
-			default:
-				var page common.Page
-
-				buffer := bufferPool.Get().([]byte)
-				n, err := file.Read(buffer)
-				if err != nil {
-					if err != io.EOF {
-						logger.Log("Failed to read file stream, error: " + err.Error())
-					} else {
-						logger.Log("File stream read done")
-					}
-					return
-				}
-				var rawRowData [][]byte
-				rawRowData = SplitInputStream(buffer, 0, n)
-				readChan <- rawRowData
-			}
-		}
-	}()
-	return
-}
-
 func readStreamAndSendBody(w http.ResponseWriter, readChan <-chan []byte, funcBytesToRow utils.ByteArrayToRow, withDetails bool, bufferPool *sync.Pool) {
 	readSize := 0
 	writeSize := 0
@@ -325,4 +303,34 @@ func readStreamAndSendBody(w http.ResponseWriter, readChan <-chan []byte, funcBy
 		writeSize += len(rowsBytes)
 		//logger.Log("Read stream size: " + strconv.Itoa(readSize) + "Byte")
 	}
+}
+
+func fileStreamToPage(file multipart.File, bufferPool *sync.Pool, funcStrToDecByte utils.StrToDecByte) (exitChan chan struct{}, readChan chan []byte) {
+	exitChan = make(chan struct{})
+	readChan = make(chan []byte)
+	go func() {
+		defer file.Close()
+		defer close(readChan)
+		pageNum := 1
+		preBuffer := make([]byte, 1024)
+		preOff := 0
+		preLen := 0
+		var preCell strings.Builder
+		for {
+			select {
+			case <-exitChan:
+				logger.Log("Exit channel is closed")
+				return
+			default:
+				pageBuffer := bufferPool.Get().([]byte)
+
+				page := utils.CreateEmptyPage(pageNum, pageBuffer)
+				pageNum++
+				preBuffer, preOff, preLen, preCell = utils.FillPage(&page, preBuffer, preOff, preLen, preCell, file, funcStrToDecByte)
+
+				readChan <- page.Buffer[:page.Index]
+			}
+		}
+	}()
+	return
 }
