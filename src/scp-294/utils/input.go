@@ -139,7 +139,7 @@ func SplitInputString(input string) []string {
 	strArray := make([]string, 0, 100)
 	var val byte
 	var builder strings.Builder
-	for i := 0; i < len(input)+1; i++ {
+	for i := 0; i <= len(input); i++ {
 		if i == len(input) {
 			val = 0
 		} else {

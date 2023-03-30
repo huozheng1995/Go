@@ -71,6 +71,28 @@ type ResData struct {
 	Data    interface{} `json:"Data"`
 }
 
+type Page struct {
+	Num      int
+	Done     bool
+	Result   []byte
+	RowWidth int
+	TempRow  []byte
+}
+
+func CreateEmptyPage(pageNum int) Page {
+	return Page{
+		Num:      pageNum,
+		Done:     false,
+		Result:   nil,
+		RowWidth: 16,
+		TempRow:  nil,
+	}
+}
+
+func (page Page) fill(data []byte) {
+
+}
+
 func ResponseError(w http.ResponseWriter, message string) {
 	logger.Log(message)
 	enc := json.NewEncoder(w)

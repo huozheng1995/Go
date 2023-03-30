@@ -210,9 +210,13 @@ function loadRecord() {
     }).then(re => {
         if (re.Success) {
             let inputType = document.getElementById("inputType");
+            let inputFormat = document.getElementById("inputFormat");
             let outputType = document.getElementById("outputType");
+            let outputFormat = document.getElementById("outputFormat");
             inputType.value = re.Data.InputType;
+            inputFormat.value = re.Data.InputFormat;
             outputType.value = re.Data.OutputType;
+            outputFormat.value = re.Data.OutputFormat;
             if (inputType.value != window.fileType) {
                 let inputText = document.getElementById("inputText");
                 inputText.value = re.Data.InputData;
@@ -226,8 +230,9 @@ function loadRecord() {
 
 function addRecord() {
     let inputType = document.getElementById("inputType");
-    if (inputType.value == window.fileType) {
-        alert("Cannot save file record");
+    let outputType = document.getElementById("outputType");
+    if (inputType.value == window.fileType || outputType == window.fileType) {
+        alert("Cannot save file type");
         return;
     }
     let recordName = prompt("Input a name", "");
@@ -236,14 +241,17 @@ function addRecord() {
         return;
     }
     let selectGroup = document.getElementById("selectGroup");
-    let outputType = document.getElementById("outputType");
+    let inputFormat = document.getElementById("inputFormat");
+    let outputFormat = document.getElementById("outputFormat");
     let inputText = document.getElementById("inputText");
     let output = document.getElementById("output");
     let record = {
         Id: 0,
         Name: recordName,
         InputType: parseInt(inputType.value),
+        InputFormat: parseInt(inputFormat.value),
         OutputType: parseInt(outputType.value),
+        OutputFormat: parseInt(outputFormat.value),
         InputData: inputText.value,
         OutputData: output.value,
         GroupId: Number(selectGroup.value),

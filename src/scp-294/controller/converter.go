@@ -251,6 +251,62 @@ func fileStreamToChannel(file multipart.File, bufferPool *sync.Pool) (exitChan c
 	return
 }
 
+func SplitInputStream(input []byte, off int, length int) [][]byte {
+	bytesArray := make([][]byte, 0, 16)
+	var val byte
+	bytesBuilder := make([]byte, 0, 100)
+	for i := off; i <= off+length; i++ {
+		if i == off+length {
+			val = 0
+		} else {
+			val = input[i]
+		}
+		if (val >= '0' && val <= '9') || (val >= 'a' && val <= 'f') || (val >= 'A' && val <= 'F') || val == '-' {
+			bytesBuilder = append(bytesBuilder, val)
+		} else {
+			if len(bytesBuilder) > 0 {
+				bytesArray = append(bytesArray, bytesBuilder)
+				bytesBuilder = make([]byte, 0, 100)
+			}
+		}
+	}
+
+	return bytesArray
+}
+
+func streamToPageToChannel(file multipart.File, bufferPool *sync.Pool) (exitChan chan struct{}, readChan chan []common.Page) {
+	exitChan = make(chan struct{})
+	readChan = make(chan []common.Page)
+	go func() {
+		defer file.Close()
+		defer close(readChan)
+		for {
+			select {
+			case <-exitChan:
+				logger.Log("Exit channel is closed")
+				return
+			default:
+				var page common.Page
+
+				buffer := bufferPool.Get().([]byte)
+				n, err := file.Read(buffer)
+				if err != nil {
+					if err != io.EOF {
+						logger.Log("Failed to read file stream, error: " + err.Error())
+					} else {
+						logger.Log("File stream read done")
+					}
+					return
+				}
+				var rawRowData [][]byte
+				rawRowData = SplitInputStream(buffer, 0, n)
+				readChan <- rawRowData
+			}
+		}
+	}()
+	return
+}
+
 func readStreamAndSendBody(w http.ResponseWriter, readChan <-chan []byte, funcBytesToRow utils.ByteArrayToRow, withDetails bool, bufferPool *sync.Pool) {
 	readSize := 0
 	writeSize := 0
