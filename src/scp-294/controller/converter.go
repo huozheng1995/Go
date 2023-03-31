@@ -315,6 +315,12 @@ func fileStreamToRawBytes(file multipart.File, bufferPool *sync.Pool) (exitChan 
 					}
 					return
 				}
+
+				//If you're just reading data from the buffer in readStreamAndSendBody without modifying it,
+				//you can use readChan <- buffer[:n] without any issues.
+				//There's no need to use append([]byte(nil), buffer[:n]...) in this case.
+				//In fact, using readChan <- buffer[:n] is more efficient because it avoids creating a new slice,
+				//which would incur extra memory usage and GC overhead.
 				readChan <- buffer[:n]
 			}
 		}
@@ -365,16 +371,16 @@ func readStreamAndSendBody(w http.ResponseWriter, readChan <-chan []byte, funcBy
 	writeSize := 0
 	globalRowIndex := 0
 	for {
-		data, ok := <-readChan
-		if !ok || len(data) <= 0 {
+		buffer, ok := <-readChan
+		if !ok || len(buffer) <= 0 {
 			logger.Log("Read channel done, total size: " + strconv.Itoa(readSize) + "Byte")
 			logger.Log("Write stream done, total size: " + strconv.Itoa(writeSize) + "Byte")
 			return
 		}
-		rowsBytes := utils.StreamBytesToRowsBytes(data, &globalRowIndex, funcBytesToRow, withDetails)
-		bufferPool.Put(data)
+		rowsBytes := utils.StreamBytesToRowsBytes(buffer, &globalRowIndex, funcBytesToRow, withDetails)
+		bufferPool.Put(buffer)
 		w.Write(rowsBytes)
-		readSize += len(data)
+		readSize += len(buffer)
 		writeSize += len(rowsBytes)
 		//logger.Log("Read stream size: " + strconv.Itoa(readSize) + "Byte")
 	}
