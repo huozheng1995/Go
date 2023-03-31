@@ -72,23 +72,6 @@ func BinArrayToDecArray(strArray []string) []int64 {
 
 // Hex, Dec, Bin in byte
 
-type StrToDecByte func(str string) byte
-
-func HexByteToDecByte(str string) byte {
-	val, _ := strconv.ParseInt(str, 16, 64)
-	return byte(val)
-}
-
-func DecByteToDecByte(str string) byte {
-	val, _ := strconv.ParseInt(str, 10, 64)
-	return byte(val)
-}
-
-func DecInt8ToDecByte(str string) byte {
-	val, _ := strconv.ParseInt(str, 10, 64)
-	return byte(val)
-}
-
 func HexByteArrayToDecByteArray(strArray []string) []byte {
 	arr := make([]byte, 0, len(strArray))
 	for _, str := range strArray {

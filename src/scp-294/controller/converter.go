@@ -78,9 +78,9 @@ func convert(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			convertFile(w, file, OutputType, InputFormat, OutputFormat)
+			convertFile(w, file, InputFormat, OutputFormat)
 		} else {
-			convertText(w, InputData, OutputType, InputFormat, OutputFormat)
+			convertText(w, InputData, InputFormat, OutputFormat)
 		}
 
 	default:
@@ -88,7 +88,7 @@ func convert(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func convertText(w http.ResponseWriter, InputData string, OutputType, InputFormat, OutputFormat common.NumType) {
+func convertText(w http.ResponseWriter, InputData string, InputFormat, OutputFormat common.NumType) {
 	var outputData string
 	var strings = utils.SplitInputString(InputData)
 	switch InputFormat {
@@ -200,44 +200,81 @@ func convertText(w http.ResponseWriter, InputData string, OutputType, InputForma
 	}
 }
 
-func convertFile(w http.ResponseWriter, file multipart.File, OutputType, InputFormat, OutputFormat common.NumType) {
-	var funcStrToDecByte utils.StrToDecByte
+func convertFile(w http.ResponseWriter, file multipart.File, InputFormat, OutputFormat common.NumType) {
+	rawBytes := false
+	var funcStrToInt64 utils.StrToInt64
+	var funcStrToByte utils.StrToByte
 	switch InputFormat {
 	case common.RawBytes:
+		rawBytes = true
 	case common.Hex:
+		funcStrToInt64 = utils.HexStrToInt64
 	case common.Dec:
+		funcStrToInt64 = utils.Int64StrToInt64
 	case common.Bin:
+		funcStrToInt64 = utils.BinStrToInt64
 	case common.HexByte:
-		funcStrToDecByte = utils.HexByteToDecByte
+		funcStrToByte = utils.HexStrToByte
 	case common.DecByte:
-		funcStrToDecByte = utils.DecByteToDecByte
+		funcStrToByte = utils.ByteStrToByte
 	case common.DecInt8:
-		funcStrToDecByte = utils.DecInt8ToDecByte
+		funcStrToByte = utils.Int8StrToByte
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
-		common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
+		common.ResponseError(w, "Unknown input format: '"+common.InputFormatMap[InputFormat]+"'")
 		return
 	}
 
+	var funcInt64ToStr utils.Int64ToStr
+	var funcInt64ArrayToRow utils.Int64ArrayToRow
+	var funcByteToStr utils.ByteToStr
 	var funcBytesToRow utils.ByteArrayToRow
 	var withDetails = false
-	switch OutputFormat {
-	case common.HexByte:
-		funcBytesToRow = utils.ByteArrayToHexByteRow
-	case common.DecByte:
-		funcBytesToRow = utils.ByteArrayToByteRow
-	case common.DecInt8:
-		funcBytesToRow = utils.ByteArrayToInt8Row
-	case common.HexByteFormatted:
-		withDetails = true
-		funcBytesToRow = utils.ByteArrayToHexByteRow
-	case common.DecByteFormatted:
-		withDetails = true
-		funcBytesToRow = utils.ByteArrayToByteRow
-	case common.DecInt8Formatted:
-		withDetails = true
-		funcBytesToRow = utils.ByteArrayToInt8Row
-	default:
+	if funcStrToInt64 != nil {
+		switch OutputFormat {
+		case common.Hex:
+			funcInt64ToStr = utils.Int64ToHexStr
+			funcBytesToRow = utils.Int64ArrayToHexRow
+		case common.Dec:
+			funcInt64ToStr = utils.Int64ToInt64Str
+			funcBytesToRow = utils.Int64ArrayToDecRow
+		case common.Bin:
+			funcInt64ToStr = utils.Int64ToBinStr
+			funcBytesToRow = utils.Int64ArrayToBinRow
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+			common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
+			return
+		}
+	} else if rawBytes || (funcStrToByte != nil) {
+		switch OutputFormat {
+		case common.HexByte:
+			funcByteToStr = utils.ByteToHexStr
+			funcBytesToRow = utils.ByteArrayToHexByteRow
+		case common.DecByte:
+			funcByteToStr = utils.ByteToByteStr
+			funcBytesToRow = utils.ByteArrayToByteRow
+		case common.DecInt8:
+			funcByteToStr = utils.ByteToInt8Str
+			funcBytesToRow = utils.ByteArrayToInt8Row
+		case common.HexByteFormatted:
+			withDetails = true
+			funcByteToStr = utils.ByteToHexStr
+			funcBytesToRow = utils.ByteArrayToHexByteRow
+		case common.DecByteFormatted:
+			withDetails = true
+			funcByteToStr = utils.ByteToByteStr
+			funcBytesToRow = utils.ByteArrayToByteRow
+		case common.DecInt8Formatted:
+			withDetails = true
+			funcByteToStr = utils.ByteToInt8Str
+			funcBytesToRow = utils.ByteArrayToInt8Row
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+			common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
+			return
+		}
+	} else {
 		w.WriteHeader(http.StatusInternalServerError)
 		common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 		return
@@ -250,8 +287,8 @@ func convertFile(w http.ResponseWriter, file multipart.File, OutputType, InputFo
 	//close(exitChannel)
 
 	logger.Log("Begin parse, buffer count: " + strconv.Itoa(int(pageBufferCount)))
-	exitChannel, readChan := fileStreamToPage(file, pageBufferPool, funcStrToDecByte)
-	readStreamAndSendBody(w, readChan, funcBytesToRow, withDetails, fileBufferPool)
+	exitChannel, readChan := fileStreamToPage(file, pageBufferPool, funcStrToByte)
+	readStreamAndSendBody(w, readChan, funcBytesToRow, withDetails, pageBufferPool)
 	logger.Log("End parse, buffer count: " + strconv.Itoa(int(pageBufferCount)))
 	close(exitChannel)
 }
@@ -285,6 +322,44 @@ func fileStreamToRawBytes(file multipart.File, bufferPool *sync.Pool) (exitChan 
 	return
 }
 
+func fileStreamToPage(file multipart.File, bufferPool *sync.Pool, funcStrToDecByte utils.StrToByte) (exitChan chan struct{}, readChan chan []byte) {
+	exitChan = make(chan struct{})
+	readChan = make(chan []byte)
+	go func() {
+		defer file.Close()
+		defer close(readChan)
+		pageNum := 1
+		preBuffer := make([]byte, 1024)
+		preOff := 0
+		preLen := 0
+		var tempCell strings.Builder
+		for {
+			select {
+			case <-exitChan:
+				logger.Log("Exit channel is closed")
+				return
+			default:
+				pageBuffer := bufferPool.Get().([]byte)
+
+				page := utils.CreateEmptyPage(pageNum, pageBuffer)
+				pageNum++
+				var err error
+				err, preBuffer, preOff, preLen, tempCell = utils.FillPage(&page, preBuffer, preOff, preLen, tempCell, file, funcStrToDecByte)
+				if err != nil {
+					if err != io.EOF {
+						logger.Log("Failed to read file stream, error: " + err.Error())
+					} else {
+						logger.Log("File stream read done")
+					}
+					return
+				}
+				readChan <- page.Buffer[:page.Index]
+			}
+		}
+	}()
+	return
+}
+
 func readStreamAndSendBody(w http.ResponseWriter, readChan <-chan []byte, funcBytesToRow utils.ByteArrayToRow, withDetails bool, bufferPool *sync.Pool) {
 	readSize := 0
 	writeSize := 0
@@ -303,34 +378,4 @@ func readStreamAndSendBody(w http.ResponseWriter, readChan <-chan []byte, funcBy
 		writeSize += len(rowsBytes)
 		//logger.Log("Read stream size: " + strconv.Itoa(readSize) + "Byte")
 	}
-}
-
-func fileStreamToPage(file multipart.File, bufferPool *sync.Pool, funcStrToDecByte utils.StrToDecByte) (exitChan chan struct{}, readChan chan []byte) {
-	exitChan = make(chan struct{})
-	readChan = make(chan []byte)
-	go func() {
-		defer file.Close()
-		defer close(readChan)
-		pageNum := 1
-		preBuffer := make([]byte, 1024)
-		preOff := 0
-		preLen := 0
-		var preCell strings.Builder
-		for {
-			select {
-			case <-exitChan:
-				logger.Log("Exit channel is closed")
-				return
-			default:
-				pageBuffer := bufferPool.Get().([]byte)
-
-				page := utils.CreateEmptyPage(pageNum, pageBuffer)
-				pageNum++
-				preBuffer, preOff, preLen, preCell = utils.FillPage(&page, preBuffer, preOff, preLen, preCell, file, funcStrToDecByte)
-
-				readChan <- page.Buffer[:page.Index]
-			}
-		}
-	}()
-	return
 }

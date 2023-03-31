@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"github.com/edward/scp-294/logger"
-	"io"
 	"mime/multipart"
 	"strings"
 )
@@ -23,41 +21,35 @@ func CreateEmptyPage(pageNum int, buffer []byte) Page {
 	}
 }
 
-func FillPage(page *Page, preBuffer []byte, preOff, preLen int, preCell strings.Builder, file multipart.File,
-	funcStrToDecByte StrToDecByte) (currentBuffer []byte, currentOff, currentLen int, currentCell strings.Builder) {
+func FillPage(page *Page, preBuffer []byte, preOff, preLen int, tempCell strings.Builder, file multipart.File,
+	funcStrToDecByte StrToByte) (err error, newPreBuffer []byte, newPreOff, newPreLen int, newTempCell strings.Builder) {
 	for {
 		if preLen == 0 {
 			preOff = 0
-			var err error
 			preLen, err = file.Read(preBuffer)
 			if err != nil {
-				if err != io.EOF {
-					logger.Log("Failed to read file stream, error: " + err.Error())
-				} else {
-					if preCell.Len() > 0 {
-						page.Buffer[page.Index] = funcStrToDecByte(preCell.String())
-						page.Index++
-						preCell.Reset()
-					}
-					logger.Log("File stream read done")
+				if tempCell.Len() > 0 {
+					page.Buffer[page.Index] = funcStrToDecByte(tempCell.String())
+					page.Index++
+					tempCell.Reset()
 				}
-				return
+				return err, preBuffer, preOff, preLen, tempCell
 			}
 		}
 
 		var val byte
-		endIndex := preOff + preLen
-		for i := preOff; i < endIndex; i++ {
+		for i := preOff; i < preOff+preLen; i++ {
 			val = preBuffer[i]
 			if (val >= '0' && val <= '9') || (val >= 'a' && val <= 'f') || (val >= 'A' && val <= 'F') || val == '-' {
-				preCell.WriteByte(val)
+				tempCell.WriteByte(val)
 			} else {
-				if preCell.Len() > 0 {
-					page.Buffer[page.Index] = funcStrToDecByte(preCell.String())
+				if tempCell.Len() > 0 {
+					page.Buffer[page.Index] = funcStrToDecByte(tempCell.String())
 					page.Index++
-					preCell.Reset()
+					tempCell.Reset()
 					if page.Index == page.PageSize {
-						return preBuffer, i + 1, endIndex - (i + 1), preCell
+						i++
+						return nil, preBuffer, i, preOff + preLen - i, tempCell
 					}
 				}
 			}
