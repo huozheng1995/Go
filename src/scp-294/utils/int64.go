@@ -94,7 +94,7 @@ func StringToInt64Array(text string, funcStrToInt64 StrToInt64) []int64 {
 
 // int64 array to
 
-func Int64ArrayToRowBytes(arr []int64, funcInt64ToStr Int64ToStr) []byte {
+func Int64ArrayToOutput(arr []int64, funcInt64ToStr Int64ToStr) []byte {
 	buffer := new(bytes.Buffer)
 	for _, val := range arr {
 		buffer.WriteString(funcInt64ToStr(val))
@@ -103,11 +103,7 @@ func Int64ArrayToRowBytes(arr []int64, funcInt64ToStr Int64ToStr) []byte {
 	return buffer.Bytes()
 }
 
-func Int64ArrayToRowString(arr []int64, funcInt64ToStr Int64ToStr) string {
-	var builder strings.Builder
-	for _, val := range arr {
-		builder.WriteString(funcInt64ToStr(val))
-		builder.WriteString(", ")
-	}
-	return builder.String()
+func Int64ArrayToOutputString(arr []int64, funcInt64ToStr Int64ToStr) string {
+	result := Int64ArrayToOutput(arr, funcInt64ToStr)
+	return string(result)
 }

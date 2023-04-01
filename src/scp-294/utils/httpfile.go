@@ -6,7 +6,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"strconv"
-	"strings"
 	"sync"
 )
 
@@ -49,10 +48,7 @@ func FileToPageBuffer[T any](file multipart.File, bufferPool *sync.Pool, funcStr
 	go func() {
 		defer close(readChan)
 		pageNum := 1
-		preBuffer := make([]byte, 1024)
-		preOff := 0
-		preLen := 0
-		var tempCell strings.Builder
+		tempBuffer := CreateTempBuffer()
 		for {
 			select {
 			case <-exitChan:
@@ -62,23 +58,22 @@ func FileToPageBuffer[T any](file multipart.File, bufferPool *sync.Pool, funcStr
 				pageBuffer := bufferPool.Get().([]T)
 				page := CreateEmptyPage(pageNum, pageBuffer, funcStrToNum)
 				pageNum++
-				var err error
-				err, preBuffer, preOff, preLen, tempCell = FillPage(&page, preBuffer, preOff, preLen, tempCell, file)
+				err := page.AppendData(&tempBuffer, file)
 				if err != nil {
 					if err != io.EOF {
 						logger.Log("Failed to read file stream, error: " + err.Error())
 						bufferPool.Put(pageBuffer)
 					} else {
 						logger.Log("File stream read done")
-						if page.Index > 0 {
-							readChan <- page.Buffer[:page.Index]
+						if !page.IsEmpty() {
+							readChan <- page.GetBuffer()
 						} else {
 							bufferPool.Put(pageBuffer)
 						}
 					}
 					return
 				}
-				readChan <- page.Buffer[:page.Index]
+				readChan <- page.GetBuffer()
 			}
 		}
 	}()
@@ -96,7 +91,7 @@ func ReadBytesAndResponse(readChan <-chan []byte, funcByteToStr ByteToStr, withD
 			logger.Log("Write stream done, total size: " + strconv.Itoa(writeSize) + "Byte")
 			return
 		}
-		rowsBytes := ByteArrayToOutputBytes(buffer, &globalRowIndex, funcByteToStr, withDetails)
+		rowsBytes := ByteArrayToOutput(buffer, &globalRowIndex, funcByteToStr, withDetails)
 
 		bufferPool.Put(buffer)
 		w.Write(rowsBytes)
@@ -116,7 +111,7 @@ func ReadInt64ArrayAndResponse(readChan <-chan []int64, funcInt64ToStr Int64ToSt
 			logger.Log("Write stream done, total size: " + strconv.Itoa(writeSize) + "Byte")
 			return
 		}
-		rowsBytes := Int64ArrayToRowBytes(buffer, funcInt64ToStr)
+		rowsBytes := Int64ArrayToOutput(buffer, funcInt64ToStr)
 
 		bufferPool.Put(buffer)
 		w.Write(rowsBytes)

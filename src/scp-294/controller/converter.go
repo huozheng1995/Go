@@ -80,7 +80,7 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 			return
 		}
 		int64Array := utils.StringToInt64Array(InputData, funcStrToInt64)
-		outputData = utils.Int64ArrayToRowString(int64Array, funcInt64ToStr)
+		outputData = utils.Int64ArrayToOutputString(int64Array, funcInt64ToStr)
 		toResponse(w, outputData)
 		return
 	}

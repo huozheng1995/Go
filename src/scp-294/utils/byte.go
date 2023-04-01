@@ -100,7 +100,7 @@ func StringToByteArray(str string, funcStrToByte StrToByte) []byte {
 const printLen = 5
 const GlobalRowSize = 16
 
-func ByteArrayToOutputBytes(arr []byte, globalRowIndex *int, byteToStr ByteToStr, withDetails bool) []byte {
+func ByteArrayToOutput(arr []byte, globalRowIndex *int, byteToStr ByteToStr, withDetails bool) []byte {
 	rowSize := GlobalRowSize
 
 	totalLen := len(arr)
@@ -140,5 +140,5 @@ func ByteArrayToOutputBytes(arr []byte, globalRowIndex *int, byteToStr ByteToStr
 }
 
 func ByteArrayToOutputString(arr []byte, globalRowIndex *int, byteToStr ByteToStr, withDetails bool) string {
-	return string(ByteArrayToOutputBytes(arr, globalRowIndex, byteToStr, withDetails))
+	return string(ByteArrayToOutput(arr, globalRowIndex, byteToStr, withDetails))
 }
