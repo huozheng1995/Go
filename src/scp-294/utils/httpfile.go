@@ -10,8 +10,7 @@ import (
 	"sync"
 )
 
-func FileStreamToRawBytes(file multipart.File, bufferPool *sync.Pool) (exitChan chan struct{}, readChan chan []byte) {
-	exitChan = make(chan struct{})
+func FileToRawBytes(file multipart.File, bufferPool *sync.Pool, exitChan chan struct{}) (readChan chan []byte) {
 	readChan = make(chan []byte)
 	go func() {
 		defer close(readChan)
@@ -45,9 +44,8 @@ func FileStreamToRawBytes(file multipart.File, bufferPool *sync.Pool) (exitChan 
 	return
 }
 
-func FileStreamToPageBytes(file multipart.File, bufferPool *sync.Pool, funcStrToByte StrToByte) (exitChan chan struct{}, readChan chan []byte) {
-	exitChan = make(chan struct{})
-	readChan = make(chan []byte)
+func FileToPageBuffer[T any](file multipart.File, bufferPool *sync.Pool, funcStrToNum func(string) T, exitChan chan struct{}) (readChan chan []T) {
+	readChan = make(chan []T)
 	go func() {
 		defer close(readChan)
 		pageNum := 1
@@ -61,12 +59,11 @@ func FileStreamToPageBytes(file multipart.File, bufferPool *sync.Pool, funcStrTo
 				logger.Log("Exit channel is closed")
 				return
 			default:
-				pageBuffer := bufferPool.Get().([]byte)
-
-				page := CreateEmptyPage(pageNum, pageBuffer)
+				pageBuffer := bufferPool.Get().([]T)
+				page := CreateEmptyPage(pageNum, pageBuffer, funcStrToNum)
 				pageNum++
 				var err error
-				err, preBuffer, preOff, preLen, tempCell = FillPage(&page, preBuffer, preOff, preLen, tempCell, file, funcStrToByte)
+				err, preBuffer, preOff, preLen, tempCell = FillPage(&page, preBuffer, preOff, preLen, tempCell, file)
 				if err != nil {
 					if err != io.EOF {
 						logger.Log("Failed to read file stream, error: " + err.Error())
@@ -88,7 +85,7 @@ func FileStreamToPageBytes(file multipart.File, bufferPool *sync.Pool, funcStrTo
 	return
 }
 
-func ReadBytesAndSendBody(w http.ResponseWriter, readChan <-chan []byte, funcByteToStr ByteToStr, withDetails bool, bufferPool *sync.Pool) {
+func ReadBytesAndResponse(readChan <-chan []byte, funcByteToStr ByteToStr, withDetails bool, bufferPool *sync.Pool, w http.ResponseWriter) {
 	readSize := 0
 	writeSize := 0
 	globalRowIndex := 0
@@ -99,7 +96,7 @@ func ReadBytesAndSendBody(w http.ResponseWriter, readChan <-chan []byte, funcByt
 			logger.Log("Write stream done, total size: " + strconv.Itoa(writeSize) + "Byte")
 			return
 		}
-		rowsBytes := ByteArrayToRowBytes(buffer, &globalRowIndex, funcByteToStr, withDetails)
+		rowsBytes := ByteArrayToOutputBytes(buffer, &globalRowIndex, funcByteToStr, withDetails)
 
 		bufferPool.Put(buffer)
 		w.Write(rowsBytes)
@@ -109,49 +106,7 @@ func ReadBytesAndSendBody(w http.ResponseWriter, readChan <-chan []byte, funcByt
 	}
 }
 
-func FileStreamToInt64Array(file multipart.File, bufferPool *sync.Pool, funcStrToInt64 StrToInt64) (exitChan chan struct{}, readChan chan []int64) {
-	exitChan = make(chan struct{})
-	readChan = make(chan []int64)
-	go func() {
-		defer close(readChan)
-		pageNum := 1
-		preBuffer := make([]byte, 1024)
-		preOff := 0
-		preLen := 0
-		var tempCell strings.Builder
-		for {
-			select {
-			case <-exitChan:
-				logger.Log("Exit channel is closed")
-				return
-			default:
-				pageBuffer := bufferPool.Get().([]int64)
-				page := CreateEmptyInt64Page(pageNum, pageBuffer)
-				pageNum++
-				var err error
-				err, preBuffer, preOff, preLen, tempCell = FillInt64Page(&page, preBuffer, preOff, preLen, tempCell, file, funcStrToInt64)
-				if err != nil {
-					if err != io.EOF {
-						logger.Log("Failed to read file stream, error: " + err.Error())
-						bufferPool.Put(pageBuffer)
-					} else {
-						logger.Log("File stream read done")
-						if page.Index > 0 {
-							readChan <- page.Buffer[:page.Index]
-						} else {
-							bufferPool.Put(pageBuffer)
-						}
-					}
-					return
-				}
-				readChan <- page.Buffer[:page.Index]
-			}
-		}
-	}()
-	return
-}
-
-func ReadInt64ArrayAndSendBody(w http.ResponseWriter, readChan <-chan []int64, funcInt64ToStr Int64ToStr, bufferPool *sync.Pool) {
+func ReadInt64ArrayAndResponse(readChan <-chan []int64, funcInt64ToStr Int64ToStr, bufferPool *sync.Pool, w http.ResponseWriter) {
 	readSize := 0
 	writeSize := 0
 	for {

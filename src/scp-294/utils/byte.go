@@ -2,7 +2,6 @@ package utils
 
 import (
 	"bytes"
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -41,11 +40,11 @@ func (byteToStr ByteToHexStr) toString(val byte) string {
 		return "00"
 	}
 
-	var builder strings.Builder
-	builder.WriteByte(ByteHexMap[val>>4&0x0F])
-	builder.WriteByte(ByteHexMap[val&0x0F])
+	arr := make([]byte, 2)
+	arr[0] = ByteHexMap[val>>4&0x0F]
+	arr[1] = ByteHexMap[val&0x0F]
 
-	return builder.String()
+	return string(arr)
 }
 func (byteToStr ByteToHexStr) getWidth() int {
 	return 2
@@ -73,15 +72,15 @@ func (byteToStr ByteToInt8Str) getWidth() int {
 
 // to byte array
 
-func StringToByteArray(text string, funcStrToByte StrToByte) []byte {
-	result := make([]byte, 0, 65536)
+func StringToByteArray(str string, funcStrToByte StrToByte) []byte {
+	result := make([]byte, 0, len(str))
 	var val byte
 	var builder strings.Builder
-	for i := 0; i < len(text)+1; i++ {
-		if i == len(text) {
+	for i := 0; i < len(str)+1; i++ {
+		if i == len(str) {
 			val = 0
 		} else {
-			val = text[i]
+			val = str[i]
 		}
 		if (val >= '0' && val <= '9') || (val >= 'a' && val <= 'f') || (val >= 'A' && val <= 'F') || val == '-' {
 			builder.WriteByte(val)
@@ -101,7 +100,7 @@ func StringToByteArray(text string, funcStrToByte StrToByte) []byte {
 const printLen = 5
 const GlobalRowSize = 16
 
-func ByteArrayToRowBytes(arr []byte, globalRowIndex *int, byteToStr ByteToStr, withDetails bool) []byte {
+func ByteArrayToOutputBytes(arr []byte, globalRowIndex *int, byteToStr ByteToStr, withDetails bool) []byte {
 	rowSize := GlobalRowSize
 
 	totalLen := len(arr)
@@ -120,14 +119,19 @@ func ByteArrayToRowBytes(arr []byte, globalRowIndex *int, byteToStr ByteToStr, w
 			rowSize = lastRowCount
 		}
 		if withDetails {
-			buffer.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n",
-				Fill0(strconv.Itoa(*globalRowIndex), printLen-1),
-				Fill0(strconv.Itoa(globalByteIndex), printLen),
-				Fill0(strconv.Itoa(globalByteIndex+8), printLen),
-				ByteArrayToRow(byteToStr, arr, byteIndex, rowSize, withDetails),
-				ByteArrayToRowDetails(arr, byteIndex, rowSize)))
+			buffer.WriteString("Row")
+			AppendStringWith0(buffer, strconv.Itoa(*globalRowIndex), printLen-1)
+			buffer.WriteString("(")
+			AppendStringWith0(buffer, strconv.Itoa(globalByteIndex), printLen)
+			buffer.WriteString(", ")
+			AppendStringWith0(buffer, strconv.Itoa(globalByteIndex+8), printLen)
+			buffer.WriteString("): ")
+			buffer.Write(ByteArrayToRowBytes(byteToStr, arr, byteIndex, rowSize, withDetails))
+			buffer.WriteString("        ")
+			buffer.Write(ByteArrayToRowDetailsBytes(arr, byteIndex, rowSize))
+			buffer.WriteString("\n")
 		} else {
-			buffer.WriteString(ByteArrayToRow(byteToStr, arr, byteIndex, rowSize, withDetails))
+			buffer.Write(ByteArrayToRowBytes(byteToStr, arr, byteIndex, rowSize, withDetails))
 			buffer.WriteString("\n")
 		}
 		*globalRowIndex++
@@ -135,35 +139,6 @@ func ByteArrayToRowBytes(arr []byte, globalRowIndex *int, byteToStr ByteToStr, w
 	return buffer.Bytes()
 }
 
-func ByteArrayToRowString(arr []byte, globalRowIndex *int, byteToStr ByteToStr, withDetails bool) string {
-	rowSize := GlobalRowSize
-
-	totalLen := len(arr)
-	totalRow := totalLen / rowSize
-	lastRowCount := totalLen % rowSize
-	if lastRowCount > 0 {
-		totalRow++
-	}
-
-	var builder strings.Builder
-	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
-		globalByteIndex := *globalRowIndex * rowSize
-		byteIndex := rowIndex * rowSize
-		if rowIndex == totalRow-1 && lastRowCount > 0 {
-			rowSize = lastRowCount
-		}
-		if withDetails {
-			builder.WriteString(fmt.Sprintf("Row%s(%s, %s): %s        %s\n",
-				Fill0(strconv.Itoa(*globalRowIndex), printLen-1),
-				Fill0(strconv.Itoa(globalByteIndex), printLen),
-				Fill0(strconv.Itoa(globalByteIndex+8), printLen),
-				ByteArrayToRow(byteToStr, arr, byteIndex, rowSize, withDetails),
-				ByteArrayToRowDetails(arr, byteIndex, rowSize)))
-		} else {
-			builder.WriteString(ByteArrayToRow(byteToStr, arr, byteIndex, rowSize, withDetails))
-			builder.WriteString("\n")
-		}
-		*globalRowIndex++
-	}
-	return builder.String()
+func ByteArrayToOutputString(arr []byte, globalRowIndex *int, byteToStr ByteToStr, withDetails bool) string {
+	return string(ByteArrayToOutputBytes(arr, globalRowIndex, byteToStr, withDetails))
 }

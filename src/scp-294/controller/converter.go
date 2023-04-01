@@ -58,9 +58,9 @@ func convert(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			defer file.Close()
-			convertFile(w, file, InputFormat, OutputFormat)
+			convertFile(file, InputFormat, OutputFormat, w)
 		} else {
-			convertText(w, InputData, InputFormat, OutputFormat)
+			convertText(InputData, InputFormat, OutputFormat, w)
 		}
 
 	default:
@@ -68,7 +68,7 @@ func convert(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func convertText(w http.ResponseWriter, InputData string, InputFormat, OutputFormat common.NumType) {
+func convertText(InputData string, InputFormat, OutputFormat common.NumType, w http.ResponseWriter) {
 	var outputData string
 
 	funcStrToInt64 := selectFuncStrToInt64(InputFormat)
@@ -95,7 +95,7 @@ func convertText(w http.ResponseWriter, InputData string, InputFormat, OutputFor
 		}
 		byteArray := utils.StringToByteArray(InputData, funcStrToByte)
 		globalRowIndex := 0
-		outputData = utils.ByteArrayToRowString(byteArray, &globalRowIndex, funcByteToStr, withDetails)
+		outputData = utils.ByteArrayToOutputString(byteArray, &globalRowIndex, funcByteToStr, withDetails)
 		toResponse(w, outputData)
 		return
 	}
@@ -118,7 +118,7 @@ func toResponse(w http.ResponseWriter, outputData string) {
 	}
 }
 
-func convertFile(w http.ResponseWriter, file multipart.File, InputFormat, OutputFormat common.NumType) {
+func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, w http.ResponseWriter) {
 	funcStrToInt64 := selectFuncStrToInt64(InputFormat)
 	if funcStrToInt64 != nil {
 		funcInt64ToStr := selectFuncInt64ToStr(OutputFormat)
@@ -128,9 +128,10 @@ func convertFile(w http.ResponseWriter, file multipart.File, InputFormat, Output
 			return
 		}
 		logger.Log("Begin parse, buffer count: " + strconv.Itoa(int(int64BufferCount)))
-		exitChan, readChan := utils.FileStreamToInt64Array(file, int64BufferPool, funcStrToInt64)
+		exitChan := make(chan struct{})
 		defer close(exitChan)
-		utils.ReadInt64ArrayAndSendBody(w, readChan, funcInt64ToStr, int64BufferPool)
+		readChan := utils.FileToPageBuffer(file, int64BufferPool, funcStrToInt64, exitChan)
+		utils.ReadInt64ArrayAndResponse(readChan, funcInt64ToStr, int64BufferPool, w)
 		logger.Log("End parse, buffer count: " + strconv.Itoa(int(int64BufferCount)))
 		return
 	}
@@ -144,9 +145,10 @@ func convertFile(w http.ResponseWriter, file multipart.File, InputFormat, Output
 			return
 		}
 		logger.Log("Begin parse, buffer count: " + strconv.Itoa(int(byteBufferCount)))
-		exitChan, readChan := utils.FileStreamToPageBytes(file, byteBufferPool, funcStrToByte)
+		exitChan := make(chan struct{})
 		defer close(exitChan)
-		utils.ReadBytesAndSendBody(w, readChan, funcByteToStr, withDetails, byteBufferPool)
+		readChan := utils.FileToPageBuffer(file, byteBufferPool, funcStrToByte, exitChan)
+		utils.ReadBytesAndResponse(readChan, funcByteToStr, withDetails, byteBufferPool, w)
 		logger.Log("End parse, buffer count: " + strconv.Itoa(int(byteBufferCount)))
 		return
 	}
@@ -159,9 +161,10 @@ func convertFile(w http.ResponseWriter, file multipart.File, InputFormat, Output
 			return
 		}
 		logger.Log("Begin parse, buffer count: " + strconv.Itoa(int(byteBufferCount)))
-		exitChan, readChan := utils.FileStreamToRawBytes(file, byteBufferPool)
+		exitChan := make(chan struct{})
 		defer close(exitChan)
-		utils.ReadBytesAndSendBody(w, readChan, funcByteToStr, withDetails, byteBufferPool)
+		readChan := utils.FileToRawBytes(file, byteBufferPool, exitChan)
+		utils.ReadBytesAndResponse(readChan, funcByteToStr, withDetails, byteBufferPool, w)
 		logger.Log("End parse, buffer count: " + strconv.Itoa(int(byteBufferCount)))
 		return
 	}
