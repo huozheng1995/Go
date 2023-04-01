@@ -175,7 +175,8 @@ class MyTypedArray {
             charset = "utf-8";
         }
         let decoder = new TextDecoder(charset, {ignoreBOM: true})
-        return "Preview the first 65536 bytes:\n" + decoder.decode(new this.typedArrayClass(this.arrayBuffer, 0, 65536));
+        let maxLen = this.off > 65536 ? 65536 : this.off;
+        return "Preview the first 65536 bytes:\n" + decoder.decode(new this.typedArrayClass(this.arrayBuffer, 0, maxLen));
     }
 
     toString(charset) {
