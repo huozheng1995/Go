@@ -35,7 +35,7 @@ func (h *Human) GetInfo() Human {
 }
 
 func (s *Student) SetName(name string) {
-	fmt.Print("student")
+	fmt.Print("student\n")
 	/*about here we can use two wanys to change the value ,so ,how different there ?????*/
 	s.name = name
 	//s.Human.name = name

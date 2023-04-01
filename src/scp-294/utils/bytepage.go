@@ -22,14 +22,14 @@ func CreateEmptyPage(pageNum int, buffer []byte) Page {
 }
 
 func FillPage(page *Page, preBuffer []byte, preOff, preLen int, tempCell strings.Builder, file multipart.File,
-	funcStrToDecByte StrToByte) (err error, newPreBuffer []byte, newPreOff, newPreLen int, newTempCell strings.Builder) {
+	funcStrToByte StrToByte) (err error, newPreBuffer []byte, newPreOff, newPreLen int, newTempCell strings.Builder) {
 	for {
 		if preLen == 0 {
 			preOff = 0
 			preLen, err = file.Read(preBuffer)
 			if err != nil {
 				if tempCell.Len() > 0 {
-					page.Buffer[page.Index] = funcStrToDecByte(tempCell.String())
+					page.Buffer[page.Index] = funcStrToByte(tempCell.String())
 					page.Index++
 					tempCell.Reset()
 				}
@@ -38,18 +38,18 @@ func FillPage(page *Page, preBuffer []byte, preOff, preLen int, tempCell strings
 		}
 
 		var val byte
-		for i := preOff; i < preOff+preLen; i++ {
-			val = preBuffer[i]
+		for i := 0; i < preLen; i++ {
+			val = preBuffer[preOff+i]
 			if (val >= '0' && val <= '9') || (val >= 'a' && val <= 'f') || (val >= 'A' && val <= 'F') || val == '-' {
 				tempCell.WriteByte(val)
 			} else {
 				if tempCell.Len() > 0 {
-					page.Buffer[page.Index] = funcStrToDecByte(tempCell.String())
+					page.Buffer[page.Index] = funcStrToByte(tempCell.String())
 					page.Index++
 					tempCell.Reset()
 					if page.Index == page.PageSize {
 						i++
-						return nil, preBuffer, i, preOff + preLen - i, tempCell
+						return nil, preBuffer, preOff + i, preLen - i, tempCell
 					}
 				}
 			}

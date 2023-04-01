@@ -1,0 +1,58 @@
+2023/04/01 10:36:54 Begin parse, buffer count: 3
+2023/04/01 10:36:54 File stream read done
+2023/04/01 10:36:54 Read channel done, total size: 1694Byte
+2023/04/01 10:36:54 Write stream done, total size: 10759Byte
+2023/04/01 10:36:54 End parse, buffer count: 3
+2023/04/01 10:38:19 Begin parse, buffer count: 3
+2023/04/01 10:38:19 File stream read done
+2023/04/01 10:38:19 Read channel done, total size: 554Byte
+2023/04/01 10:38:19 Write stream done, total size: 3912Byte
+2023/04/01 10:38:19 End parse, buffer count: 3
+2023/04/01 10:39:11 Begin parse, buffer count: 3
+2023/04/01 10:39:11 File stream read done
+2023/04/01 10:39:11 Read channel done, total size: 554Byte
+2023/04/01 10:39:11 Write stream done, total size: 2805Byte
+2023/04/01 10:39:11 End parse, buffer count: 3
+2023/04/01 10:43:31 Begin parse, buffer count: 3
+2023/04/01 10:43:31 File stream read done
+2023/04/01 10:43:31 Read channel done, total size: 554Byte
+2023/04/01 10:43:31 Write stream done, total size: 2805Byte
+2023/04/01 10:43:31 End parse, buffer count: 3
+2023/04/01 10:43:35 Begin parse, buffer count: 3
+2023/04/01 10:43:35 File stream read done
+2023/04/01 10:43:35 Read channel done, total size: 554Byte
+2023/04/01 10:43:35 Write stream done, total size: 2251Byte
+2023/04/01 10:43:35 End parse, buffer count: 3
+2023/04/01 10:46:40 Begin parse, buffer count: 3
+2023/04/01 10:46:40 File stream read done
+2023/04/01 10:46:40 Read channel done, total size: 364Byte
+2023/04/01 10:46:40 Write stream done, total size: 1479Byte
+2023/04/01 10:46:40 End parse, buffer count: 3
+2023/04/01 10:46:48 Cannot convert 'Hex numbers' to 'Hex Byte numbers'
+2023/04/01 10:46:50 Begin parse, buffer count: 0
+2023/04/01 10:46:50 File stream read done
+2023/04/01 10:46:54 Read channel done, total size: 364Byte
+2023/04/01 10:46:54 Write stream done, total size: 6552Byte
+2023/04/01 10:46:54 End parse, buffer count: 1
+2023/04/01 10:58:41 Begin parse, buffer count: 1
+2023/04/01 10:58:41 File stream read done
+2023/04/01 10:58:41 Read channel done, total size: 364Byte
+2023/04/01 10:58:41 Write stream done, total size: 2120Byte
+2023/04/01 10:58:41 End parse, buffer count: 2
+2023/04/01 10:58:49 Begin parse, buffer count: 2
+2023/04/01 10:58:49 File stream read done
+2023/04/01 10:58:49 Read channel done, total size: 364Byte
+2023/04/01 10:58:49 Write stream done, total size: 24024Byte
+2023/04/01 10:58:49 End parse, buffer count: 3
+2023/04/01 11:03:34 Database Connected!
+2023/04/01 11:03:34 Server started!
+2023/04/01 11:03:35 Begin parse, buffer count: 0
+2023/04/01 11:03:35 File stream read done
+2023/04/01 11:03:35 Read channel done, total size: 364Byte
+2023/04/01 11:03:35 Write stream done, total size: 4760Byte
+2023/04/01 11:03:35 End parse, buffer count: 1
+2023/04/01 11:03:43 Begin parse, buffer count: 1
+2023/04/01 11:03:43 File stream read done
+2023/04/01 11:03:43 Read channel done, total size: 364Byte
+2023/04/01 11:03:43 Write stream done, total size: 1736Byte
+2023/04/01 11:03:43 End parse, buffer count: 2

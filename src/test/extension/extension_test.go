@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-type Animalor interface {
+type Animaler interface {
 	eat()
 }
 
@@ -41,7 +41,7 @@ func (dog *Dog) play() {
 	fmt.Println("我叫" + dog.name + "我喜欢玩" + dog.plays)
 }
 
-func testInterface(animaler Animalor) {
+func testInterface(animaler Animaler) {
 	animaler.eat()
 }
 
