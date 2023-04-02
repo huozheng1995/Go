@@ -15,7 +15,7 @@ func main() {
 		logger.Log(err.Error())
 		return
 	}
-	common.InitDatabases(true)
+	common.InitDatabases(false)
 
 	server := http.Server{
 		Addr: common.HttpAddr,

@@ -57,7 +57,9 @@ func convert(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			defer file.Close()
+			if file != nil {
+				defer file.Close()
+			}
 			convertFile(file, InputFormat, OutputFormat, w)
 		} else {
 			convertText(InputData, InputFormat, OutputFormat, w)
