@@ -120,11 +120,11 @@ func ByteArrayToOutput(arr []byte, globalRowIndex *int, byteToStr ByteToStr, wit
 		}
 		if withDetails {
 			buffer.WriteString("Row")
-			AppendStringWith0(buffer, strconv.Itoa(*globalRowIndex), printLen-1)
+			WriteStringWith0(buffer, strconv.Itoa(*globalRowIndex), printLen-1)
 			buffer.WriteString("(")
-			AppendStringWith0(buffer, strconv.Itoa(globalByteIndex), printLen)
+			WriteStringWith0(buffer, strconv.Itoa(globalByteIndex), printLen)
 			buffer.WriteString(", ")
-			AppendStringWith0(buffer, strconv.Itoa(globalByteIndex+8), printLen)
+			WriteStringWith0(buffer, strconv.Itoa(globalByteIndex+8), printLen)
 			buffer.WriteString("): ")
 			buffer.Write(ByteArrayToRowBytes(byteToStr, arr, byteIndex, rowSize, withDetails))
 			buffer.WriteString("        ")

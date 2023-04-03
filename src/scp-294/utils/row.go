@@ -10,7 +10,7 @@ func ByteArrayToRowBytes(byteToStr ByteToStr, arr []byte, off int, len2 int, wit
 	count := 0
 	for i := 0; i < len2; i++ {
 		count++
-		AppendStringWithSpace(buffer, byteToStr.toString(arr[off+i]), byteToStr.getWidth())
+		WriteStringWithSpace(buffer, byteToStr.toString(arr[off+i]), byteToStr.getWidth())
 		if withDetails {
 			if count&0x0F == 0 {
 				buffer.WriteString(", ")
@@ -41,7 +41,7 @@ func ByteArrayToRowDetailsBytes(arr []byte, off int, len int) []byte {
 	return buffer.Bytes()
 }
 
-func AppendStringWithChar(buffer *bytes.Buffer, str string, expectedLen int, char rune) {
+func WriteStringWithChar(buffer *bytes.Buffer, str string, expectedLen int, char rune) {
 	diff := expectedLen - len(str)
 	if diff > 0 {
 		for i := 0; i < diff; i++ {
@@ -52,10 +52,10 @@ func AppendStringWithChar(buffer *bytes.Buffer, str string, expectedLen int, cha
 	buffer.WriteString(str)
 }
 
-func AppendStringWithSpace(buffer *bytes.Buffer, str string, expectedLen int) {
-	AppendStringWithChar(buffer, str, expectedLen, ' ')
+func WriteStringWithSpace(buffer *bytes.Buffer, str string, expectedLen int) {
+	WriteStringWithChar(buffer, str, expectedLen, ' ')
 }
 
-func AppendStringWith0(buffer *bytes.Buffer, str string, expectedLen int) {
-	AppendStringWithChar(buffer, str, expectedLen, '0')
+func WriteStringWith0(buffer *bytes.Buffer, str string, expectedLen int) {
+	WriteStringWithChar(buffer, str, expectedLen, '0')
 }
