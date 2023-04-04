@@ -48,7 +48,6 @@ func (page *Page[T]) GetBuffer() []T {
 func (page *Page[T]) AppendData(tempBuffer *TempBuffer, file multipart.File) (err error) {
 	for {
 		if tempBuffer.len == 0 {
-			tempBuffer.off = 0
 			tempBuffer.len, err = file.Read(tempBuffer.data)
 			if err != nil {
 				if tempBuffer.cell.Len() > 0 {
@@ -60,8 +59,9 @@ func (page *Page[T]) AppendData(tempBuffer *TempBuffer, file multipart.File) (er
 		}
 
 		var val byte
-		for i := 0; i < tempBuffer.len; i++ {
-			val = tempBuffer.data[tempBuffer.off+i]
+		endOff := tempBuffer.off + tempBuffer.len
+		for tempBuffer.off < endOff {
+			val = tempBuffer.data[tempBuffer.off]
 			if (val >= '0' && val <= '9') || (val >= 'a' && val <= 'f') || (val >= 'A' && val <= 'F') || val == '-' {
 				tempBuffer.cell.WriteByte(val)
 			} else {
@@ -69,12 +69,16 @@ func (page *Page[T]) AppendData(tempBuffer *TempBuffer, file multipart.File) (er
 					page.AppendValue(tempBuffer.cell.String())
 					tempBuffer.cell.Reset()
 					if page.IsFull() {
-						i++
+						tempBuffer.off++
 						return nil
 					}
 				}
 			}
+
+			tempBuffer.off++
 		}
+
+		tempBuffer.off = 0
 		tempBuffer.len = 0
 	}
 }
