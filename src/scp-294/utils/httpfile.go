@@ -42,11 +42,6 @@ func FileToRawBytes(file multipart.File, bufferPool *sync.Pool, exitChan chan st
 					}
 				}
 
-				//If you're just reading data from the buffer in readStreamAndSendBody without modifying it,
-				//you can use readChan <- buffer[:n] without any issues.
-				//There's no need to use append([]byte(nil), buffer[:n]...) in this case.
-				//In fact, using readChan <- buffer[:n] is more efficient because it avoids creating a new slice,
-				//which would incur extra memory usage and GC overhead.
 				readChan <- page
 			}
 		}
@@ -82,6 +77,7 @@ func FileToPageBuffer[T any](file multipart.File, bufferPool *sync.Pool, funcStr
 						logger.Log("File stream read done")
 					}
 				}
+
 				readChan <- page
 			}
 		}
