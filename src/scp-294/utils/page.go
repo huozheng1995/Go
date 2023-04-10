@@ -41,10 +41,6 @@ func (page *Page[T]) IsFull() bool {
 	return page.index >= page.pageSize
 }
 
-func (page *Page[T]) GetBuffer() []T {
-	return page.buffer[:page.index]
-}
-
 func (page *Page[T]) AppendData(tempBuffer *TempBuffer, file multipart.File) (err error) {
 	for {
 		if tempBuffer.len == 0 {
@@ -62,6 +58,7 @@ func (page *Page[T]) AppendData(tempBuffer *TempBuffer, file multipart.File) (er
 		endOff := tempBuffer.off + tempBuffer.len
 		for tempBuffer.off < endOff {
 			val = tempBuffer.data[tempBuffer.off]
+			tempBuffer.off++
 			if (val >= '0' && val <= '9') || (val >= 'a' && val <= 'f') || (val >= 'A' && val <= 'F') || val == '-' {
 				tempBuffer.cell.WriteByte(val)
 			} else {
@@ -69,13 +66,11 @@ func (page *Page[T]) AppendData(tempBuffer *TempBuffer, file multipart.File) (er
 					page.AppendValue(tempBuffer.cell.String())
 					tempBuffer.cell.Reset()
 					if page.IsFull() {
-						tempBuffer.off++
+						tempBuffer.len = endOff - tempBuffer.off
 						return nil
 					}
 				}
 			}
-
-			tempBuffer.off++
 		}
 
 		tempBuffer.off = 0
@@ -87,7 +82,7 @@ func CreateEmptyPage[T any](pageNum int, buffer []T, funcStrToNum func(string) T
 	return Page[T]{
 		pageNum:      pageNum,
 		buffer:       buffer,
-		pageSize:     len(buffer),
+		pageSize:     cap(buffer),
 		index:        0,
 		funcStrToNum: funcStrToNum,
 	}
