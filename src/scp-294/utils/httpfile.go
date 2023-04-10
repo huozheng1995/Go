@@ -9,8 +9,8 @@ import (
 	"sync"
 )
 
-func FileToRawBytes(file multipart.File, bufferPool *sync.Pool, exitChan chan struct{}) (readChan chan Page[byte]) {
-	readChan = make(chan Page[byte])
+func FileToRawBytes(file multipart.File, bufferPool *sync.Pool, exitChan chan struct{}) (readChan chan *Page[byte]) {
+	readChan = make(chan *Page[byte])
 	go func() {
 		defer close(readChan)
 		pageNum := 1
@@ -21,8 +21,8 @@ func FileToRawBytes(file multipart.File, bufferPool *sync.Pool, exitChan chan st
 				return
 			default:
 				pageBuffer := bufferPool.Get().([]byte)
-				var page Page[byte]
-				page = Page[byte]{
+				var page *Page[byte]
+				page = &Page[byte]{
 					pageNum:  pageNum,
 					buffer:   pageBuffer,
 					pageSize: cap(pageBuffer),
@@ -49,8 +49,8 @@ func FileToRawBytes(file multipart.File, bufferPool *sync.Pool, exitChan chan st
 	return
 }
 
-func FileToPageBuffer[T any](file multipart.File, bufferPool *sync.Pool, funcStrToNum func(string) T, exitChan chan struct{}) (readChan chan Page[T]) {
-	readChan = make(chan Page[T])
+func FileToPageBuffer[T any](file multipart.File, bufferPool *sync.Pool, funcStrToNum func(string) T, exitChan chan struct{}) (readChan chan *Page[T]) {
+	readChan = make(chan *Page[T])
 	go func() {
 		defer close(readChan)
 		pageNum := 1
@@ -62,7 +62,7 @@ func FileToPageBuffer[T any](file multipart.File, bufferPool *sync.Pool, funcStr
 				return
 			default:
 				pageBuffer := bufferPool.Get().([]T)
-				var page Page[T]
+				var page *Page[T]
 				page = CreateEmptyPage(pageNum, pageBuffer, funcStrToNum)
 				pageNum++
 
@@ -85,18 +85,18 @@ func FileToPageBuffer[T any](file multipart.File, bufferPool *sync.Pool, funcStr
 	return
 }
 
-func ReadBytesAndResponse(readChan <-chan Page[byte], funcByteToStr ByteToStr, withDetails bool, bufferPool *sync.Pool, w http.ResponseWriter) {
+func ReadBytesAndResponse(readChan <-chan *Page[byte], funcByteToStr ByteToStr, withDetails bool, bufferPool *sync.Pool, w http.ResponseWriter) {
 	readSize := 0
 	writeSize := 0
 	globalRowIndex := 0
 	for {
-		var page Page[byte]
+		var page *Page[byte]
 		var buffer []byte
 		page, ok := <-readChan
 		buffer = page.buffer
 		if !ok || page.index <= 0 {
-			logger.Log("Read channel done, total size: " + strconv.Itoa(readSize) + "Byte")
-			logger.Log("Write stream done, total size: " + strconv.Itoa(writeSize) + "Byte")
+			logger.Log("Read channel done, total size: " + strconv.Itoa(readSize) + "Byte(" + strconv.Itoa(readSize>>10) + "KB)")
+			logger.Log("Write stream done, total size: " + strconv.Itoa(writeSize) + "Byte(" + strconv.Itoa(writeSize>>10) + "KB)")
 			return
 		}
 		rowsBytes := ByteArrayToOutput(buffer[0:page.index], &globalRowIndex, funcByteToStr, withDetails)
@@ -109,11 +109,11 @@ func ReadBytesAndResponse(readChan <-chan Page[byte], funcByteToStr ByteToStr, w
 	}
 }
 
-func ReadInt64ArrayAndResponse(readChan <-chan Page[int64], funcInt64ToStr Int64ToStr, bufferPool *sync.Pool, w http.ResponseWriter) {
+func ReadInt64ArrayAndResponse(readChan <-chan *Page[int64], funcInt64ToStr Int64ToStr, bufferPool *sync.Pool, w http.ResponseWriter) {
 	readSize := 0
 	writeSize := 0
 	for {
-		var page Page[int64]
+		var page *Page[int64]
 		var buffer []int64
 		page, ok := <-readChan
 		buffer = page.buffer

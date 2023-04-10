@@ -78,8 +78,8 @@ func (page *Page[T]) AppendData(tempBuffer *TempBuffer, file multipart.File) (er
 	}
 }
 
-func CreateEmptyPage[T any](pageNum int, buffer []T, funcStrToNum func(string) T) Page[T] {
-	return Page[T]{
+func CreateEmptyPage[T any](pageNum int, buffer []T, funcStrToNum func(string) T) *Page[T] {
+	return &Page[T]{
 		pageNum:      pageNum,
 		buffer:       buffer,
 		pageSize:     cap(buffer),
