@@ -24,7 +24,7 @@ func FileToRawBytes(file multipart.File, bufferPool *sync.Pool, exitChan chan st
 				var page *Page[byte]
 				page = &Page[byte]{
 					pageNum:  pageNum,
-					buffer:   pageBuffer,
+					buffer:   &pageBuffer,
 					pageSize: cap(pageBuffer),
 					index:    0,
 				}
@@ -35,11 +35,11 @@ func FileToRawBytes(file multipart.File, bufferPool *sync.Pool, exitChan chan st
 				if err != nil {
 					if err != io.EOF {
 						logger.Log("Failed to read file stream, error: " + err.Error())
-						bufferPool.Put(pageBuffer)
-						return
 					} else {
 						logger.Log("File stream read done")
 					}
+					bufferPool.Put(pageBuffer)
+					return
 				}
 
 				readChan <- page
@@ -63,7 +63,7 @@ func FileToPageBuffer[T any](file multipart.File, bufferPool *sync.Pool, funcStr
 			default:
 				pageBuffer := bufferPool.Get().([]T)
 				var page *Page[T]
-				page = CreateEmptyPage(pageNum, pageBuffer, funcStrToNum)
+				page = CreateEmptyPage(pageNum, &pageBuffer, funcStrToNum)
 				pageNum++
 
 				var err error
@@ -71,11 +71,11 @@ func FileToPageBuffer[T any](file multipart.File, bufferPool *sync.Pool, funcStr
 				if err != nil {
 					if err != io.EOF {
 						logger.Log("Failed to read file stream, error: " + err.Error())
-						bufferPool.Put(pageBuffer)
-						return
 					} else {
 						logger.Log("File stream read done")
 					}
+					bufferPool.Put(pageBuffer)
+					return
 				}
 
 				readChan <- page
@@ -93,12 +93,12 @@ func ReadBytesAndResponse(readChan <-chan *Page[byte], funcByteToStr ByteToStr, 
 		var page *Page[byte]
 		var buffer []byte
 		page, ok := <-readChan
-		buffer = page.buffer
 		if !ok || page.index <= 0 {
 			logger.Log("Read channel done, total size: " + strconv.Itoa(readSize) + "Byte(" + strconv.Itoa(readSize>>10) + "KB)")
 			logger.Log("Write stream done, total size: " + strconv.Itoa(writeSize) + "Byte(" + strconv.Itoa(writeSize>>10) + "KB)")
 			return
 		}
+		buffer = *page.buffer
 		rowsBytes := ByteArrayToOutput(buffer[0:page.index], &globalRowIndex, funcByteToStr, withDetails)
 
 		bufferPool.Put(buffer)
@@ -116,12 +116,12 @@ func ReadInt64ArrayAndResponse(readChan <-chan *Page[int64], funcInt64ToStr Int6
 		var page *Page[int64]
 		var buffer []int64
 		page, ok := <-readChan
-		buffer = page.buffer
 		if !ok || len(buffer) <= 0 {
 			logger.Log("Read channel done, total size: " + strconv.Itoa(readSize) + "Byte")
 			logger.Log("Write stream done, total size: " + strconv.Itoa(writeSize) + "Byte")
 			return
 		}
+		buffer = *page.buffer
 		rowsBytes := Int64ArrayToOutput(buffer[0:page.index], funcInt64ToStr)
 
 		bufferPool.Put(buffer)

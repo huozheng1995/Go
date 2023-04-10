@@ -22,14 +22,14 @@ func CreateTempBuffer() TempBuffer {
 
 type Page[T any] struct {
 	pageNum      int
-	buffer       []T
+	buffer       *[]T
 	pageSize     int
 	index        int
 	funcStrToNum func(string) T
 }
 
 func (page *Page[T]) AppendValue(str string) {
-	page.buffer[page.index] = page.funcStrToNum(str)
+	(*page.buffer)[page.index] = page.funcStrToNum(str)
 	page.index++
 }
 
@@ -78,11 +78,11 @@ func (page *Page[T]) AppendData(tempBuffer *TempBuffer, file multipart.File) (er
 	}
 }
 
-func CreateEmptyPage[T any](pageNum int, buffer []T, funcStrToNum func(string) T) *Page[T] {
+func CreateEmptyPage[T any](pageNum int, buffer *[]T, funcStrToNum func(string) T) *Page[T] {
 	return &Page[T]{
 		pageNum:      pageNum,
 		buffer:       buffer,
-		pageSize:     cap(buffer),
+		pageSize:     cap(*buffer),
 		index:        0,
 		funcStrToNum: funcStrToNum,
 	}
