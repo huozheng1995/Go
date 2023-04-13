@@ -88,7 +88,7 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 	}
 
 	funcStrToByte := selectFuncStrToByte(InputFormat)
-	if funcStrToInt64 != nil {
+	if funcStrToByte != nil {
 		funcByteToStr, withDetails := selectFuncByteToStr(OutputFormat)
 		if funcByteToStr == nil {
 			w.WriteHeader(http.StatusInternalServerError)
