@@ -1,69 +1,48 @@
 package myutil
 
-// Exists 空结构体
-var Exists = struct{}{}
-
-// Set is the main interface
-type Set struct {
-	// struct为结构体类型的变量
-	m map[interface{}]struct{}
-}
+type Set map[interface{}]bool
 
 func NewSet(items ...interface{}) *Set {
-	// 获取Set的地址
-	s := &Set{}
-	// 声明map类型的数据结构
-	s.m = make(map[interface{}]struct{})
-	s.Add(items...)
-	return s
-}
-
-func (s *Set) Add(items ...interface{}) error {
+	set := make(Set)
 	for _, item := range items {
-		s.m[item] = Exists
+		set.Add(item)
 	}
-	return nil
+	return &set
 }
 
-func (s *Set) Contains(item interface{}) bool {
-	_, ok := s.m[item]
-	return ok
+// Add adds an element to the set
+func (s Set) Add(item interface{}) {
+	s[item] = true
 }
 
-func (s *Set) Size() int {
-	return len(s.m)
+// Remove removes an element from the set
+func (s Set) Remove(item interface{}) {
+	delete(s, item)
 }
 
-func (s *Set) Clear() {
-	s.m = make(map[interface{}]struct{})
+// Contains checks if an element is present in the set
+func (s Set) Contains(item interface{}) bool {
+	_, exists := s[item]
+	return exists
 }
 
-func (s *Set) Equal(other *Set) bool {
-	// 如果两者Size不相等，就不用比较了
-	if s.Size() != other.Size() {
-		return false
-	}
-
-	// 迭代查询遍历
-	for key := range s.m {
-		// 只要有一个不存在就返回false
-		if !other.Contains(key) {
-			return false
-		}
-	}
-	return true
+// Size returns the number of elements in the set
+func (s Set) Size() int {
+	return len(s)
 }
 
-func (s *Set) IsSubset(other *Set) bool {
-	// s的size长于other，不用说了
-	if s.Size() > other.Size() {
-		return false
+// Clear removes all elements from the set
+func (s Set) Clear() {
+	for k := range s {
+		delete(s, k)
 	}
-	// 迭代遍历
-	for key := range s.m {
-		if !other.Contains(key) {
-			return false
-		}
+}
+
+// Elements returns a slice of all elements in the set
+func (s Set) Elements() []interface{} {
+	elements := make([]interface{}, 0, len(s))
+	for k := range s {
+		elements = append(elements, k)
 	}
-	return true
+	return elements
 }
