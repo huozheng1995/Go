@@ -1,16 +1,15 @@
 package main
 
 import (
-	"bufio"
 	"net"
 	"strconv"
 	"time"
 )
 
 type Sender struct {
-	IP         string
-	Port       int
-	Connection net.Conn
+	IP   string
+	Port int
+	Conn net.Conn
 }
 
 func NewSender(ip string, port int) *Sender {
@@ -33,27 +32,27 @@ func (sender *Sender) Open() {
 	tcpConn.SetKeepAlive(true)
 	tcpConn.SetKeepAlivePeriod(60 * time.Second)
 
-	sender.Connection = conn
+	sender.Conn = conn
 }
 
 func (sender *Sender) Close() {
-	sender.Connection.Close()
+	sender.Conn.Close()
 }
 
-func (sender *Sender) Send(request []byte) (response []byte) {
+func (sender *Sender) Send(request []byte) (response []byte, err error) {
 	// Send a TCP packet to the server
-	_, err := sender.Connection.Write(request)
+	_, err = sender.Conn.Write(request)
 	if err != nil {
-		LogError("Error sending request to real server:" + err.Error())
-		panic(err)
+		LogError("Error sending request to real server: " + err.Error())
+		return nil, err
 	}
 
-	reader := bufio.NewReader(sender.Connection)
-	response, err = reader.ReadBytes('\n')
+	buffer := make([]byte, 4096)
+	n, err := sender.Conn.Read(buffer)
 	if err != nil {
-		LogError("Error receiving data:" + err.Error())
-		panic(err)
+		LogError("Error receiving response: " + err.Error())
+		return nil, err
 	}
-
-	return response
+	response = buffer[:n]
+	return response, nil
 }
