@@ -75,6 +75,7 @@ func (m *Mocker) handleConnection(conn net.Conn) {
 		} else {
 			Log("Response isn't found in Mocker, try to send request to real server")
 			response = m.Sender.Send(request)
+			Log("Got the response!")
 			for _, item := range postElements {
 				rr := item.(*ResLenResData)
 				if rr.ResLen == len(response) {
