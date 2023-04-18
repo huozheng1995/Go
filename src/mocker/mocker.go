@@ -9,9 +9,10 @@ import (
 )
 
 type Mocker struct {
-	MockSet  *myutil.Set
-	Listener net.Listener
-	Sender   *Sender
+	PreSendSet  *myutil.Set
+	PostSendSet *myutil.Set
+	Listener    net.Listener
+	Sender      *Sender
 }
 
 func NewMocker(ip string, port int) *Mocker {
@@ -27,9 +28,10 @@ func NewMocker(ip string, port int) *Mocker {
 	Log("Listener is started!")
 
 	return &Mocker{
-		MockSet:  myutil.NewSet(),
-		Listener: listener,
-		Sender:   sender,
+		PreSendSet:  myutil.NewSet(),
+		PostSendSet: myutil.NewSet(),
+		Listener:    listener,
+		Sender:      sender,
 	}
 }
 
@@ -49,7 +51,8 @@ func (m *Mocker) handleConnection(conn net.Conn) {
 	defer conn.Close()
 
 	reader := bufio.NewReader(conn)
-	elements := m.MockSet.Elements()
+	preElements := m.PreSendSet.Elements()
+	postElements := m.PostSendSet.Elements()
 	for {
 		request, err := reader.ReadBytes('\n')
 		if err != nil {
@@ -58,21 +61,30 @@ func (m *Mocker) handleConnection(conn net.Conn) {
 		}
 
 		var response []byte
-		for _, item := range elements {
-			rr := item.(*ReqRes)
-			if bytes.Equal(*rr.Request, request) {
-				response = *rr.Response
+		for _, item := range preElements {
+			rr := item.(*ReqDataResData)
+			if bytes.Equal(*rr.ReqData, request) {
+				Log("Response is found in PreSendSet!")
+				response = *rr.ResData
 				break
 			}
 		}
 
 		if response != nil {
-			Log("Response is found!")
 			conn.Write(response)
 		} else {
 			Log("Response isn't found in Mocker, try to send request to real server")
-			realResponse := m.Sender.Send(request)
-			conn.Write(realResponse)
+			response = m.Sender.Send(request)
+			for _, item := range postElements {
+				rr := item.(*ResLenResData)
+				if rr.ResLen == len(response) {
+					Log("Response is matched PostSendSet!")
+					response = *rr.ResData
+					break
+				}
+			}
+
+			conn.Write(response)
 		}
 	}
 }

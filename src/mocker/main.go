@@ -14,8 +14,9 @@ func main() {
 
 	m := NewMocker(IP, Port)
 
-	AddReqRes(m, []byte("abc\n"), []byte("def\n"))
-	AddReqResFromFile(m, "C:\\Users\\33907\\Downloads\\req.txt", "C:\\Users\\33907\\Downloads\\res.txt")
+	//AddReqDataResData(m, []byte("abc\n"), []byte("def\n"))
+	//AddReqDataResData(m, HexFileToBytes("C:\\Users\\33907\\Downloads\\req.txt"), HexFileToBytes("C:\\Users\\33907\\Downloads\\res.txt"))
+	AddResLenResData(m, 356, HexFileToBytes("C:\\Users\\33907\\Downloads\\res.txt"))
 
 	Log("Mocker started on port " + strconv.Itoa(Port))
 	m.Start()

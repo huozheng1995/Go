@@ -6,38 +6,37 @@ import (
 	"strings"
 )
 
-type ReqRes struct {
-	Request  *[]byte
-	Response *[]byte
+type ReqDataResData struct {
+	ReqData *[]byte
+	ResData *[]byte
 }
 
-func AddReqRes(m *Mocker, request []byte, response []byte) {
-	m.MockSet.Add(&ReqRes{
-		Request:  &request,
-		Response: &response,
+type ResLenResData struct {
+	ResLen  int
+	ResData *[]byte
+}
+
+func AddReqDataResData(m *Mocker, reqData []byte, resData []byte) {
+	m.PreSendSet.Add(&ReqDataResData{
+		ReqData: &reqData,
+		ResData: &resData,
 	})
 }
 
-func AddReqResFromFile(m *Mocker, reqFileUri string, resFileUri string) {
-	// Read request file
-	reqData, err := ioutil.ReadFile(reqFileUri)
-	if err != nil {
-		Log("Failed to read request file, error: " + err.Error())
-		panic(err)
-	}
-
-	// Read response file
-	resData, err := ioutil.ReadFile(resFileUri)
-	if err != nil {
-		Log("Failed to read response file" + err.Error())
-		panic(err)
-	}
-
-	// Add request-response to mock set
-	AddReqRes(m, FileBytesToByteArray(reqData), FileBytesToByteArray(resData))
+func AddResLenResData(m *Mocker, resLen int, resData []byte) {
+	m.PostSendSet.Add(&ResLenResData{
+		ResLen:  resLen,
+		ResData: &resData,
+	})
 }
 
-func FileBytesToByteArray(fileBytes []byte) []byte {
+func HexFileToBytes(fileUri string) []byte {
+	fileBytes, err := ioutil.ReadFile(fileUri)
+	if err != nil {
+		Log("Failed to read file: " + fileUri + ", error: " + err.Error())
+		panic(err)
+	}
+
 	result := make([]byte, 0, len(fileBytes)>>1)
 	var val byte
 	var builder strings.Builder
