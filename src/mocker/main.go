@@ -1,7 +1,7 @@
 package main
 
 const (
-	IP   = "172.16.85.140"
+	IP   = "172.16.85.138"
 	Port = 3306
 )
 

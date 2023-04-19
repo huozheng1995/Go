@@ -5,13 +5,15 @@ import (
 	"myutil"
 	"net"
 	"strconv"
+	"time"
 )
 
 type Mocker struct {
+	IP          string
+	Port        int
 	PreSendSet  *myutil.Set
 	PostSendSet *myutil.Set
 	Listener    net.Listener
-	Sender      *Sender
 }
 
 func NewMocker(ip string, port int) *Mocker {
@@ -22,99 +24,63 @@ func NewMocker(ip string, port int) *Mocker {
 	}
 	Log("Listener is started!")
 
-	sender := NewSender(ip, port)
-
 	return &Mocker{
+		IP:          ip,
+		Port:        port,
 		PreSendSet:  myutil.NewSet(),
 		PostSendSet: myutil.NewSet(),
 		Listener:    listener,
-		Sender:      sender,
 	}
 }
 
 func (m *Mocker) Start() {
 	for {
-		conn, err := m.Listener.Accept()
+		clientConn, err := m.Listener.Accept()
 		if err != nil {
-			LogError("Error accepting connection:" + err.Error())
+			LogError("Error accepting connection, error :" + err.Error())
 			return
 		}
-		Log("Source socket is established!")
+		Log("Client socket is established!")
 
-		m.Sender.Open()
-		Log("Sender socket is established!")
+		serverConn, err := m.connectServer()
+		if err != nil {
+			LogError("Error connecting server, error: " + err.Error())
+			return
+		}
+		Log("Server socket is established!")
 
-		go m.handleReqConn(conn)
-		go m.handleResConn(conn)
+		go m.handleClientSocket(clientConn, serverConn)
+		go m.handleServerSocket(clientConn, serverConn)
 	}
 }
 
-func (m *Mocker) handleReqConn(reqConn net.Conn) {
-	defer reqConn.Close()
-
-	for {
-		buffer := make([]byte, 4096)
-		n, err := reqConn.Read(buffer)
-		if err != nil {
-			LogError("Error reading request: " + err.Error())
-			return
-		}
-		Log("Read new request data")
-		request := buffer[:n]
-
-		Log("Response isn't found in PreSendSet, try to send request to real server")
-		_, err = m.Sender.Conn.Write(request)
-		if err != nil {
-			LogError("Error sending request to real server: " + err.Error())
-			return
-		}
-	}
-}
-func (m *Mocker) handleResConn(reqConn net.Conn) {
-	defer m.Sender.Conn.Close()
-
-	for {
-		buffer := make([]byte, 4096)
-		n, err := m.Sender.Conn.Read(buffer)
-		if err != nil {
-			LogError("Error receiving response: " + err.Error())
-			return
-		}
-
-		reqConn.Write(buffer[:n])
-	}
-}
-
-func (m *Mocker) handleReqConn2(conn net.Conn) {
-	defer conn.Close()
-
-	m.Sender.Open()
-	defer m.Sender.Conn.Close()
-	Log("Sender socket is established!")
-
-	serverHello := make([]byte, 4096)
-	n, err := m.Sender.Conn.Read(serverHello)
+func (m *Mocker) connectServer() (net.Conn, error) {
+	serverAddr := m.IP + ":" + strconv.Itoa(m.Port)
+	conn, err := net.Dial("tcp", serverAddr)
 	if err != nil {
-		LogError("Error receiving ServerHello: " + err.Error())
-		return
+		return nil, err
 	}
 
-	_, err = conn.Write(serverHello[:n])
-	if err != nil {
-		LogError("Error Hello : " + err.Error())
-		return
-	}
+	// Set keep-alive parameters
+	tcpConn := conn.(*net.TCPConn)
+	tcpConn.SetKeepAlive(true)
+	tcpConn.SetKeepAlivePeriod(60 * time.Second)
+
+	return conn, nil
+}
+
+func (m *Mocker) handleClientSocket(clientConn net.Conn, serverConn net.Conn) {
+	defer clientConn.Close()
 
 	preElements := m.PreSendSet.Elements()
-	postElements := m.PostSendSet.Elements()
 	for {
 		buffer := make([]byte, 4096)
-		n, err = conn.Read(buffer)
+		n, err := clientConn.Read(buffer)
 		if err != nil {
-			LogError("Error reading request: " + err.Error())
-			break
+			LogError("Error reading from client: " + err.Error())
+			return
 		}
-		Log("Read new request data")
+		Log("Read new client data")
 		request := buffer[:n]
 
 		var response []byte
@@ -127,16 +93,33 @@ func (m *Mocker) handleReqConn2(conn net.Conn) {
 		}
 		if response != nil {
 			Log("Response is found in PreSendSet!")
-			conn.Write(response)
+			clientConn.Write(response)
 			continue
+		} else {
+			Log("Response isn't found in PreSendSet, try to send request to real server")
+			_, err = serverConn.Write(request)
+			if err != nil {
+				LogError("Error sending request to real server: " + err.Error())
+				return
+			}
 		}
+	}
+}
 
-		Log("Response isn't found in PreSendSet, try to send request to real server")
-		response, err = m.Sender.Send(request)
+func (m *Mocker) handleServerSocket(clientConn net.Conn, serverConn net.Conn) {
+	defer serverConn.Close()
+
+	postElements := m.PostSendSet.Elements()
+	for {
+		buffer := make([]byte, 4096)
+		n, err := serverConn.Read(buffer)
 		if err != nil {
-			continue
+			LogError("Error reading from server: " + err.Error())
+			return
 		}
-		Log("Got the response from the real server!")
+		Log("Read new server data")
+		response := buffer[:n]
+
 		for _, item := range postElements {
 			rr := item.(*ResLenResData)
 			if rr.ResLen == len(response) {
@@ -145,6 +128,6 @@ func (m *Mocker) handleReqConn2(conn net.Conn) {
 				break
 			}
 		}
-		conn.Write(response)
+		clientConn.Write(response)
 	}
 }
