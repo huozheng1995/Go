@@ -73,14 +73,14 @@ func (m *Mocker) handleClientSocket(clientConn net.Conn, serverConn net.Conn) {
 	defer clientConn.Close()
 
 	preElements := m.PreSendSet.Elements()
+	buffer := make([]byte, 4096)
 	for {
-		buffer := make([]byte, 4096)
 		n, err := clientConn.Read(buffer)
 		if err != nil {
 			LogError("Error reading from client: " + err.Error())
 			return
 		}
-		Log("Read new client data")
+		Log("Read new client data, length: " + strconv.Itoa(n))
 		request := buffer[:n]
 
 		var response []byte
@@ -110,14 +110,14 @@ func (m *Mocker) handleServerSocket(clientConn net.Conn, serverConn net.Conn) {
 	defer serverConn.Close()
 
 	postElements := m.PostSendSet.Elements()
+	buffer := make([]byte, 4096)
 	for {
-		buffer := make([]byte, 4096)
 		n, err := serverConn.Read(buffer)
 		if err != nil {
 			LogError("Error reading from server: " + err.Error())
 			return
 		}
-		Log("Read new server data")
+		Log("Read new server data, length: " + strconv.Itoa(n))
 		response := buffer[:n]
 
 		for _, item := range postElements {
