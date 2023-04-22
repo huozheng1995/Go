@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/edward/scp-294/common"
 	"github.com/edward/scp-294/logger"
@@ -71,7 +72,7 @@ func convert(w http.ResponseWriter, r *http.Request) {
 }
 
 func convertText(InputData string, InputFormat, OutputFormat common.NumType, w http.ResponseWriter) {
-	var outputData string
+	var response string
 
 	funcStrToInt64 := selectFuncStrToInt64(InputFormat)
 	if funcStrToInt64 != nil {
@@ -81,9 +82,15 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 			common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
-		int64Array := utils.StringToInt64Array(InputData, funcStrToInt64)
-		outputData = utils.Int64ArrayToOutputString(int64Array, funcInt64ToStr)
-		toResponse(w, outputData)
+		int64Array := utils.ReqStrToInt64Array(InputData, funcStrToInt64)
+
+		resPageBuf := utils.ResBufferPool.Get().(*bytes.Buffer)
+		resPageBuf.Reset()
+		defer utils.ResBufferPool.Put(resPageBuf)
+
+		utils.Int64ArrayToResponse(int64Array, funcInt64ToStr, resPageBuf)
+		response = string(resPageBuf.Bytes())
+		writeResponse(w, response)
 		return
 	}
 
@@ -95,10 +102,16 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 			common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
-		byteArray := utils.StringToByteArray(InputData, funcStrToByte)
+		byteArray := utils.ReqStrToByteArray(InputData, funcStrToByte)
+
+		resPageBuf := utils.ResBufferPool.Get().(*bytes.Buffer)
+		resPageBuf.Reset()
+		defer utils.ResBufferPool.Put(resPageBuf)
+
 		globalRowIndex := 0
-		outputData = utils.ByteArrayToOutputString(byteArray, &globalRowIndex, funcByteToStr, withDetails)
-		toResponse(w, outputData)
+		utils.ByteArrayToResponse(byteArray, &globalRowIndex, funcByteToStr, withDetails, resPageBuf)
+		response = string(resPageBuf.Bytes())
+		writeResponse(w, response)
 		return
 	}
 
@@ -106,12 +119,12 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 	common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 }
 
-func toResponse(w http.ResponseWriter, outputData string) {
+func writeResponse(w http.ResponseWriter, response string) {
 	enc := json.NewEncoder(w)
 	resData := common.ResData{
 		Success: true,
 		Message: "Data was converted!",
-		Data:    outputData,
+		Data:    response,
 	}
 	err := enc.Encode(resData)
 	if err != nil {
@@ -121,6 +134,7 @@ func toResponse(w http.ResponseWriter, outputData string) {
 }
 
 func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, w http.ResponseWriter) {
+	//Int64
 	funcStrToInt64 := selectFuncStrToInt64(InputFormat)
 	if funcStrToInt64 != nil {
 		funcInt64ToStr := selectFuncInt64ToStr(OutputFormat)
@@ -129,15 +143,14 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 			common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
-		logger.Log("Begin parse, buffer count: " + strconv.Itoa(int(int64BufferCount)))
 		exitChan := make(chan struct{})
 		defer close(exitChan)
-		readChan := utils.FileToPageBuffer(file, int64BufferPool, funcStrToInt64, exitChan)
-		utils.ReadInt64ArrayAndResponse(readChan, funcInt64ToStr, int64BufferPool, w)
-		logger.Log("End parse, buffer count: " + strconv.Itoa(int(int64BufferCount)))
+		readChan := utils.FileToPageBuffer(file, reqInt64BufferPool, funcStrToInt64, exitChan)
+		utils.ReadInt64ArrayAndResponse(readChan, funcInt64ToStr, reqInt64BufferPool, w)
 		return
 	}
 
+	//Bytes
 	funcStrToByte := selectFuncStrToByte(InputFormat)
 	if funcStrToByte != nil {
 		funcByteToStr, withDetails := selectFuncByteToStr(OutputFormat)
@@ -146,15 +159,14 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 			common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
-		logger.Log("Begin parse, buffer count: " + strconv.Itoa(int(byteBufferCount)))
 		exitChan := make(chan struct{})
 		defer close(exitChan)
-		readChan := utils.FileToPageBuffer(file, byteBufferPool, funcStrToByte, exitChan)
-		utils.ReadBytesAndResponse(readChan, funcByteToStr, withDetails, byteBufferPool, w)
-		logger.Log("End parse, buffer count: " + strconv.Itoa(int(byteBufferCount)))
+		readChan := utils.FileToPageBuffer(file, reqByteBufferPool, funcStrToByte, exitChan)
+		utils.ReadByteArrayAndResponse(readChan, funcByteToStr, withDetails, reqByteBufferPool, w)
 		return
 	}
 
+	//RawBytes
 	if InputFormat == common.RawBytes {
 		funcByteToStr, withDetails := selectFuncByteToStr(OutputFormat)
 		if funcByteToStr == nil {
@@ -162,12 +174,10 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 			common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
-		logger.Log("Begin parse, buffer count: " + strconv.Itoa(int(byteBufferCount)))
 		exitChan := make(chan struct{})
 		defer close(exitChan)
-		readChan := utils.FileToRawBytes(file, byteBufferPool, exitChan)
-		utils.ReadBytesAndResponse(readChan, funcByteToStr, withDetails, byteBufferPool, w)
-		logger.Log("End parse, buffer count: " + strconv.Itoa(int(byteBufferCount)))
+		readChan := utils.FileToRawBytes(file, reqByteBufferPool, exitChan)
+		utils.ReadByteArrayAndResponse(readChan, funcByteToStr, withDetails, reqByteBufferPool, w)
 		return
 	}
 
@@ -175,19 +185,21 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 	common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 }
 
-var int64BufferCount int32
-var int64BufferPool = &sync.Pool{
+var byteBufferCount int32
+var reqByteBufferPool = &sync.Pool{
 	New: func() interface{} {
-		atomic.AddInt32(&int64BufferCount, 1)
-		return make([]int64, 512)
+		atomic.AddInt32(&byteBufferCount, 1)
+		logger.Log("reqByteBufferPool: Count of new buffer: " + strconv.Itoa(int(byteBufferCount)))
+		return make([]byte, 4096)
 	},
 }
 
-var byteBufferCount int32
-var byteBufferPool = &sync.Pool{
+var int64BufferCount int32
+var reqInt64BufferPool = &sync.Pool{
 	New: func() interface{} {
-		atomic.AddInt32(&byteBufferCount, 1)
-		return make([]byte, 4096)
+		atomic.AddInt32(&int64BufferCount, 1)
+		logger.Log("reqInt64BufferPool: Count of new buffer: " + strconv.Itoa(int(int64BufferCount)))
+		return make([]int64, 4096>>3)
 	},
 }
 

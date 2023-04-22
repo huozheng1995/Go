@@ -24,21 +24,21 @@ type Page[T any] struct {
 	pageNum      int
 	buffer       *[]T
 	pageSize     int
-	index        int
+	length       int
 	funcStrToNum func(string) T
 }
 
 func (page *Page[T]) AppendValue(str string) {
-	(*page.buffer)[page.index] = page.funcStrToNum(str)
-	page.index++
+	(*page.buffer)[page.length] = page.funcStrToNum(str)
+	page.length++
 }
 
 func (page *Page[T]) IsEmpty() bool {
-	return page.index <= 0
+	return page.length <= 0
 }
 
 func (page *Page[T]) IsFull() bool {
-	return page.index >= page.pageSize
+	return page.length >= page.pageSize
 }
 
 func (page *Page[T]) AppendData(tempBuffer *TempBuffer, file multipart.File) (err error) {
@@ -83,7 +83,7 @@ func CreateEmptyPage[T any](pageNum int, buffer *[]T, funcStrToNum func(string) 
 		pageNum:      pageNum,
 		buffer:       buffer,
 		pageSize:     cap(*buffer),
-		index:        0,
+		length:       0,
 		funcStrToNum: funcStrToNum,
 	}
 }

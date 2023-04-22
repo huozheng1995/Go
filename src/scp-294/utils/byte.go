@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// to byte
+// string to byte
 
 type StrToByte func(str string) byte
 
@@ -25,7 +25,7 @@ func Int8StrToByte(str string) byte {
 	return byte(val)
 }
 
-// byte to
+// byte to string
 
 type ByteToStr interface {
 	toString(byte) string
@@ -70,9 +70,9 @@ func (byteToStr ByteToInt8Str) getWidth() int {
 	return 4
 }
 
-// to byte array
+// request string to byte array
 
-func StringToByteArray(str string, funcStrToByte StrToByte) []byte {
+func ReqStrToByteArray(str string, funcStrToByte StrToByte) []byte {
 	result := make([]byte, 0, len(str))
 	var val byte
 	var builder strings.Builder
@@ -95,12 +95,12 @@ func StringToByteArray(str string, funcStrToByte StrToByte) []byte {
 	return result
 }
 
-// byte array to
+// byte array to response
 
 const printLen = 5
 const GlobalRowSize = 16
 
-func ByteArrayToOutput(arr []byte, globalRowIndex *int, byteToStr ByteToStr, withDetails bool) []byte {
+func ByteArrayToResponse(arr []byte, globalRowIndex *int, byteToStr ByteToStr, withDetails bool, resBuf *bytes.Buffer) {
 	rowSize := GlobalRowSize
 
 	totalLen := len(arr)
@@ -110,8 +110,6 @@ func ByteArrayToOutput(arr []byte, globalRowIndex *int, byteToStr ByteToStr, wit
 		totalRow++
 	}
 
-	buffer := new(bytes.Buffer)
-	buffer.Grow(len(arr) * 10)
 	for rowIndex := 0; rowIndex < totalRow; rowIndex++ {
 		globalByteIndex := *globalRowIndex * rowSize
 		byteIndex := rowIndex * rowSize
@@ -119,26 +117,72 @@ func ByteArrayToOutput(arr []byte, globalRowIndex *int, byteToStr ByteToStr, wit
 			rowSize = lastRowCount
 		}
 		if withDetails {
-			buffer.WriteString("Row")
-			WriteStringWith0(buffer, strconv.Itoa(*globalRowIndex), printLen-1)
-			buffer.WriteString("(")
-			WriteStringWith0(buffer, strconv.Itoa(globalByteIndex), printLen)
-			buffer.WriteString(", ")
-			WriteStringWith0(buffer, strconv.Itoa(globalByteIndex+8), printLen)
-			buffer.WriteString("): ")
-			buffer.Write(ByteArrayToRowBytes(byteToStr, arr, byteIndex, rowSize, withDetails))
-			buffer.WriteString("        ")
-			buffer.Write(ByteArrayToRowDetailsBytes(arr, byteIndex, rowSize))
-			buffer.WriteString("\n")
+			resBuf.WriteString("Row")
+			WriteStringWith0(resBuf, strconv.Itoa(*globalRowIndex), printLen-1)
+			resBuf.WriteString("(")
+			WriteStringWith0(resBuf, strconv.Itoa(globalByteIndex), printLen)
+			resBuf.WriteString(", ")
+			WriteStringWith0(resBuf, strconv.Itoa(globalByteIndex+8), printLen)
+			resBuf.WriteString("): ")
+			WriteRowData(resBuf, byteToStr, arr, byteIndex, rowSize, withDetails)
+			resBuf.WriteString("        ")
+			WriteRowDetails(resBuf, arr, byteIndex, rowSize)
+			resBuf.WriteString("\n")
 		} else {
-			buffer.Write(ByteArrayToRowBytes(byteToStr, arr, byteIndex, rowSize, withDetails))
-			buffer.WriteString("\n")
+			WriteRowData(resBuf, byteToStr, arr, byteIndex, rowSize, withDetails)
+			resBuf.WriteString("\n")
 		}
 		*globalRowIndex++
 	}
-	return buffer.Bytes()
 }
 
-func ByteArrayToOutputString(arr []byte, globalRowIndex *int, byteToStr ByteToStr, withDetails bool) string {
-	return string(ByteArrayToOutput(arr, globalRowIndex, byteToStr, withDetails))
+func WriteRowData(buffer *bytes.Buffer, byteToStr ByteToStr, arr []byte, off int, len2 int, withDetails bool) {
+	count := 0
+	for i := 0; i < len2; i++ {
+		count++
+		WriteStringWithSpace(buffer, byteToStr.toString(arr[off+i]), byteToStr.getWidth())
+		if withDetails {
+			if count&0x0F == 0 {
+				buffer.WriteString(", ")
+			} else {
+				buffer.WriteString(" ")
+			}
+		} else {
+			buffer.WriteString(", ")
+		}
+	}
+}
+
+func WriteRowDetails(buffer *bytes.Buffer, arr []byte, off int, len int) {
+	count := 0
+	for i := off; i < off+len; i++ {
+		count++
+		if arr[i] >= 32 && arr[i] <= 126 {
+			buffer.WriteByte(arr[i])
+		} else {
+			buffer.WriteString(CharNULL)
+		}
+		if count&0x0F == 0 {
+			buffer.WriteString(", ")
+		}
+	}
+}
+
+func WriteStringWithChar(buffer *bytes.Buffer, str string, expectedLen int, char rune) {
+	diff := expectedLen - len(str)
+	if diff > 0 {
+		for i := 0; i < diff; i++ {
+			buffer.WriteString(string(char))
+		}
+	}
+
+	buffer.WriteString(str)
+}
+
+func WriteStringWithSpace(buffer *bytes.Buffer, str string, expectedLen int) {
+	WriteStringWithChar(buffer, str, expectedLen, ' ')
+}
+
+func WriteStringWith0(buffer *bytes.Buffer, str string, expectedLen int) {
+	WriteStringWithChar(buffer, str, expectedLen, '0')
 }

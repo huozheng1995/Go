@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// to int64
+// string to int64
 
 type StrToInt64 func(str string) int64
 
@@ -25,7 +25,7 @@ func BinStrToInt64(str string) int64 {
 	return val
 }
 
-// int64 to
+// int64 to string
 
 type Int64ToStr func(val int64) string
 
@@ -67,9 +67,9 @@ func Int64ToBinStr(val int64) string {
 	return builder.String()
 }
 
-// to int64 array
+// request string to int64 array
 
-func StringToInt64Array(text string, funcStrToInt64 StrToInt64) []int64 {
+func ReqStrToInt64Array(text string, funcStrToInt64 StrToInt64) []int64 {
 	result := make([]int64, 0, 4096)
 	var val byte
 	var builder strings.Builder
@@ -92,18 +92,11 @@ func StringToInt64Array(text string, funcStrToInt64 StrToInt64) []int64 {
 	return result
 }
 
-// int64 array to
+// int64 array to response
 
-func Int64ArrayToOutput(arr []int64, funcInt64ToStr Int64ToStr) []byte {
-	buffer := new(bytes.Buffer)
+func Int64ArrayToResponse(arr []int64, funcInt64ToStr Int64ToStr, resBuf *bytes.Buffer) {
 	for _, val := range arr {
-		buffer.WriteString(funcInt64ToStr(val))
-		buffer.WriteString(", ")
+		resBuf.WriteString(funcInt64ToStr(val))
+		resBuf.WriteString(", ")
 	}
-	return buffer.Bytes()
-}
-
-func Int64ArrayToOutputString(arr []int64, funcInt64ToStr Int64ToStr) string {
-	result := Int64ArrayToOutput(arr, funcInt64ToStr)
-	return string(result)
 }
