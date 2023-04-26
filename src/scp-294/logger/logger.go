@@ -27,5 +27,5 @@ func Log(message string) {
 }
 
 func LogError(params ...interface{}) {
-	log.Fatalf("[ERROR]%v\n", params)
+	log.Printf("[ERROR]%v\n", params)
 }
