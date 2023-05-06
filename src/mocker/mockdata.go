@@ -17,14 +17,14 @@ type ResLenResData struct {
 }
 
 func AddReqDataResData(m *Mocker, reqData []byte, resData []byte) {
-	m.PreSendSet.Add(&ReqDataResData{
+	m.MockedReqDataResData.Add(&ReqDataResData{
 		ReqData: &reqData,
 		ResData: &resData,
 	})
 }
 
 func AddResLenResData(m *Mocker, resLen int, resData []byte) {
-	m.PostSendSet.Add(&ResLenResData{
+	m.MockedResLenResData.Add(&ResLenResData{
 		ResLen:  resLen,
 		ResData: &resData,
 	})
@@ -56,7 +56,6 @@ func HexFileToBytes(fileUri string) []byte {
 			}
 		}
 	}
-	result = append(result, byte(10))
 
 	return result
 }

@@ -26,6 +26,10 @@ func Log(message string) {
 	log.Printf("%v\n", message)
 }
 
+func LogWarn(message string) {
+	log.Printf("[WARN]%v\n", message)
+}
+
 func LogError(params ...interface{}) {
 	log.Printf("[ERROR]%v\n", params)
 }
