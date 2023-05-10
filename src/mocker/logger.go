@@ -26,6 +26,14 @@ func Log(message string) {
 	log.Printf("%v\n", message)
 }
 
+func LogBytes(message string, arr []byte, printDetails bool) {
+	if printDetails {
+		log.Printf("%v\n%v\n", message, arr)
+	} else {
+		log.Printf("%v\n", message)
+	}
+}
+
 func LogWarn(message string) {
 	log.Printf("[WARN]%v\n", message)
 }

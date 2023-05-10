@@ -9,16 +9,14 @@ import (
 )
 
 type Mocker struct {
-	MockerPort           int
-	ServerIP             string
-	ServerPort           int
 	MockedReqDataResData *myutil.Set
 	MockedResLenResData  *myutil.Set
 	Listener             net.Listener
+	Settings             Settings
 }
 
-func NewMocker(mockerPort int, serverIp string, serverPort int) *Mocker {
-	listener, err := net.Listen("tcp", ":"+strconv.Itoa(mockerPort))
+func NewMocker(settings Settings) *Mocker {
+	listener, err := net.Listen("tcp", ":"+strconv.Itoa(settings.MockerPort))
 	if err != nil {
 		LogError("Error listening:" + err.Error())
 		panic(err)
@@ -26,12 +24,10 @@ func NewMocker(mockerPort int, serverIp string, serverPort int) *Mocker {
 	Log("Listener is started!")
 
 	return &Mocker{
-		MockerPort:           mockerPort,
-		ServerIP:             serverIp,
-		ServerPort:           serverPort,
 		MockedReqDataResData: myutil.NewSet(),
 		MockedResLenResData:  myutil.NewSet(),
 		Listener:             listener,
+		Settings:             settings,
 	}
 }
 
@@ -57,7 +53,7 @@ func (m *Mocker) Start() {
 }
 
 func (m *Mocker) connectServer() (net.Conn, error) {
-	serverAddr := m.ServerIP + ":" + strconv.Itoa(m.ServerPort)
+	serverAddr := m.Settings.ServerIP + ":" + strconv.Itoa(m.Settings.ServerPort)
 	conn, err := net.Dial("tcp", serverAddr)
 	if err != nil {
 		return nil, err
@@ -82,12 +78,12 @@ func (m *Mocker) handleClientSocket(clientConn net.Conn, serverConn net.Conn) {
 			LogError("Error reading from client: " + err.Error())
 			return
 		}
-		Log("Read new client data, length: " + strconv.Itoa(n))
 		if n == cap(buffer) {
 			LogWarn("The length of data read from client is " + strconv.Itoa(n) + ", which has reached the capacity of the client read buffer. " +
 				"The request data may have been fragmented, which could result in the MockedReqDataResData not matching.")
 		}
 		request := buffer[:n]
+		LogBytes("Read new client data, length: "+strconv.Itoa(n), request, m.Settings.PrintDetails)
 
 		var response []byte
 		for _, item := range preElements {
@@ -123,12 +119,12 @@ func (m *Mocker) handleServerSocket(clientConn net.Conn, serverConn net.Conn) {
 			LogError("Error reading from server: " + err.Error())
 			return
 		}
-		Log("Read new server data, length: " + strconv.Itoa(n))
 		if n == cap(buffer) {
 			LogWarn("The length of data read from server is " + strconv.Itoa(n) + ", which has reached the capacity of the server read buffer. " +
 				"The response data may have been fragmented, which could result in the MockedResLenResData not matching.")
 		}
 		response := buffer[:n]
+		LogBytes("Read new server data, length: "+strconv.Itoa(n), response, m.Settings.PrintDetails)
 
 		for _, item := range postElements {
 			rr := item.(*ResLenResData)
