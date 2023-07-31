@@ -9,10 +9,11 @@ import (
 )
 
 type Mocker struct {
-	MockedReqDataResData *myutil.Set
-	MockedResLenResData  *myutil.Set
-	Listener             net.Listener
-	Settings             Settings
+	MockedReqDataResData      *myutil.Set
+	MockedReqDataResDataFiles *myutil.Set
+	MockedResLenResData       *myutil.Set
+	Listener                  net.Listener
+	Settings                  Settings
 }
 
 func NewMocker(settings Settings) *Mocker {
@@ -24,10 +25,11 @@ func NewMocker(settings Settings) *Mocker {
 	Log("Listener is started!")
 
 	return &Mocker{
-		MockedReqDataResData: myutil.NewSet(),
-		MockedResLenResData:  myutil.NewSet(),
-		Listener:             listener,
-		Settings:             settings,
+		MockedReqDataResData:      myutil.NewSet(),
+		MockedReqDataResDataFiles: myutil.NewSet(),
+		MockedResLenResData:       myutil.NewSet(),
+		Listener:                  listener,
+		Settings:                  settings,
 	}
 }
 
@@ -70,7 +72,8 @@ func (m *Mocker) connectServer() (net.Conn, error) {
 func (m *Mocker) handleClientSocket(clientConn net.Conn, serverConn net.Conn) {
 	defer clientConn.Close()
 
-	preElements := m.MockedReqDataResData.Elements()
+	resDataSet := m.MockedReqDataResData.Elements()
+	resDataFiles := m.MockedReqDataResDataFiles.Elements()
 	buffer := make([]byte, 64*1024)
 	for {
 		n, err := clientConn.Read(buffer)
@@ -85,8 +88,9 @@ func (m *Mocker) handleClientSocket(clientConn net.Conn, serverConn net.Conn) {
 		request := buffer[:n]
 		LogBytes("Read new client data, length: "+strconv.Itoa(n), request, m.Settings.PrintDetails)
 
+		//handle MockedReqDataResData
 		var response []byte
-		for _, item := range preElements {
+		for _, item := range resDataSet {
 			rr := item.(*ReqDataResData)
 			if bytes.Equal(*rr.ReqData, request) {
 				response = *rr.ResData
@@ -97,13 +101,31 @@ func (m *Mocker) handleClientSocket(clientConn net.Conn, serverConn net.Conn) {
 			Log("Response is found in MockedReqDataResData!")
 			clientConn.Write(response)
 			continue
-		} else {
-			Log("Response isn't found in MockedReqDataResData, try to send request to real server")
-			_, err = serverConn.Write(request)
-			if err != nil {
-				LogError("Error sending request to real server: " + err.Error())
-				return
+		}
+
+		//handle MockedReqDataResDataFiles
+		var fileUris []string
+		for _, item := range resDataFiles {
+			rr := item.(*ReqDataResDataFiles)
+			if bytes.Equal(*rr.ReqData, request) {
+				fileUris = rr.FileUris
+				break
 			}
+		}
+		if fileUris != nil {
+			Log("Response is found in MockedReqDataResDataFiles!")
+			for _, fileUri := range fileUris {
+				partResponse := HexFileToBytes(fileUri)
+				clientConn.Write(partResponse)
+			}
+			continue
+		}
+
+		Log("Response isn't found in MockedReqDataResData, try to send request to real server")
+		_, err = serverConn.Write(request)
+		if err != nil {
+			LogError("Error sending request to real server: " + err.Error())
+			return
 		}
 	}
 }
