@@ -168,7 +168,7 @@ func (m *Mocker) handleServerSocket(clientConn net.Conn, serverConn net.Conn) {
 	defer serverConn.Close()
 
 	postElements := m.MockedResLenResData.Elements()
-	buffer := make([]byte, 1024*1024)
+	buffer := make([]byte, 512*1024)
 	for {
 		n, err := serverConn.Read(buffer)
 		if err != nil {
