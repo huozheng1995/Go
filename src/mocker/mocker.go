@@ -11,40 +11,57 @@ import (
 type Mocker struct {
 	MockedReqDataResData *myutil.Set
 	MockedResLenResData  *myutil.Set
-	Listener             net.Listener
 	Settings             Settings
 }
 
 func NewMocker(settings Settings) *Mocker {
-	listener, err := net.Listen("tcp", ":"+strconv.Itoa(settings.MockerPort))
-	if err != nil {
-		LogError("Error listening:" + err.Error())
-		panic(err)
-	}
-	Log("Listener is started!")
-
 	return &Mocker{
 		MockedReqDataResData: myutil.NewSet(),
 		MockedResLenResData:  myutil.NewSet(),
-		Listener:             listener,
 		Settings:             settings,
 	}
 }
 
 func (m *Mocker) Start() {
+	var listener net.Listener
+	var err error
+	if m.Settings.VirtualNetworkInterfaceMode {
+		_, err = CreateNetworkInterface(m.Settings.ServerIP)
+		if err != nil {
+			LogError("Failed to create Network Interface, error: " + err.Error())
+			panic(err)
+		}
+		listener, err = net.Listen("tcp", m.Settings.ServerIP+":"+strconv.Itoa(m.Settings.MockerPort))
+	} else {
+		listener, err = net.Listen("tcp", ":"+strconv.Itoa(m.Settings.MockerPort))
+	}
+	if err != nil {
+		LogError("Error listening, error: " + err.Error())
+		panic(err)
+	}
+	Log("Listener is started!")
+
 	for {
-		clientConn, err := m.Listener.Accept()
+		clientConn, err := listener.Accept()
 		if err != nil {
 			LogError("Error accepting connection, error :" + err.Error())
-			return
+			panic(err)
 		}
 		Log("Client socket is established!")
 
-		serverConn, err := m.connectServer()
+		var serverConn net.Conn
+		if m.Settings.VirtualNetworkInterfaceMode {
+			serverConn, err = m.connectServerByLocalInterface()
+		} else {
+			serverConn, err = m.connectServer()
+		}
 		if err != nil {
 			LogError("Error connecting server, error: " + err.Error())
 			return
 		}
+		tcpConn := serverConn.(*net.TCPConn)
+		tcpConn.SetKeepAlive(true)
+		tcpConn.SetKeepAlivePeriod(60 * time.Second)
 		Log("Server socket is established!")
 
 		go m.handleClientSocket(clientConn, serverConn)
@@ -59,10 +76,25 @@ func (m *Mocker) connectServer() (net.Conn, error) {
 		return nil, err
 	}
 
-	// Set keep-alive parameters
-	tcpConn := conn.(*net.TCPConn)
-	tcpConn.SetKeepAlive(true)
-	tcpConn.SetKeepAlivePeriod(60 * time.Second)
+	return conn, nil
+}
+
+func (m *Mocker) connectServerByLocalInterface() (net.Conn, error) {
+	ip := m.Settings.LocalNetworkInterfaceAddress
+	_, err := GetNetworkInterface(ip)
+	if err != nil {
+		LogError("Cannot find local network interface, ip address: "+ip, err)
+		return nil, err
+	}
+
+	localAddr := &net.TCPAddr{IP: net.ParseIP(ip), Port: 10000 + m.Settings.ServerPort}
+	remoteAddr := &net.TCPAddr{IP: net.ParseIP(m.Settings.ServerIP), Port: m.Settings.ServerPort}
+	dialer := net.Dialer{LocalAddr: localAddr}
+	conn, err := dialer.Dial("tcp", remoteAddr.String())
+	if err != nil {
+		LogError("Failed to connect to server through local network interface", err)
+		return nil, err
+	}
 
 	return conn, nil
 }
