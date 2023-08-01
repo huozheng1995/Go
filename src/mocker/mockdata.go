@@ -11,6 +11,11 @@ type ReqDataResData struct {
 	ResData *[]byte
 }
 
+type ReqDataResDataFiles struct {
+	ReqData  *[]byte
+	FileUris []string
+}
+
 type ResLenResData struct {
 	ResLen  int
 	ResData *[]byte
@@ -20,6 +25,18 @@ func AddReqDataResData(m *Mocker, reqData []byte, resData []byte) {
 	m.MockedReqDataResData.Add(&ReqDataResData{
 		ReqData: &reqData,
 		ResData: &resData,
+	})
+}
+
+func AddReqDataResDataFiles(m *Mocker, reqData []byte, fileUris ...string) {
+	fileArray := make([]string, len(fileUris))
+	for i, fileUri := range fileUris {
+		fileArray[i] = fileUri
+	}
+
+	m.MockedReqDataResDataFiles.Add(&ReqDataResDataFiles{
+		ReqData:  &reqData,
+		FileUris: fileArray,
 	})
 }
 
