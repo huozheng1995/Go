@@ -2,3 +2,4 @@
 pkg/
 *.exe
 *.log
+src/simpletun-main/

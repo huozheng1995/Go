@@ -66,7 +66,9 @@ func (m *Mocker) Start() {
 		tcpConn.SetKeepAlivePeriod(60 * time.Second)
 		Log("Server socket is established!")
 
+		Log("Start listening to the client socket...")
 		go m.handleClientSocket(clientConn, serverConn)
+		Log("Start listening to the server socket...")
 		go m.handleServerSocket(clientConn, serverConn)
 	}
 }
@@ -166,7 +168,7 @@ func (m *Mocker) handleServerSocket(clientConn net.Conn, serverConn net.Conn) {
 	defer serverConn.Close()
 
 	postElements := m.MockedResLenResData.Elements()
-	buffer := make([]byte, 4*1024*1024)
+	buffer := make([]byte, 1024*1024)
 	for {
 		n, err := serverConn.Read(buffer)
 		if err != nil {
