@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"fmt"
+	"github.com/edward/mocker/logger"
 	"myutil"
 	"net"
 	"strconv"
@@ -30,7 +32,7 @@ func (m *Mocker) Start() {
 	if m.Settings.VirtualNetworkInterfaceMode {
 		_, err = CreateNetworkInterface(m.Settings.ServerIP)
 		if err != nil {
-			LogError("Failed to create Network Interface, error: " + err.Error())
+			logger.LogError("Failed to create Network Interface, error: " + err.Error())
 			panic(err)
 		}
 		listener, err = net.Listen("tcp", m.Settings.ServerIP+":"+strconv.Itoa(m.Settings.MockerPort))
@@ -38,18 +40,18 @@ func (m *Mocker) Start() {
 		listener, err = net.Listen("tcp", ":"+strconv.Itoa(m.Settings.MockerPort))
 	}
 	if err != nil {
-		LogError("Error listening, error: " + err.Error())
+		logger.LogError("Error listening, error: " + err.Error())
 		panic(err)
 	}
-	Log("Listener is started!")
+	logger.Log("Listening TCP connections on " + listener.Addr().String() + "...")
 
 	for {
 		clientConn, err := listener.Accept()
 		if err != nil {
-			LogError("Error accepting connection, error :" + err.Error())
+			logger.LogError("Error accepting connection, error :" + err.Error())
 			panic(err)
 		}
-		Log("Client socket is established!")
+		logger.Log(fmt.Sprintf("Client socket is established! Client: %v -> Local: %v", clientConn.RemoteAddr(), clientConn.LocalAddr()))
 
 		var serverConn net.Conn
 		if m.Settings.VirtualNetworkInterfaceMode {
@@ -58,17 +60,12 @@ func (m *Mocker) Start() {
 			serverConn, err = m.connectServer()
 		}
 		if err != nil {
-			LogError("Error connecting server, error: " + err.Error())
-			return
+			logger.LogError("Error connecting server, error: " + err.Error())
+			panic(err)
 		}
-		tcpConn := serverConn.(*net.TCPConn)
-		tcpConn.SetKeepAlive(true)
-		tcpConn.SetKeepAlivePeriod(60 * time.Second)
-		Log("Server socket is established!")
+		logger.Log(fmt.Sprintf("Server socket is established! Local: %v -> Server: %v", serverConn.LocalAddr(), serverConn.RemoteAddr()))
 
-		Log("Start listening to the client socket...")
 		go m.handleClientSocket(clientConn, serverConn)
-		Log("Start listening to the server socket...")
 		go m.handleServerSocket(clientConn, serverConn)
 	}
 }
@@ -80,6 +77,9 @@ func (m *Mocker) connectServer() (net.Conn, error) {
 		return nil, err
 	}
 
+	tcpConn := conn.(*net.TCPConn)
+	tcpConn.SetKeepAlive(true)
+	tcpConn.SetKeepAlivePeriod(60 * time.Second)
 	return conn, nil
 }
 
@@ -87,40 +87,48 @@ func (m *Mocker) connectServerByLocalInterface() (net.Conn, error) {
 	ip := m.Settings.LocalNetworkInterfaceAddress
 	_, err := GetNetworkInterface(ip)
 	if err != nil {
-		LogError("Cannot find local network interface, ip address: "+ip, err)
+		logger.LogError("Cannot find local network interface, ip address: "+ip, err)
 		return nil, err
 	}
 
-	localAddr := &net.TCPAddr{IP: net.ParseIP(ip), Port: 10000 + m.Settings.ServerPort}
+	localPort := m.Settings.ServerPort
+	if localPort < 10000 {
+		localPort += 10000
+	}
+	localAddr := &net.TCPAddr{IP: net.ParseIP(ip), Port: localPort}
 	remoteAddr := &net.TCPAddr{IP: net.ParseIP(m.Settings.ServerIP), Port: m.Settings.ServerPort}
 	dialer := net.Dialer{LocalAddr: localAddr}
 	conn, err := dialer.Dial("tcp", remoteAddr.String())
 	if err != nil {
-		LogError("Failed to connect to server through local network interface", err)
+		logger.LogError("Failed to connect to server through local network interface", err)
 		return nil, err
 	}
 
+	tcpConn := conn.(*net.TCPConn)
+	tcpConn.SetKeepAlive(true)
+	tcpConn.SetKeepAlivePeriod(60 * time.Second)
 	return conn, nil
 }
 
 func (m *Mocker) handleClientSocket(clientConn net.Conn, serverConn net.Conn) {
 	defer clientConn.Close()
 
+	logger.Log("Listening on client socket...")
 	resDataSet := m.MockedReqDataResData.Elements()
 	resDataFiles := m.MockedReqDataResDataFiles.Elements()
 	buffer := make([]byte, 64*1024)
 	for {
 		n, err := clientConn.Read(buffer)
 		if err != nil {
-			LogError("Error reading from client: " + err.Error())
+			logger.LogError("Error reading from client: " + err.Error())
 			return
 		}
 		if n == cap(buffer) {
-			LogWarn("The length of data read from client is " + strconv.Itoa(n) + ", which has reached the capacity of the client read buffer. " +
+			logger.LogWarn("The length of data read from client is " + strconv.Itoa(n) + ", which has reached the capacity of the client read buffer. " +
 				"The request data may have been fragmented, which could result in the MockedReqDataResData not matching.")
 		}
 		request := buffer[:n]
-		LogBytes("Read new client data, length: "+strconv.Itoa(n), request, m.Settings.PrintDetails)
+		logger.LogBytes("Read new client data, length: "+strconv.Itoa(n), request, m.Settings.PrintDetails)
 
 		//handle MockedReqDataResData
 		var response []byte
@@ -132,7 +140,7 @@ func (m *Mocker) handleClientSocket(clientConn net.Conn, serverConn net.Conn) {
 			}
 		}
 		if response != nil {
-			Log("Response is found in MockedReqDataResData!")
+			logger.Log("Response is found in MockedReqDataResData!")
 			clientConn.Write(response)
 			continue
 		}
@@ -147,7 +155,7 @@ func (m *Mocker) handleClientSocket(clientConn net.Conn, serverConn net.Conn) {
 			}
 		}
 		if fileUris != nil {
-			Log("Response is found in MockedReqDataResDataFiles!")
+			logger.Log("Response is found in MockedReqDataResDataFiles!")
 			for _, fileUri := range fileUris {
 				partResponse := HexFileToBytes(fileUri)
 				clientConn.Write(partResponse)
@@ -155,10 +163,10 @@ func (m *Mocker) handleClientSocket(clientConn net.Conn, serverConn net.Conn) {
 			continue
 		}
 
-		Log("Response isn't found in MockedReqDataResData, try to send request to real server")
+		logger.Log("Response isn't found in MockedReqDataResData, try to send request to real server")
 		_, err = serverConn.Write(request)
 		if err != nil {
-			LogError("Error sending request to real server: " + err.Error())
+			logger.LogError("Error sending request to real server: " + err.Error())
 			return
 		}
 	}
@@ -167,25 +175,26 @@ func (m *Mocker) handleClientSocket(clientConn net.Conn, serverConn net.Conn) {
 func (m *Mocker) handleServerSocket(clientConn net.Conn, serverConn net.Conn) {
 	defer serverConn.Close()
 
+	logger.Log("Listening on server socket...")
 	postElements := m.MockedResLenResData.Elements()
 	buffer := make([]byte, 512*1024)
 	for {
 		n, err := serverConn.Read(buffer)
 		if err != nil {
-			LogError("Error reading from server: " + err.Error())
+			logger.LogError("Error reading from server: " + err.Error())
 			return
 		}
 		if n == cap(buffer) {
-			LogWarn("The length of data read from server is " + strconv.Itoa(n) + ", which has reached the capacity of the server read buffer. " +
+			logger.LogWarn("The length of data read from server is " + strconv.Itoa(n) + ", which has reached the capacity of the server read buffer. " +
 				"The response data may have been fragmented, which could result in the MockedResLenResData not matching.")
 		}
 		response := buffer[:n]
-		LogBytes("Read new server data, length: "+strconv.Itoa(n), response, m.Settings.PrintDetails)
+		logger.LogBytes("Read new server data, length: "+strconv.Itoa(n), response, m.Settings.PrintDetails)
 
 		for _, item := range postElements {
 			rr := item.(*ResLenResData)
 			if rr.ResLen == len(response) {
-				Log("Response is matched in MockedResLenResData!")
+				logger.Log("Response is matched in MockedResLenResData!")
 				response = *rr.ResData
 				break
 			}

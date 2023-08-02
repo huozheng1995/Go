@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"github.com/edward/mocker/logger"
 	"github.com/edward/mocker/winipcfg"
 	"golang.zx2c4.com/wireguard/tun"
 	"net"
@@ -10,26 +11,24 @@ import (
 )
 
 func CreateNetworkInterface(ip string) (*tun.NativeTun, error) {
-	device, err := tun.CreateTUN("mocker", 0)
+	device, err := tun.CreateTUN("mocker0", 0)
 	if err != nil {
 		return nil, err
 	}
 	// Get the LUID to set IP address
 	nativeTunDevice := device.(*tun.NativeTun)
 	link := winipcfg.LUID(nativeTunDevice.LUID())
-	addr, err := netip.ParsePrefix(ip + "/24")
+
+	addr, err := netip.ParsePrefix(ip + "/32")
 	if err != nil {
 		return nil, err
 	}
-	//err = link.SetIPAddresses([]netip.Prefix{addr})
 
-	//addr1, _ := netip.ParsePrefix("172.16.88.1/32")
 	err = link.SetIPAddresses([]netip.Prefix{addr})
-	//link.AddRoute(addr, addr.Addr(), 0)
-
 	if err != nil {
 		return nil, err
 	}
+	logger.Log("Network Interface is created! name: mocker0, address: " + addr.String())
 
 	return nativeTunDevice, nil
 }
@@ -44,7 +43,7 @@ func GetNetworkInterface(ip string) (*net.Interface, error) {
 	for _, iface := range ifaces {
 		addrs, err := iface.Addrs()
 		if err != nil {
-			LogError("Failed to get addresses for interface:"+iface.Name, err)
+			logger.LogError("Failed to get addresses for interface:"+iface.Name, err)
 			continue
 		}
 		for _, addr := range addrs {

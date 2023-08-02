@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/edward/mocker/logger"
 	"io/ioutil"
 	"strconv"
 	"strings"
@@ -50,7 +51,7 @@ func AddResLenResData(m *Mocker, resLen int, resData []byte) {
 func HexFileToBytes(fileUri string) []byte {
 	fileBytes, err := ioutil.ReadFile(fileUri)
 	if err != nil {
-		Log("Failed to read file: " + fileUri + ", error: " + err.Error())
+		logger.Log("Failed to read file: " + fileUri + ", error: " + err.Error())
 		panic(err)
 	}
 
