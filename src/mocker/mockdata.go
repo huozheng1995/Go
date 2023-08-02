@@ -2,54 +2,23 @@ package main
 
 import (
 	"github.com/edward/mocker/logger"
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 )
 
-type ReqDataResData struct {
-	ReqData *[]byte
-	ResData *[]byte
-}
-
-type ReqDataResDataFiles struct {
+type ReqDataResFiles struct {
 	ReqData  *[]byte
 	FileUris []string
 }
 
-type ResLenResData struct {
-	ResLen  int
-	ResData *[]byte
-}
-
-func AddReqDataResData(m *Mocker, reqData []byte, resData []byte) {
-	m.MockedReqDataResData.Add(&ReqDataResData{
-		ReqData: &reqData,
-		ResData: &resData,
-	})
-}
-
-func AddReqDataResDataFiles(m *Mocker, reqData []byte, fileUris ...string) {
-	fileArray := make([]string, len(fileUris))
-	for i, fileUri := range fileUris {
-		fileArray[i] = fileUri
-	}
-
-	m.MockedReqDataResDataFiles.Add(&ReqDataResDataFiles{
-		ReqData:  &reqData,
-		FileUris: fileArray,
-	})
-}
-
-func AddResLenResData(m *Mocker, resLen int, resData []byte) {
-	m.MockedResLenResData.Add(&ResLenResData{
-		ResLen:  resLen,
-		ResData: &resData,
-	})
+type ResLenResFiles struct {
+	ResLen   int
+	FileUris []string
 }
 
 func HexFileToBytes(fileUri string) []byte {
-	fileBytes, err := ioutil.ReadFile(fileUri)
+	fileBytes, err := os.ReadFile(fileUri)
 	if err != nil {
 		logger.Log("Failed to read file: " + fileUri + ", error: " + err.Error())
 		panic(err)
