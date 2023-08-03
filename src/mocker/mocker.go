@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/edward/mocker/logger"
+	"io"
 	"myutil"
 	"myutil/stream"
 	"net"
@@ -25,6 +26,7 @@ func (m *MockerConn) Close() {
 	if !m.isClosed {
 		m.ClientConn.Close()
 		m.ServerConn.Close()
+		m.isClosed = true
 	}
 }
 
@@ -189,7 +191,7 @@ func (m *Mocker) handleClientSocket(mockerConn *MockerConn) {
 		for _, item := range resDataFiles {
 			rr := item.(*ReqDataResFiles)
 			if bytes.Equal(*rr.ReqData, request) {
-				logger.Log("Main", "Response is found in ReqDataResFiles!")
+				logger.Log(logCode, "Response is found in ReqDataResFiles!")
 				fileUris = rr.FileUris
 				break
 			}
@@ -268,17 +270,25 @@ func writeFileToClient(fileUri string, mockerConn *MockerConn, logCode string) e
 		logger.LogError(logCode, "Error opening file: "+fileUri+", error: "+err.Error())
 		return err
 	}
-	buf := make([]byte, 4*1024)
+	buf := make([]byte, 64*1024)
 	for {
+		isEOF := false
 		n1, err := hexFileStream.Read(buf)
 		if err != nil {
-			logger.LogError(logCode, "Error reading file: "+fileUri+", error: "+err.Error())
-			return err
+			if err == io.EOF {
+				isEOF = true
+			} else {
+				logger.LogError(logCode, "Error reading file: "+fileUri+", error: "+err.Error())
+				return err
+			}
 		}
 		_, err = mockerConn.ClientConn.Write(buf[:n1])
 		if err != nil {
-			logger.LogError(logCode, "Error sending response to client: "+err.Error())
+			logger.LogError(logCode, "Error sending file stream to client: "+err.Error())
 			return err
+		}
+		if isEOF {
+			return nil
 		}
 	}
 

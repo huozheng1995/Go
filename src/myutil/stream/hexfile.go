@@ -2,7 +2,6 @@ package stream
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -23,7 +22,7 @@ func NewHexFileStream(fileUri string) (*HexFileStream, error) {
 
 	hexFileStream := HexFileStream{
 		file:    file,
-		buf:     make([]byte, 4*1024),
+		buf:     make([]byte, 64*1024),
 		bufPos:  0,
 		bufSize: 0,
 	}
@@ -47,8 +46,9 @@ func (h *HexFileStream) innerRead() (err error) {
 func (h *HexFileStream) Read(p []byte) (int, error) {
 	pPos := 0
 	var builder strings.Builder
-	for pPos < len(p) && h.bufPos < h.bufSize {
+	for pPos < len(p) {
 		val := h.buf[h.bufPos]
+		h.bufPos++
 		if (val >= '0' && val <= '9') || (val >= 'a' && val <= 'f') || (val >= 'A' && val <= 'F') || val == '-' {
 			builder.WriteByte(val)
 		} else {
@@ -59,15 +59,11 @@ func (h *HexFileStream) Read(p []byte) (int, error) {
 				pPos++
 			}
 		}
-		h.bufPos++
 
 		if h.bufPos >= h.bufSize {
-			fmt.Println("read next...")
 			err := h.innerRead()
+			fmt.Println("read next..." + strconv.Itoa(h.bufSize))
 			if err != nil {
-				if err == io.EOF {
-					return pPos, nil
-				}
 				return pPos, err
 			}
 		}
