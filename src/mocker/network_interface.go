@@ -28,7 +28,7 @@ func CreateNetworkInterface(ip string) (*tun.NativeTun, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger.Log("Network Interface is created! name: mocker0, address: " + addr.String())
+	logger.Log("Main", "Network Interface is created! name: mocker0, address: "+addr.String())
 
 	return nativeTunDevice, nil
 }
@@ -43,7 +43,7 @@ func GetNetworkInterface(ip string) (*net.Interface, error) {
 	for _, iface := range ifaces {
 		addrs, err := iface.Addrs()
 		if err != nil {
-			logger.LogError("Failed to get addresses for interface:"+iface.Name, err)
+			logger.LogError("Main", "Failed to get addresses for interface:"+iface.Name+", error: "+err.Error())
 			continue
 		}
 		for _, addr := range addrs {

@@ -3,6 +3,7 @@ package logger
 import (
 	stlog "log"
 	"os"
+	"strconv"
 )
 
 var log *stlog.Logger
@@ -22,22 +23,26 @@ func InitLog(destination string) {
 	log = stlog.New(fileLog(destination), "", stlog.LstdFlags)
 }
 
-func Log(message string) {
-	log.Printf("%v\n", message)
+func Log(code string, message string) {
+	log.Printf("[%v] %v\n", code, message)
 }
 
-func LogBytes(message string, arr []byte, printDetails bool) {
+func LogBytes(code string, message string, arr []byte, printDetails bool) {
 	if printDetails {
-		log.Printf("%v\n%v\n", message, arr)
+		log.Printf("[%v] %v\n%v\n", code, message, arr)
 	} else {
-		log.Printf("%v\n", message)
+		log.Printf("[%v] %v\n", code, message)
 	}
 }
 
-func LogWarn(message string) {
-	log.Printf("[WARN]%v\n", message)
+func LogWarn(code string, message string) {
+	log.Printf("[%v] [WARN]%v\n", code, message)
 }
 
-func LogError(params ...interface{}) {
-	log.Printf("[ERROR]%v\n", params)
+func LogError(code string, message string) {
+	log.Printf("[%v] [ERROR]%v\n", code, message)
+}
+
+func GetCode(connId int, socket string) string {
+	return "Conn" + strconv.Itoa(connId) + "-" + socket
 }
