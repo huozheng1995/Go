@@ -83,7 +83,7 @@ func (m *Mocker) Start() {
 	var listener net.Listener
 	var err error
 	if m.MockerConfig.TunnelMode {
-		_, err = CreateNetworkInterface(m.MockerConfig.ServerIP)
+		_, err = CreateInterface(m.MockerConfig.ServerIP)
 		if err != nil {
 			logger.LogError("Main", "Failed to create Network Interface, error: "+err.Error())
 			panic(err)
@@ -145,7 +145,7 @@ func (m *Mocker) connectServer() (net.Conn, error) {
 
 func (m *Mocker) connectServerByLocalInterface() (net.Conn, error) {
 	ip := m.MockerConfig.LocalNetworkInterfaceAddress
-	_, err := GetNetworkInterface(ip)
+	_, err := GetInterface(ip)
 	if err != nil {
 		logger.LogError("Main", "Cannot find local network interface, ip address: "+ip+", error: "+err.Error())
 		return nil, err
