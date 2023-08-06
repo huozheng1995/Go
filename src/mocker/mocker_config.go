@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 )
 
@@ -24,10 +23,10 @@ type MockerConfig struct {
 	} `json:"MockDataGroup2"`
 }
 
-func ParseConfig() MockerConfig {
+func ParseConfig() *MockerConfig {
 	file, err := os.Open("config.json")
 	if err != nil {
-		fmt.Println("Error opening config file:", err)
+		Logger.LogError("Main", "Error opening config file:"+err.Error())
 		panic(err)
 	}
 	defer file.Close()
@@ -36,9 +35,9 @@ func ParseConfig() MockerConfig {
 	config := MockerConfig{}
 	err = decoder.Decode(&config)
 	if err != nil {
-		fmt.Println("Error decoding config file:", err)
+		Logger.LogError("Main", "Error decoding config file:"+err.Error())
 		panic(err)
 	}
 
-	return config
+	return &config
 }

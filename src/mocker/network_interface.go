@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/edward/mocker/logger"
 	"github.com/edward/mocker/winipcfg"
 	"golang.zx2c4.com/wireguard/tun"
 	"net"
@@ -13,29 +12,30 @@ import (
 )
 
 func CreateInterface(ip string) (*tun.NativeTun, error) {
-	device, err := tun.CreateTUN("mocker0", 0)
-	if err != nil {
-		return nil, err
-	}
-	//Must stop all operations and wait for the interface to be created!
-	fmt.Println("Waiting for network interface to be created...")
-	time.Sleep(8 * time.Second)
-
-	// Get the LUID to set IP address
-	nativeTunDevice := device.(*tun.NativeTun)
-	link := winipcfg.LUID(nativeTunDevice.LUID())
-
 	addr, err := netip.ParsePrefix(ip + "/32")
 	if err != nil {
 		return nil, err
 	}
 
+	device, err := tun.CreateTUN("mocker0", 0)
+	if err != nil {
+		return nil, err
+	}
+	// Get the LUID to set IP address
+	nativeTunDevice := device.(*tun.NativeTun)
+	link := winipcfg.LUID(nativeTunDevice.LUID())
 	err = link.SetIPAddresses([]netip.Prefix{addr})
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Network interface is created!")
-	logger.Log("Main", "Network interface is created! name: mocker0, address: "+addr.String())
+
+	//Must stop all operations and wait for the interface to be created!
+	fmt.Println("Waiting for network interface to be created...")
+	//Logger.Log("Main", "Waiting for network interface to be created...")
+	time.Sleep(3 * time.Second)
+	msg2 := "Network interface is created! name: mocker0, address: " + addr.String()
+	fmt.Println(msg2)
+	Logger.Log("Main", msg2)
 
 	return nativeTunDevice, nil
 }
@@ -49,7 +49,7 @@ func GetInterface(ip string) (*net.Interface, error) {
 	for _, iface := range ifaces {
 		addrs, err := iface.Addrs()
 		if err != nil {
-			logger.LogError("Main", "Failed to get addresses for interface:"+iface.Name+", error: "+err.Error())
+			Logger.LogError("Main", "Failed to get addresses for interface:"+iface.Name+", error: "+err.Error())
 			continue
 		}
 		for _, addr := range addrs {
@@ -70,7 +70,7 @@ func GetInterfaceAddr(interfaceName string) (*net.IP, error) {
 
 	addrs, err := iface.Addrs()
 	if err != nil {
-		logger.LogError("Main", "Failed to get addresses for interface:"+iface.Name+", error: "+err.Error())
+		Logger.LogError("Main", "Failed to get addresses for interface:"+iface.Name+", error: "+err.Error())
 	}
 	for _, addr := range addrs {
 		ipnet, ok := addr.(*net.IPNet)

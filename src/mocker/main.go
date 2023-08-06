@@ -1,9 +1,15 @@
 package main
 
-import "github.com/edward/mocker/logger"
+import (
+	"myutil"
+)
+
+var Logger *myutil.MyLogger
 
 func main() {
-	logger.InitLog("mocker.log")
+	Logger = myutil.NewMyLogger("mocker.log")
+	defer Logger.Close()
+
 	config := ParseConfig()
 
 	m := NewMocker(config)

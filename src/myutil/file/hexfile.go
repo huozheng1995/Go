@@ -1,26 +1,26 @@
-package stream
+package file
 
 import (
-	"fmt"
+	"myutil"
 	"os"
 	"strconv"
 	"strings"
 )
 
-type HexFileStream struct {
+type HexFile struct {
 	file    *os.File
 	buf     []byte
 	bufPos  int
 	bufSize int
 }
 
-func NewHexFileStream(fileUri string) (*HexFileStream, error) {
+func NewHexFile(fileUri string) (*HexFile, error) {
 	file, err := os.Open(fileUri)
 	if err != nil {
 		return nil, err
 	}
 
-	hexFileStream := HexFileStream{
+	hexFileStream := HexFile{
 		file:    file,
 		buf:     make([]byte, 64*1024),
 		bufPos:  0,
@@ -34,7 +34,7 @@ func NewHexFileStream(fileUri string) (*HexFileStream, error) {
 	return &hexFileStream, err
 }
 
-func (h *HexFileStream) innerRead() (err error) {
+func (h *HexFile) innerRead() (err error) {
 	h.bufSize, err = h.file.Read(h.buf)
 	h.bufPos = 0
 	if err != nil {
@@ -43,7 +43,7 @@ func (h *HexFileStream) innerRead() (err error) {
 	return nil
 }
 
-func (h *HexFileStream) Read(p []byte) (int, error) {
+func (h *HexFile) Read(p []byte) (int, error) {
 	pPos := 0
 	var builder strings.Builder
 	for pPos < len(p) {
@@ -62,16 +62,24 @@ func (h *HexFileStream) Read(p []byte) (int, error) {
 
 		if h.bufPos >= h.bufSize {
 			err := h.innerRead()
-			fmt.Println("read next..." + strconv.Itoa(h.bufSize))
+			if myutil.Logger != nil {
+				myutil.Logger.Log("HexFile", "Read bytes "+strconv.Itoa(h.bufSize))
+			}
 			if err != nil {
+				if myutil.Logger != nil {
+					myutil.Logger.Log("HexFile", "Return bytes "+strconv.Itoa(pPos))
+				}
 				return pPos, err
 			}
 		}
 	}
 
+	if myutil.Logger != nil {
+		myutil.Logger.Log("HexFile", "Return bytes "+strconv.Itoa(pPos))
+	}
 	return pPos, nil
 }
 
-func (h *HexFileStream) Close() error {
+func (h *HexFile) Close() error {
 	return h.file.Close()
 }
