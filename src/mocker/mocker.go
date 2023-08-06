@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"myutil"
@@ -71,6 +72,18 @@ func NewMocker(config *MockerConfig) *Mocker {
 		})
 	}
 
+	ip, err := GetIPByDomain(config.ServerIP)
+	if err != nil {
+		Logger.LogError("Main", "Failed to get IP, domain:"+config.ServerIP+", error: "+err.Error())
+		panic(err)
+	}
+	if ip == nil {
+		err = errors.New("There is no IP for domain, name: " + config.ServerIP)
+		Logger.LogError("Main", err.Error())
+		panic(err)
+	}
+	config.ServerIP = ip.String()
+
 	return &Mocker{
 		ReqDataResFiles: reqDataResFiles,
 		ResLenResFiles:  resLenResFiles,
@@ -82,7 +95,11 @@ func (m *Mocker) Start() {
 	var listener net.Listener
 	var err error
 	if m.MockerConfig.TunnelMode {
-		_, err = CreateInterface(m.MockerConfig.ServerIP)
+		if m.MockerConfig.CreateNetworkInterfaceManual {
+			err = CreateInterfaceManual(m.MockerConfig.ServerIP)
+		} else {
+			err = CreateInterface(m.MockerConfig.ServerIP)
+		}
 		if err != nil {
 			Logger.LogError("Main", "Failed to create Network Interface, error: "+err.Error())
 			panic(err)
@@ -144,7 +161,7 @@ func (m *Mocker) connectServer() (net.Conn, error) {
 
 func (m *Mocker) connectServerByLocalInterface() (net.Conn, error) {
 	ip := m.MockerConfig.LocalNetworkInterfaceAddress
-	_, err := GetInterface(ip)
+	_, err := GetInterfaceByIP(ip)
 	if err != nil {
 		Logger.LogError("Main", "Cannot find local network interface, ip address: "+ip+", error: "+err.Error())
 		return nil, err

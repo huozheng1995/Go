@@ -8,7 +8,6 @@ var Logger *myutil.MyLogger
 
 func main() {
 	Logger = myutil.NewMyLogger("mocker.log")
-	defer Logger.Close()
 
 	config := ParseConfig()
 

@@ -12,6 +12,7 @@ type MockerConfig struct {
 	PrintDetails                 bool   `json:"PrintDetails"`
 	TunnelMode                   bool   `json:"TunnelMode"`
 	LocalNetworkInterfaceAddress string `json:"LocalNetworkInterfaceAddress"`
+	CreateNetworkInterfaceManual bool   `json:"CreateNetworkInterfaceManual"`
 	MockDataLocation             string `json:"MockDataLocation"`
 	MockDataGroup1               []struct {
 		RequestFile   string   `json:"RequestFile"`

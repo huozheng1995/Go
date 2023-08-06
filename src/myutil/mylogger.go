@@ -9,25 +9,26 @@ import (
 var Logger *MyLogger
 
 func NewMyLogger(logPath string) *MyLogger {
-	file, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
-	if err != nil {
-		panic(err)
-	}
-	log := stlog.New(file, "", stlog.LstdFlags)
+	log := stlog.New(logWriter(logPath), "", stlog.LstdFlags)
 	Logger = &MyLogger{
-		file:   file,
 		logger: log,
 	}
 	return Logger
 }
 
-type MyLogger struct {
-	file   *os.File
-	logger *stlog.Logger
+type logWriter string
+
+func (fl logWriter) Write(data []byte) (int, error) {
+	f, err := os.OpenFile(string(fl), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+	return f.Write(data)
 }
 
-func (my *MyLogger) Close() {
-	my.file.Close()
+type MyLogger struct {
+	logger *stlog.Logger
 }
 
 func (my *MyLogger) Log(code string, message string) {

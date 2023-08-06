@@ -1,19 +1,17 @@
 {
-  "ServerIP": "172.16.85.139",
+  "ServerIP": "172.16.85.140",
   "ServerPort": 3306,
   "MockerPort": 3306,
   "PrintDetails": true,
   "TunnelMode": true,
   "LocalNetworkInterfaceAddress": "172.16.85.1",
-  "MockDataLocation": "C:/Users/User/Downloads/mocker",
+  "CreateNetworkInterfaceManual": true,
+  "MockDataLocation": "C:\\Users\\33907\\Downloads\\mocker",
   "MockDataGroup1": [
     {
       "RequestFile": "/req.txt",
       "ResponseFiles": [
-        "/res1.log",
-        "/res2.log",
-        "/res3.log",
-        "/res4.log"
+        "/res1.log"
       ]
     }
   ],
@@ -21,10 +19,7 @@
     {
       "ResponseDataLength": 12345678,
       "ResponseFiles": [
-        "/res1.log",
-        "/res2.log",
-        "/res3.log",
-        "/res4.log"
+        "/res1.log"
       ]
     }
   ]
