@@ -71,12 +71,13 @@ func FileToPageBuffer[T any](file multipart.File, reqBufferPool *sync.Pool, func
 				var err error
 				err = page.AppendData(&tempBuffer, file)
 				if err != nil {
-					if err != io.EOF {
-						logger.Log("Failed to read file stream, error: " + err.Error())
-					} else {
+					if err == io.EOF {
 						logger.Log("File stream read done")
+						readChan <- page
+					} else {
+						logger.Log("Failed to read file stream, error: " + err.Error())
+						reqBufferPool.Put(pageBuf)
 					}
-					reqBufferPool.Put(pageBuf)
 					return
 				}
 
