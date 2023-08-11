@@ -73,17 +73,27 @@ async function readStream(re) {
     let errorMessage = null;
 
     let reader = re.body.getReader();
+    let arrays = new Array();
     let myTypedArray = new MyTypedArray(Uint8Array, 4096);
     let transferSize = 0;
     let done = false;
     while (!done) {
         done = await reader.read().then(({done, value}) => {
             if (value != null && value.byteLength > 0) {
-                myTypedArray.pushArray(value);
+                let result = myTypedArray.pushArray(value);
+                if (!result) {
+                    arrays.push(myTypedArray)
+                    myTypedArray = new MyTypedArray(Uint8Array, 4096);
+                    result = myTypedArray.pushArray(value);
+                    if (!result) {
+                        throw new Error('Cannot push data into MyTypedArray');
+                    }
+                }
                 transferSize += value.byteLength;
                 updateMessageValue("Transferred size: " + (transferSize >>> 10) + "KB", "blue");
             }
             if (done) {
+                arrays.push(myTypedArray)
                 updateMessageValue("Transfer done, total size: " + (transferSize >>> 10) + "KB", "green");
                 return true;
             }
@@ -97,24 +107,27 @@ async function readStream(re) {
     return {
         Success: success,
         Message: success ? "Data was converted! Total size: " + (transferSize >>> 10) + "KB" : errorMessage,
-        TypedArray: myTypedArray
+        TypedArrays: arrays
     };
 }
 
 async function streamToFile(re) {
     let result = await readStream(re);
-    let file = new File([result.TypedArray.toString()], DownloadFileName, {type: "text/plain"});
-    let url = URL.createObjectURL(file);
-    let a = document.createElement('a');
-    a.href = url;
-    a.download = DownloadFileName;
-    a.click();
-    URL.revokeObjectURL(url);
+
+    for (let typedArr of result.TypedArrays) {
+        let file = new File([typedArr.toString()], DownloadFileName, {type: "text/plain"});
+        let url = URL.createObjectURL(file);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = DownloadFileName;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
 
     return {
         Success: result.Success,
         Message: result.Message,
-        Data: result.TypedArray.preview()
+        Data: result.TypedArrays[0].preview()
     };
 }
 
@@ -124,7 +137,7 @@ async function streamToText(re) {
     return {
         Success: result.Success,
         Message: result.Message,
-        Data: result.TypedArray.toString()
+        Data: result.TypedArrays[0].toString()
     };
 }
 
@@ -142,6 +155,8 @@ async function textToFile(re) {
 }
 
 class MyTypedArray {
+    static MaxSize = 512 * 1024 * 1024;
+
     constructor(typedArrayClass, cap) {
         this.typedArrayClass = typedArrayClass;
         this.off = 0;
@@ -151,9 +166,14 @@ class MyTypedArray {
     }
 
     pushArray(valArr) {
+        if (this.off + valArr.length > this.cap && this.cap * 2 > MyTypedArray.MaxSize) {
+            return false
+        }
+
         for (let val of valArr) {
             this.push(val);
         }
+        return true
     }
 
     push(val) {
