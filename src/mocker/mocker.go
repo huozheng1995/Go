@@ -8,10 +8,8 @@ import (
 	"myutil"
 	"myutil/file"
 	"net"
-	"os"
 	"path"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -49,7 +47,22 @@ type Mocker struct {
 func NewMocker(config *MockerConfig) *Mocker {
 	reqDataResFiles := myutil.NewSet()
 	for _, mockData := range config.MockDataGroup1 {
-		reqData := hexFileToBytes(path.Join(config.MockDataLocation, mockData.RequestFile))
+		var reqData []byte
+		func() {
+			fileUri := path.Join(config.MockDataLocation, mockData.RequestFile)
+			hexFile, err := file.NewHexFile(fileUri)
+			defer hexFile.Close()
+			if err != nil {
+				Logger.LogError("Main", "Error opening file: "+fileUri+", error: "+err.Error())
+				panic(err)
+			}
+			reqData, err = hexFile.ReadAll()
+			if err != nil {
+				Logger.LogError("Main", "Error reading file: "+fileUri+", error: "+err.Error())
+				panic(err)
+			}
+		}()
+
 		fileUris := make([]string, len(mockData.ResponseFiles))
 		for i, fileName := range mockData.ResponseFiles {
 			fileUris[i] = path.Join(config.MockDataLocation, fileName)
@@ -308,34 +321,4 @@ func writeFileToClient(fileUri string, mockerConn *MockerConn, logCode string) e
 		}
 	}
 
-}
-
-func hexFileToBytes(fileUri string) []byte {
-	fileBytes, err := os.ReadFile(fileUri)
-	if err != nil {
-		Logger.Log("Main", "Failed to read file: "+fileUri+", error: "+err.Error())
-		panic(err)
-	}
-
-	result := make([]byte, 0, len(fileBytes)>>1)
-	var val byte
-	var builder strings.Builder
-	for i := 0; i < len(fileBytes)+1; i++ {
-		if i == len(fileBytes) {
-			val = 0
-		} else {
-			val = fileBytes[i]
-		}
-		if (val >= '0' && val <= '9') || (val >= 'a' && val <= 'f') || (val >= 'A' && val <= 'F') || val == '-' {
-			builder.WriteByte(val)
-		} else {
-			if builder.Len() > 0 {
-				intVal, _ := strconv.ParseInt(builder.String(), 16, 64)
-				builder.Reset()
-				result = append(result, byte(intVal))
-			}
-		}
-	}
-
-	return result
 }
