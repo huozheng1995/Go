@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/edward/mocker/winipcfg"
 	"golang.zx2c4.com/wireguard/tun"
@@ -100,6 +101,32 @@ func GetIPByDomain(domain string) (*net.IP, error) {
 	for _, ip := range ips {
 		if ip.To4() != nil {
 			return &ip, nil
+		}
+	}
+
+	return nil, nil
+}
+
+func FindInterfaceInRouteTable(ipStr string) (*net.IPNet, error) {
+	ip := net.ParseIP(ipStr)
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, iface := range ifaces {
+		addrs, err := iface.Addrs()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, addr := range addrs {
+			if ipnet, ok := addr.(*net.IPNet); ok && ipnet.Contains(ip) {
+				if bytes.Equal(ipnet.IP, ip) {
+					continue
+				}
+				return ipnet, nil
+			}
 		}
 	}
 

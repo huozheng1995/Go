@@ -108,7 +108,7 @@ func (m *Mocker) Start() {
 	var listener net.Listener
 	var err error
 	if m.MockerConfig.TunnelMode {
-		if m.MockerConfig.CreateNetworkInterfaceManual {
+		if m.MockerConfig.CreateTunnelManual {
 			err = CreateInterfaceManual(m.MockerConfig.ServerIP)
 		} else {
 			err = CreateInterface(m.MockerConfig.ServerIP)
@@ -139,7 +139,7 @@ func (m *Mocker) Start() {
 
 		var serverConn net.Conn
 		if m.MockerConfig.TunnelMode {
-			serverConn, err = m.connectServerByLocalInterface()
+			serverConn, err = m.connectServerAccordingToRouteTable()
 		} else {
 			serverConn, err = m.connectServer()
 		}
@@ -172,15 +172,17 @@ func (m *Mocker) connectServer() (net.Conn, error) {
 	return conn, nil
 }
 
-func (m *Mocker) connectServerByLocalInterface() (net.Conn, error) {
-	ip := m.MockerConfig.LocalNetworkInterfaceAddress
-	_, err := GetInterfaceByIP(ip)
+func (m *Mocker) connectServerAccordingToRouteTable() (net.Conn, error) {
+	ipNet, err := FindInterfaceInRouteTable(m.MockerConfig.ServerIP)
 	if err != nil {
-		Logger.LogError("Main", "Cannot find local network interface, ip address: "+ip+", error: "+err.Error())
+		Logger.LogError("Main", "Error finding local network interface in route table, IP: "+m.MockerConfig.ServerIP+", error: "+err.Error())
 		return nil, err
 	}
+	if ipNet == nil {
+		return nil, errors.New("Cannot find local network interface in route table, IP: " + m.MockerConfig.ServerIP)
+	}
 
-	localAddr := &net.TCPAddr{IP: net.ParseIP(ip), Port: 0}
+	localAddr := &net.TCPAddr{IP: ipNet.IP, Port: 0}
 	remoteAddr := &net.TCPAddr{IP: net.ParseIP(m.MockerConfig.ServerIP), Port: m.MockerConfig.ServerPort}
 	dialer := net.Dialer{LocalAddr: localAddr}
 	conn, err := dialer.Dial("tcp", remoteAddr.String())
