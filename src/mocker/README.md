@@ -96,6 +96,11 @@ the connection string in the driver.
    2D D5 EF 00 00 74 C0 2C C0 2B C0 2F C0 30 C0 2E 
    00 9D 00 9C C0 2D 00 
    ```
+- The following regex will help you extract hexadecimal bytes from the log:
+  - Hexadecimal byte data lines in CData logs:
+    ^([0-9A-F][0-9A-F] ){1, 16}.*\r\n 
+  - Non-hex byte data lines in CData logs:
+    ^(?!([0-9A-F][0-9A-F] ){1, 16}).*\r\n
 
 
 
