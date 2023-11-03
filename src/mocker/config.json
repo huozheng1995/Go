@@ -5,7 +5,7 @@
   "PrintDetails": true,
   "TunnelMode": true,
   "CreateTunnelManual": true,
-  "MockDataLocation": "D:/DevelopTools/mocker/binlog",
+  "MockDataLocation": "D:/DevelopTools/mocker/common",
   "MockDataGroup1": [
     {
       "RequestFile": "/req1.txt",
@@ -18,7 +18,7 @@
     {
       "ResponseDataLength": 328,
       "ResponseFiles": [
-        "/res2.log"
+        "/res1.log"
       ]
     }
   ]

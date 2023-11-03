@@ -63,9 +63,11 @@ func NewMocker(config *MockerConfig) *Mocker {
 			}
 		}()
 
+		Logger.Log("Main", "Parsed ReqDataResFiles, req data length: "+strconv.Itoa(len(reqData)))
 		fileUris := make([]string, len(mockData.ResponseFiles))
 		for i, fileName := range mockData.ResponseFiles {
 			fileUris[i] = path.Join(config.MockDataLocation, fileName)
+			Logger.Log("Main", "Parsed ReqDataResFiles, res file path: "+fileUris[i])
 		}
 		reqDataResFiles.Add(&ReqDataResFiles{
 			ReqData:  &reqData,
