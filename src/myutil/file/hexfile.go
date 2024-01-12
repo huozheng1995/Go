@@ -48,15 +48,14 @@ func (h *HexFile) Read(p []byte) (int, error) {
 	for pPos < cap(p) {
 		//read data
 		if h.bufPos >= h.bufSize {
-			if builder.Len() > 0 {
-				intVal, _ := strconv.ParseInt(builder.String(), 16, 64)
-				builder.Reset()
-				p[pPos] = byte(intVal)
-				pPos++
-			}
-
 			err := h.innerRead()
 			if err != nil {
+				if err == io.EOF && builder.Len() > 0 {
+					intVal, _ := strconv.ParseInt(builder.String(), 16, 64)
+					builder.Reset()
+					p[pPos] = byte(intVal)
+					pPos++
+				}
 				if myutil.Logger != nil {
 					myutil.Logger.Log("HexFile", "Return bytes "+strconv.Itoa(pPos))
 				}

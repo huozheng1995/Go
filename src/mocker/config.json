@@ -10,7 +10,7 @@
     {
       "RequestFile": "/req1.txt",
       "ResponseFiles": [
-        "/res1.txt"
+        "/res2.txt"
       ]
     }
   ],
