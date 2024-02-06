@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	logger.Init("file_collector.log")
+	logger.Init("file-collector.log")
 	jobs, err := ReadConfig("config.json")
 	if err != nil {
 		logger.Log(err.Error())
