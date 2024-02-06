@@ -108,14 +108,14 @@ func DeleteFolder(desRootPath string) error {
 }
 
 func CopyFile(src, des string) (int64, error) {
-	logger.Log(fmt.Sprintf("Begin to copy, from [%s] to [%s]", src, des))
+	logger.Log(fmt.Sprintf("Begin to copy, file: [%s]", src))
 	srcState, err := os.Stat(src)
 	if err != nil {
 		return 0, err
 	}
 
 	if !srcState.Mode().IsRegular() {
-		return 0, fmt.Errorf("%s is not a regular file", src)
+		return 0, fmt.Errorf("[%s] is not a regular file", src)
 	}
 
 	source, err := os.Open(src)
@@ -143,6 +143,6 @@ func CopyFile(src, des string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	logger.Log("File is copied")
+
 	return nBytes, err
 }
