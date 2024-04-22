@@ -24,12 +24,7 @@ func FileToRawBytes(file multipart.File, reqBufferPool *sync.Pool, exitChan chan
 			default:
 				pageBuf := reqBufferPool.Get().([]byte)
 				var page *Page[byte]
-				page = &Page[byte]{
-					pageNum:  pageNum,
-					buffer:   &pageBuf,
-					pageSize: cap(pageBuf),
-					length:   0,
-				}
+				page = CreateEmptyPage(pageNum, &pageBuf, nil)
 				pageNum++
 
 				var err error
