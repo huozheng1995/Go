@@ -67,6 +67,9 @@ func (page *Page[T]) AppendData(tempBuffer *TempBuffer, file multipart.File) (er
 					tempBuffer.cell.Reset()
 					if page.IsFull() {
 						tempBuffer.len = endOff - tempBuffer.off
+						if tempBuffer.len == 0 {
+							tempBuffer.off = 0
+						}
 						return nil
 					}
 				}
