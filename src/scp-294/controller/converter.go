@@ -263,6 +263,8 @@ func selectFuncByteToStr(OutputFormat common.NumType) (funcByteToStr utils.ByteT
 	case common.DecInt8Formatted:
 		withDetails = true
 		funcByteToStr = utils.ByteToInt8Str{}
+	case common.RawBytes:
+		funcByteToStr = utils.ByteToRawBytes{}
 	default:
 		funcByteToStr = nil
 	}

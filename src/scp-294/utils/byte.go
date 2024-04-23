@@ -70,6 +70,16 @@ func (byteToStr ByteToInt8Str) getWidth() int {
 	return 4
 }
 
+type ByteToRawBytes struct {
+}
+
+func (byteToStr ByteToRawBytes) toString(val byte) string {
+	return ""
+}
+func (byteToStr ByteToRawBytes) getWidth() int {
+	return 0
+}
+
 // request string to byte array
 
 func ReqStrToByteArray(str string, funcStrToByte StrToByte) []byte {
@@ -101,8 +111,14 @@ const printLen = 5
 const GlobalRowSize = 16
 
 func ByteArrayToResponse(arr []byte, globalRowIndex *int, byteToStr ByteToStr, withDetails bool, resBuf *bytes.Buffer) {
-	rowSize := GlobalRowSize
+	//To RawBytes
+	if _, ok := byteToStr.(ByteToRawBytes); ok {
+		resBuf.Write(arr)
+		return
+	}
 
+	//To String
+	rowSize := GlobalRowSize
 	totalLen := len(arr)
 	totalRow := totalLen / rowSize
 	lastRowCount := totalLen % rowSize

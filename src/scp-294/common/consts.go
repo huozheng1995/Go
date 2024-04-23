@@ -48,6 +48,7 @@ var OutputFormatMap = map[NumType]string{
 	HexByteFormatted: "Formatted Hex Byte numbers",
 	DecByteFormatted: "Formatted Dec Byte numbers",
 	DecInt8Formatted: "Formatted Dec Int8 numbers",
+	RawBytes:         "Raw Bytes",
 }
 
 var TypeDescMap = map[NumType]string{
