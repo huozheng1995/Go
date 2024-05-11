@@ -6,14 +6,13 @@ import (
 )
 
 type MockerConfig struct {
-	ServerIP           string `json:"ServerIP"`
-	ServerPort         int    `json:"ServerPort"`
-	MockerPort         int    `json:"MockerPort"`
-	PrintDetails       bool   `json:"PrintDetails"`
-	TunnelMode         bool   `json:"TunnelMode"`
-	CreateTunnelManual bool   `json:"CreateTunnelManual"`
-	MockDataLocation   string `json:"MockDataLocation"`
-	MockDataGroup1     []struct {
+	ServerIP         string `json:"ServerIP"`
+	ServerPort       int    `json:"ServerPort"`
+	MockerPort       int    `json:"MockerPort"`
+	PrintDetails     bool   `json:"PrintDetails"`
+	TunnelMode       bool   `json:"TunnelMode"`
+	MockDataLocation string `json:"MockDataLocation"`
+	MockDataGroup1   []struct {
 		RequestFile   string   `json:"RequestFile"`
 		ResponseFiles []string `json:"ResponseFiles"`
 	} `json:"MockDataGroup1"`

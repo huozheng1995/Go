@@ -1,25 +1,13 @@
 {
   "ServerIP": "172.16.85.139",
-  "ServerPort": 3306,
-  "MockerPort": 3306,
+  "ServerPort": 50000,
+  "MockerPort": 50000,
   "PrintDetails": true,
   "TunnelMode": true,
   "CreateTunnelManual": true,
-  "MockDataLocation": "D:/DevelopTools/mocker/common",
+  "MockDataLocation": "D:/DevelopTools/mocker/db2",
   "MockDataGroup1": [
-    {
-      "RequestFile": "/req1.txt",
-      "ResponseFiles": [
-        "/res2.txt"
-      ]
-    }
   ],
   "MockDataGroup2": [
-    {
-      "ResponseDataLength": 328,
-      "ResponseFiles": [
-        "/res1.log"
-      ]
-    }
   ]
 }

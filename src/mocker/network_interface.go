@@ -3,36 +3,10 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/edward/mocker/winipcfg"
-	"golang.zx2c4.com/wireguard/tun"
 	"net"
-	"net/netip"
 	"strings"
 	"time"
 )
-
-func CreateInterface(ip string) error {
-	fmt.Println("Waiting for network interface to be created... IP: " + ip)
-
-	device, err := tun.CreateTUN("mocker0", 0)
-	if err != nil {
-		return err
-	}
-	// Get the LUID to set IP address
-	nativeTunDevice := device.(*tun.NativeTun)
-	link := winipcfg.LUID(nativeTunDevice.LUID())
-	addr, _ := netip.ParsePrefix(ip + "/32")
-	err = link.SetIPAddresses([]netip.Prefix{addr})
-	if err != nil {
-		return err
-	}
-
-	//Must stop all operations and wait for the interface to be created!
-	time.Sleep(6 * time.Second)
-	fmt.Println("Network interface is created! name: mocker0")
-
-	return nil
-}
 
 func CreateInterfaceManual(ip string) error {
 	for {

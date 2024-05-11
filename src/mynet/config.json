@@ -1,0 +1,9 @@
+{
+  "NetworksToAdd": [
+    {
+      "Name": "mocker0",
+      "IPv4Address": "172.16.85.139",
+      "SubnetMask": 32
+    }
+  ]
+}

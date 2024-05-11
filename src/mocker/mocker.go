@@ -110,11 +110,7 @@ func (m *Mocker) Start() {
 	var listener net.Listener
 	var err error
 	if m.MockerConfig.TunnelMode {
-		if m.MockerConfig.CreateTunnelManual {
-			err = CreateInterfaceManual(m.MockerConfig.ServerIP)
-		} else {
-			err = CreateInterface(m.MockerConfig.ServerIP)
-		}
+		err = CreateInterfaceManual(m.MockerConfig.ServerIP)
 		if err != nil {
 			Logger.LogError("Main", "Failed to create Network Interface, error: "+err.Error())
 			panic(err)
