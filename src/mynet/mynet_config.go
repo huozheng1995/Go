@@ -2,15 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"myutil"
 	"os"
 )
 
 type MyNetConfig struct {
-	NetworksToAdd []struct {
-		Name        string `json:"Name"`
-		IPv4Address string `json:"IPv4Address"`
-		SubnetMask  int    `json:"SubnetMask"`
-	} `json:"NetworksToAdd"`
+	NetworksToAdd []myutil.Network `json:"NetworksToAdd"`
 }
 
 func ParseConfig() *MyNetConfig {

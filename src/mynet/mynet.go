@@ -11,12 +11,6 @@ import (
 	"time"
 )
 
-type Network struct {
-	Name        string
-	IPv4Address string
-	SubnetMask  int
-}
-
 type MyNet struct {
 	NetworksToAdd *myutil.Set
 	MyNetConfig   *MyNetConfig
@@ -25,7 +19,7 @@ type MyNet struct {
 func NewMyNet(config *MyNetConfig) *MyNet {
 	networksToAdd := myutil.NewSet()
 	for _, network := range config.NetworksToAdd {
-		networksToAdd.Add(&Network{
+		networksToAdd.Add(&myutil.Network{
 			Name:        network.Name,
 			IPv4Address: network.IPv4Address,
 			SubnetMask:  network.SubnetMask,
@@ -40,7 +34,7 @@ func NewMyNet(config *MyNetConfig) *MyNet {
 func (m *MyNet) Start() {
 	networksToAdd := m.NetworksToAdd.Elements()
 	for _, item := range networksToAdd {
-		network := item.(*Network)
+		network := item.(*myutil.Network)
 		var device tun.Device
 		var err error
 		device, err = CreateNetwork(network.Name, network.IPv4Address, network.SubnetMask)
@@ -52,7 +46,7 @@ func (m *MyNet) Start() {
 		go LogNetworkData(device)
 	}
 
-	time.Sleep(1 * time.Hour)
+	time.Sleep(24 * time.Hour)
 }
 
 func CreateNetwork(name string, ip string, subnetMask int) (tun.Device, error) {
