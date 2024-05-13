@@ -1,26 +1,9 @@
 ### To use Mocker, follow the steps bellow:
-#### Tunnel mode off
-- Edit 'config.json', see "Common Config"
+
+- Edit 'config.json', see the "Common Config"
 - Create request and response data files, see "Format for RequestFile and ResponseFiles"
-- Modify CData driver's connection string. Server property should be "127.0.0.1", Port property should be the same as "MockerPort"
-- Start mocker.exe
-- Execute CData driver
-
-#### Tunnel mode on
-- Edit 'config.json', see the "Common Config" and "Tunnel Mode Config" below
-- Create request and response data files, see "Format for RequestFile and ResponseFiles"
-- Start mocker.exe
-- Mocker will prompt you to set the correct IP address for WireGuard, see "Waiting for network interface to be
-  created... IP: xxx.xxx.xxx.xxx"
-- Start WireGuard, then add empty tunnel (press Ctrl+N), input a name and add the IP address, then click "Activate"
-- ```
-   [Interface]
-   PrivateKey = XXXXXXXXXXXXXXXXXXXXXXXXXXXX
-   Address = xxx.xxx.xxx.xxx/32
-   ```
-- execute CData driver
-
-
+- Run mocker.exe as administrator
+- Run CData driver
 
 ### Common Config
 - ServerIP: The server ip to connect
@@ -50,11 +33,11 @@
   ],
   ```
 - MockDataGroup2:
-  - ResponseDataLength: Mocker will send the real request to server, then match the length of the response
+  - ResponseDataLength: Mocker will send the raw request to server, then match the length of the response
   - ResponseFiles: Same as itself in MockDataGroup1
   ```
   For example:
-  "MockDataGroup1": [
+  "MockDataGroup2": [
     {
       "ResponseDataLength": 123,
       "ResponseFiles": [
@@ -72,21 +55,6 @@
   ```
 
 
-
-### Tunnel Mode Config
-It is used to handle http-based drivers such as databricks and snowflake. In these drivers, the server property
-cannot be changed, otherwise the server will not recognize it.
-
-#### Working Principle
-It will create a virtual network interface to route the request to Mocker, so you don't need to change
-the connection string in the driver.
-
-#### To enable Tunnel Mode, you should configure these
-- TunnelMode: True
-- CreateNetworkInterfaceManual: Only support True for now
-
-
-
 ### Format for RequestFile and ResponseFiles
 - The format is hexadecimal bytes, the same as CData driver log file, such as:
    ```
@@ -101,25 +69,3 @@ the connection string in the driver.
     ^([0-9A-F][0-9A-F] ){1, 16}.*\r\n 
   - Non-hex byte data lines in CData logs:
     ^(?!([0-9A-F][0-9A-F] ){1, 16}).*\r\n
-
-
-
-### [WireGuard config](https://www.procustodibus.com/blog/2021/01/wireguard-endpoints-and-ip-addresses/)
-#### Basic (sufficient in most cases)
-```
-[Interface]
-PrivateKey = aHZ0FJBG3kdNhiEhLiTjBwHwYpzdIHd9dTStJoQClGk=
-Address = xxx.xxx.xxx.xxx/32
-```
-
-#### Advanced (for example: use the network proxy)
-```
-[Interface]
-PrivateKey = aHZ0FJBG3kdNhiEhLiTjBwHwYpzdIHd9dTStJoQClGk=
-Address = xxx.xxx.xxx.xxx/32
-
-[Peer]
-PublicKey = fE/wdxzl0klVp/IR8UcaoGUMjqaWi3jAd7KzHKFS6Ds=
-AllowedIPs = xxx.xxx.xxx.xxx/32
-Endpoint = 127.0.0.1:10809
-```

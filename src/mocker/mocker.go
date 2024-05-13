@@ -108,17 +108,12 @@ func NewMocker(config *MockerConfig) *Mocker {
 
 func (m *Mocker) Start() {
 	var listener net.Listener
-	var err error
-	if m.MockerConfig.TunnelMode {
-		err = myutil.CreateInterfaceManual(m.MockerConfig.ServerIP)
-		if err != nil {
-			Logger.LogError("Main", "Failed to create Network Interface, error: "+err.Error())
-			panic(err)
-		}
-		listener, err = net.Listen("tcp", m.MockerConfig.ServerIP+":"+strconv.Itoa(m.MockerConfig.MockerPort))
-	} else {
-		listener, err = net.Listen("tcp", ":"+strconv.Itoa(m.MockerConfig.MockerPort))
+	err := myutil.CreateInterfaceManual(m.MockerConfig.ServerIP)
+	if err != nil {
+		Logger.LogError("Main", "Failed to create Network Interface, error: "+err.Error())
+		panic(err)
 	}
+	listener, err = net.Listen("tcp", m.MockerConfig.ServerIP+":"+strconv.Itoa(m.MockerConfig.MockerPort))
 	if err != nil {
 		Logger.LogError("Main", "Error listening, error: "+err.Error())
 		panic(err)
@@ -136,11 +131,7 @@ func (m *Mocker) Start() {
 		Logger.Log("Main", fmt.Sprintf("Client socket is established! Client: %v -> Local: %v", clientConn.RemoteAddr(), clientConn.LocalAddr()))
 
 		var serverConn net.Conn
-		if m.MockerConfig.TunnelMode {
-			serverConn, err = m.connectServerAccordingToRouteTable()
-		} else {
-			serverConn, err = m.connectServer()
-		}
+		serverConn, err = m.connectServerAccordingToRouteTable()
 		if err != nil {
 			Logger.LogError("Main", "Error connecting server, error: "+err.Error())
 			panic(err)
