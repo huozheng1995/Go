@@ -87,7 +87,7 @@ func NewMocker(config *MockerConfig) *Mocker {
 		})
 	}
 
-	ip, err := GetIPByDomain(config.ServerIP)
+	ip, err := myutil.GetIPByDomain(config.ServerIP)
 	if err != nil {
 		Logger.LogError("Main", "Failed to get IP, domain:"+config.ServerIP+", error: "+err.Error())
 		panic(err)
@@ -110,7 +110,7 @@ func (m *Mocker) Start() {
 	var listener net.Listener
 	var err error
 	if m.MockerConfig.TunnelMode {
-		err = CreateInterfaceManual(m.MockerConfig.ServerIP)
+		err = myutil.CreateInterfaceManual(m.MockerConfig.ServerIP)
 		if err != nil {
 			Logger.LogError("Main", "Failed to create Network Interface, error: "+err.Error())
 			panic(err)
@@ -171,13 +171,13 @@ func (m *Mocker) connectServer() (net.Conn, error) {
 }
 
 func (m *Mocker) connectServerAccordingToRouteTable() (net.Conn, error) {
-	ipNet, err := FindInterfaceInRouteTable(m.MockerConfig.ServerIP)
+	ipNet, err := myutil.FindInterfaceInRouteTable(m.MockerConfig.ServerIP)
 	if err != nil {
-		Logger.LogError("Main", "Error finding local network interface in route table, IP: "+m.MockerConfig.ServerIP+", error: "+err.Error())
+		Logger.LogError("Main", "Error finding network interface in route table, IP: "+m.MockerConfig.ServerIP+", error: "+err.Error())
 		return nil, err
 	}
 	if ipNet == nil {
-		return nil, errors.New("Cannot find local network interface in route table, IP: " + m.MockerConfig.ServerIP)
+		return nil, errors.New("There is no network interface in route table, IP: " + m.MockerConfig.ServerIP)
 	}
 
 	localAddr := &net.TCPAddr{IP: ipNet.IP, Port: 0}
