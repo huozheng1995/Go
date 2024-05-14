@@ -11,76 +11,56 @@ import (
 	"sync/atomic"
 )
 
-func FileToRawBytes(file multipart.File, reqBufferPool *sync.Pool, exitChan chan struct{}) (readChan chan *Page[byte]) {
-	readChan = make(chan *Page[byte])
-	go func() {
-		defer close(readChan)
-		pageNum := 1
-		for {
-			select {
-			case <-exitChan:
-				logger.Log("Exit channel is closed")
-				return
-			default:
-				pageBuf := reqBufferPool.Get().([]byte)
-				var page *Page[byte]
-				page = CreateEmptyPage(pageNum, &pageBuf, nil)
-				pageNum++
+func FileToRawBytes(file multipart.File, reqBufferPool *sync.Pool, readChan chan *Page[byte]) {
+	defer close(readChan)
+	pageNum := 1
+	for {
+		pageBuf := reqBufferPool.Get().([]byte)
+		var page *Page[byte]
+		page = CreateEmptyPage(pageNum, &pageBuf, nil)
+		pageNum++
 
-				var err error
-				page.length, err = file.Read(pageBuf)
-				if err != nil {
-					if err != io.EOF {
-						logger.Log("Failed to read file stream, error: " + err.Error())
-					} else {
-						logger.Log("File stream read done")
-					}
-					reqBufferPool.Put(pageBuf)
-					return
-				}
-
-				readChan <- page
+		var err error
+		page.length, err = file.Read(pageBuf)
+		if err != nil {
+			if err != io.EOF {
+				logger.Log("Failed to read file stream, error: " + err.Error())
+			} else {
+				logger.Log("File stream read done")
 			}
+			reqBufferPool.Put(pageBuf)
+			return
 		}
-	}()
-	return
+
+		readChan <- page
+	}
 }
 
-func FileToPageBuffer[T any](file multipart.File, reqBufferPool *sync.Pool, funcStrToNum func(string) T, exitChan chan struct{}) (readChan chan *Page[T]) {
-	readChan = make(chan *Page[T])
-	go func() {
-		defer close(readChan)
-		pageNum := 1
-		tempBuffer := CreateTempBuffer()
-		for {
-			select {
-			case <-exitChan:
-				logger.Log("Exit channel is closed")
-				return
-			default:
-				pageBuf := reqBufferPool.Get().([]T)
-				var page *Page[T]
-				page = CreateEmptyPage(pageNum, &pageBuf, funcStrToNum)
-				pageNum++
+func FileToPageBuffer[T any](file multipart.File, reqBufferPool *sync.Pool, funcStrToNum func(string) T, readChan chan *Page[T]) {
+	defer close(readChan)
+	pageNum := 1
+	tempBuffer := CreateTempBuffer()
+	for {
+		pageBuf := reqBufferPool.Get().([]T)
+		var page *Page[T]
+		page = CreateEmptyPage(pageNum, &pageBuf, funcStrToNum)
+		pageNum++
 
-				var err error
-				err = page.AppendData(&tempBuffer, file)
-				if err != nil {
-					if err == io.EOF {
-						logger.Log("File stream read done")
-						readChan <- page
-					} else {
-						logger.Log("Failed to read file stream, error: " + err.Error())
-						reqBufferPool.Put(pageBuf)
-					}
-					return
-				}
-
+		var err error
+		err = page.AppendData(&tempBuffer, file)
+		if err != nil {
+			if err == io.EOF {
+				logger.Log("File stream read done")
 				readChan <- page
+			} else {
+				logger.Log("Failed to read file stream, error: " + err.Error())
+				reqBufferPool.Put(pageBuf)
 			}
+			return
 		}
-	}()
-	return
+
+		readChan <- page
+	}
 }
 
 func ReadByteArrayAndResponse(readChan <-chan *Page[byte], funcByteToStr ByteToStr, withDetails bool, reqBufferPool *sync.Pool, w http.ResponseWriter) {

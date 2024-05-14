@@ -143,9 +143,8 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 			common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
-		exitChan := make(chan struct{})
-		defer close(exitChan)
-		readChan := utils.FileToPageBuffer(file, reqInt64BufferPool, funcStrToInt64, exitChan)
+		readChan := make(chan *utils.Page[int64])
+		go utils.FileToPageBuffer(file, reqInt64BufferPool, funcStrToInt64, readChan)
 		utils.ReadInt64ArrayAndResponse(readChan, funcInt64ToStr, reqInt64BufferPool, w)
 		return
 	}
@@ -159,9 +158,8 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 			common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
-		exitChan := make(chan struct{})
-		defer close(exitChan)
-		readChan := utils.FileToPageBuffer(file, reqByteBufferPool, funcStrToByte, exitChan)
+		readChan := make(chan *utils.Page[byte])
+		go utils.FileToPageBuffer(file, reqByteBufferPool, funcStrToByte, readChan)
 		utils.ReadByteArrayAndResponse(readChan, funcByteToStr, withDetails, reqByteBufferPool, w)
 		return
 	}
@@ -174,9 +172,8 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 			common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
-		exitChan := make(chan struct{})
-		defer close(exitChan)
-		readChan := utils.FileToRawBytes(file, reqByteBufferPool, exitChan)
+		readChan := make(chan *utils.Page[byte])
+		go utils.FileToRawBytes(file, reqByteBufferPool, readChan)
 		utils.ReadByteArrayAndResponse(readChan, funcByteToStr, withDetails, reqByteBufferPool, w)
 		return
 	}
