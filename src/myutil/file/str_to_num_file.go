@@ -2,75 +2,10 @@ package file
 
 import (
 	"io"
-	"mime/multipart"
 	"myutil"
 	"strconv"
 	"strings"
 )
-
-// String To Byte
-
-func NewHex2StrMultipartFile(file multipart.File) *StrToNumFile[byte] {
-	return &StrToNumFile[byte]{
-		buf:          make([]byte, 64*1024),
-		bufPos:       0,
-		bufSize:      0,
-		file:         file,
-		funcStrToNum: myutil.Hex2StrToByte,
-	}
-}
-
-func NewInt8StrMultipartFile(file multipart.File) *StrToNumFile[byte] {
-	return &StrToNumFile[byte]{
-		buf:          make([]byte, 64*1024),
-		bufPos:       0,
-		bufSize:      0,
-		file:         file,
-		funcStrToNum: myutil.Int8StrToByte,
-	}
-}
-
-func NewByteStrMultipartFile(file multipart.File) *StrToNumFile[byte] {
-	return &StrToNumFile[byte]{
-		buf:          make([]byte, 64*1024),
-		bufPos:       0,
-		bufSize:      0,
-		file:         file,
-		funcStrToNum: myutil.ByteStrToByte,
-	}
-}
-
-// String To Int64
-
-func NewHexStrMultipartFile(file multipart.File) *StrToNumFile[int64] {
-	return &StrToNumFile[int64]{
-		buf:          make([]byte, 64*1024),
-		bufPos:       0,
-		bufSize:      0,
-		file:         file,
-		funcStrToNum: myutil.HexStrToInt64,
-	}
-}
-
-func NewDecStrMultipartFile(file multipart.File) *StrToNumFile[int64] {
-	return &StrToNumFile[int64]{
-		buf:          make([]byte, 64*1024),
-		bufPos:       0,
-		bufSize:      0,
-		file:         file,
-		funcStrToNum: myutil.DecStrToInt64,
-	}
-}
-
-func NewBinStrMultipartFile(file multipart.File) *StrToNumFile[int64] {
-	return &StrToNumFile[int64]{
-		buf:          make([]byte, 64*1024),
-		bufPos:       0,
-		bufSize:      0,
-		file:         file,
-		funcStrToNum: myutil.BinStrToInt64,
-	}
-}
 
 type StrToNumFile[T any] struct {
 	buf          []byte
