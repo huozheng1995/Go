@@ -14,7 +14,7 @@ func HexStrToInt64(str string) int64 {
 	return val
 }
 
-func Int64StrToInt64(str string) int64 {
+func DecStrToInt64(str string) int64 {
 	val, _ := strconv.ParseInt(str, 10, 64)
 	return val
 }

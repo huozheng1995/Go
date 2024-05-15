@@ -26,14 +26,14 @@ func Int8StrToByte(str string) byte {
 // byte to string
 
 type ByteToStr interface {
-	toString(byte) string
-	getWidth() int
+	ToString(byte) string
+	GetWidth() int
 }
 
 type ByteToHexStr struct {
 }
 
-func (byteToStr ByteToHexStr) toString(val byte) string {
+func (byteToStr ByteToHexStr) ToString(val byte) string {
 	if val == 0 {
 		return "00"
 	}
@@ -44,36 +44,36 @@ func (byteToStr ByteToHexStr) toString(val byte) string {
 
 	return string(arr)
 }
-func (byteToStr ByteToHexStr) getWidth() int {
+func (byteToStr ByteToHexStr) GetWidth() int {
 	return 2
 }
 
 type ByteToByteStr struct {
 }
 
-func (byteToStr ByteToByteStr) toString(val byte) string {
+func (byteToStr ByteToByteStr) ToString(val byte) string {
 	return strconv.Itoa(int(val))
 }
-func (byteToStr ByteToByteStr) getWidth() int {
+func (byteToStr ByteToByteStr) GetWidth() int {
 	return 3
 }
 
 type ByteToInt8Str struct {
 }
 
-func (byteToStr ByteToInt8Str) toString(val byte) string {
+func (byteToStr ByteToInt8Str) ToString(val byte) string {
 	return strconv.Itoa(int(int8(val)))
 }
-func (byteToStr ByteToInt8Str) getWidth() int {
+func (byteToStr ByteToInt8Str) GetWidth() int {
 	return 4
 }
 
 type ByteToRawBytes struct {
 }
 
-func (byteToStr ByteToRawBytes) toString(val byte) string {
+func (byteToStr ByteToRawBytes) ToString(val byte) string {
 	return ""
 }
-func (byteToStr ByteToRawBytes) getWidth() int {
+func (byteToStr ByteToRawBytes) GetWidth() int {
 	return 0
 }

@@ -50,7 +50,7 @@ func NewMocker(config *MockerConfig) *Mocker {
 		var reqData []byte
 		func() {
 			fileUri := path.Join(config.MockDataLocation, mockData.RequestFile)
-			hexFile, err := file.NewHexFile(fileUri)
+			hexFile, err := file.NewHex2ByteOSFile(fileUri)
 			defer hexFile.Close()
 			if err != nil {
 				Logger.LogError("Main", "Error opening file: "+fileUri+", error: "+err.Error())
@@ -284,7 +284,7 @@ func (m *Mocker) handleServerSocket(mockerConn *MockerConn) {
 }
 
 func writeFileToClient(fileUri string, mockerConn *MockerConn, logCode string) error {
-	hexFile, err := file.NewHexFile(fileUri)
+	hexFile, err := file.NewHex2ByteOSFile(fileUri)
 	defer hexFile.Close()
 	if err != nil {
 		Logger.LogError(logCode, "Error opening file: "+fileUri+", error: "+err.Error())
