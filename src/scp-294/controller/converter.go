@@ -25,7 +25,7 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		err = r.ParseMultipartForm(100)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			common.ResponseError(w, "Failed to parse form data, error: "+err.Error())
+			common.RespondError(w, "Failed to parse form data, error: "+err.Error())
 			return
 		}
 		form := r.MultipartForm
@@ -54,7 +54,7 @@ func convert(w http.ResponseWriter, r *http.Request) {
 					file, err = files[0].Open()
 					if err != nil {
 						w.WriteHeader(http.StatusInternalServerError)
-						common.ResponseError(w, "Failed to open file, error: "+err.Error())
+						common.RespondError(w, "Failed to open file, error: "+err.Error())
 						return
 					}
 				}
@@ -68,7 +68,7 @@ func convert(w http.ResponseWriter, r *http.Request) {
 		}
 
 	default:
-		common.ResponseError(w, "Failed to convert data")
+		common.RespondError(w, "Failed to convert data")
 	}
 }
 
@@ -80,7 +80,7 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 		funcInt64ToStr := selectFuncInt64ToStr(OutputFormat)
 		if funcInt64ToStr == nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
+			common.RespondError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
 		int64Array := utils.ReqTextToInt64Array(InputData, funcStrToInt64)
@@ -95,7 +95,7 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 		funcByteToStr, withDetails := selectFuncByteToStr(OutputFormat)
 		if funcByteToStr == nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
+			common.RespondError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
 		byteArray := utils.ReqTextToByteArray(InputData, funcStrToByte)
@@ -107,7 +107,7 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 	}
 
 	w.WriteHeader(http.StatusInternalServerError)
-	common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
+	common.RespondError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 }
 
 func writeResponse(w http.ResponseWriter, response string) {
@@ -119,7 +119,7 @@ func writeResponse(w http.ResponseWriter, response string) {
 	}
 	err := enc.Encode(resData)
 	if err != nil {
-		common.ResponseError(w, "Failed to encode data, error: "+err.Error())
+		common.RespondError(w, "Failed to encode data, error: "+err.Error())
 		return
 	}
 }
@@ -131,7 +131,7 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 		funcInt64ToStr := selectFuncInt64ToStr(OutputFormat)
 		if funcInt64ToStr == nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
+			common.RespondError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
 		readChan := make(chan []int64)
@@ -146,7 +146,7 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 		funcByteToStr, withDetails := selectFuncByteToStr(OutputFormat)
 		if funcByteToStr == nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
+			common.RespondError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
 		readChan := make(chan []byte)
@@ -160,7 +160,7 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 		funcByteToStr, withDetails := selectFuncByteToStr(OutputFormat)
 		if funcByteToStr == nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
+			common.RespondError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
 		readChan := make(chan []byte)
@@ -170,14 +170,14 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 	}
 
 	w.WriteHeader(http.StatusInternalServerError)
-	common.ResponseError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
+	common.RespondError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 }
 
 var byteBufferCount int32
 var reqByteBufferPool = &sync.Pool{
 	New: func() interface{} {
 		atomic.AddInt32(&byteBufferCount, 1)
-		logger.Log("reqByteBufferPool: Count of new buffer: " + strconv.Itoa(int(byteBufferCount)))
+		logger.Logger.Log("Main", "reqByteBufferPool: Count of new buffer: "+strconv.Itoa(int(byteBufferCount)))
 		return make([]byte, 4096)
 	},
 }
@@ -186,7 +186,7 @@ var int64BufferCount int32
 var reqInt64BufferPool = &sync.Pool{
 	New: func() interface{} {
 		atomic.AddInt32(&int64BufferCount, 1)
-		logger.Log("reqInt64BufferPool: Count of new buffer: " + strconv.Itoa(int(int64BufferCount)))
+		logger.Logger.Log("Main", "reqInt64BufferPool: Count of new buffer: "+strconv.Itoa(int(int64BufferCount)))
 		return make([]int64, 4096>>3)
 	},
 }

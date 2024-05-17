@@ -2,38 +2,40 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/edward/file-collector/logger"
+	"myutil"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
+var Logger *myutil.MyLogger
+
 func main() {
-	logger.Init("file-collector.log")
+	Logger = myutil.NewMyLogger("file-collector.log")
 	jobs, err := ReadConfig("config.json")
 	if err != nil {
-		logger.Log(err.Error())
+		Logger.Log("Main", err.Error())
 		return
 	}
 	for _, job := range jobs {
-		logger.Log("Starting a job...")
+		Logger.Log("Main", "Starting a job...")
 		jobBytes, err := json.Marshal(job)
 		if err != nil {
-			logger.Log(err.Error())
+			Logger.Log("Main", err.Error())
 			return
 		}
-		logger.Log("Job content: " + string(jobBytes))
+		Logger.Log("Main", "Job content: "+string(jobBytes))
 
 		copyObjs, err := CollectCopyObjs(job.SrcRootPath, job.DesRootPath, job.DirPattern, job.ExcludedDirPattern, job.FileNames)
 		if err != nil {
-			logger.Log(err.Error())
+			Logger.Log("Main", err.Error())
 			return
 		}
 
 		if job.DeleteDesRootBeforeCollect {
 			err := DeleteFolder(job.DesRootPath)
 			if err != nil {
-				logger.Log(err.Error())
+				Logger.Log("Main", err.Error())
 				return
 			}
 		}
@@ -41,11 +43,11 @@ func main() {
 		for _, copyObj := range copyObjs {
 			_, err := CopyFile(copyObj.SrcPath, copyObj.DesPath)
 			if err != nil {
-				logger.Log(err.Error())
+				Logger.Log("Main", err.Error())
 				return
 			}
 		}
-		logger.Log("Job is executed")
+		Logger.Log("Main", "Job is executed")
 	}
 }
 

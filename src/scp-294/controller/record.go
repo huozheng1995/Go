@@ -20,19 +20,19 @@ func addRecord(w http.ResponseWriter, r *http.Request) {
 		record := model.Record{}
 		err := dec.Decode(&record)
 		if err != nil {
-			common.ResponseError(w, "Failed to decode data, error: "+err.Error())
+			common.RespondError(w, "Failed to decode data, error: "+err.Error())
 			return
 		}
 
 		err = record.Insert()
 		if err != nil {
-			common.ResponseError(w, "Failed to insert record, error: "+err.Error())
+			common.RespondError(w, "Failed to insert record, error: "+err.Error())
 			return
 		} else {
 			reloadHeader(w)
 		}
 	default:
-		common.ResponseError(w, "Failed to save record")
+		common.RespondError(w, "Failed to save record")
 	}
 }
 
@@ -42,12 +42,12 @@ func loadRecord(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
 		id, ok := query["RecordId"]
 		if !ok {
-			common.ResponseError(w, "Failed to get parameter 'RecordId'")
+			common.RespondError(w, "Failed to get parameter 'RecordId'")
 			return
 		}
 		record, err := model.GetRecord(id[0])
 		if err != nil {
-			common.ResponseError(w, "Failed to get record, error: "+err.Error())
+			common.RespondError(w, "Failed to get record, error: "+err.Error())
 			return
 		}
 
@@ -59,11 +59,11 @@ func loadRecord(w http.ResponseWriter, r *http.Request) {
 		}
 		err = enc.Encode(resData)
 		if err != nil {
-			common.ResponseError(w, "Failed to encode data, error: "+err.Error())
+			common.RespondError(w, "Failed to encode data, error: "+err.Error())
 			return
 		}
 	default:
-		common.ResponseError(w, "Failed to load record")
+		common.RespondError(w, "Failed to load record")
 	}
 }
 
@@ -73,17 +73,17 @@ func deleteRecord(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
 		id, ok := query["RecordId"]
 		if !ok {
-			common.ResponseError(w, "Failed to get parameter 'RecordId'")
+			common.RespondError(w, "Failed to get parameter 'RecordId'")
 			return
 		}
 		err := model.DeleteRecord(id[0])
 		if err != nil {
-			common.ResponseError(w, "Failed to delete record, error: "+err.Error())
+			common.RespondError(w, "Failed to delete record, error: "+err.Error())
 			return
 		} else {
 			reloadHeader(w)
 		}
 	default:
-		common.ResponseError(w, "Failed to delete record")
+		common.RespondError(w, "Failed to delete record")
 	}
 }

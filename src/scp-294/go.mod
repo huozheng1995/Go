@@ -8,4 +8,3 @@ require (
 )
 
 replace myutil => ../myutil
-

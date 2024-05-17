@@ -72,8 +72,8 @@ type ResData struct {
 	Data    interface{} `json:"Data"`
 }
 
-func ResponseError(w http.ResponseWriter, message string) {
-	logger.Log(message)
+func RespondError(w http.ResponseWriter, message string) {
+	logger.Logger.Log("Main", message)
 	enc := json.NewEncoder(w)
 	resData := ResData{
 		Success: false,

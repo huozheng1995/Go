@@ -5,14 +5,16 @@ import (
 	"github.com/edward/scp-294/controller"
 	"github.com/edward/scp-294/logger"
 	_ "github.com/mattn/go-sqlite3"
+	"myutil"
 	"net/http"
 )
 
 func main() {
-	logger.Init("scp294.log")
+	logger.Logger = myutil.NewMyLogger("scp294.log")
+
 	err := common.Connect()
 	if err != nil {
-		logger.Log(err.Error())
+		logger.Logger.Log("Main", err.Error())
 		return
 	}
 	common.InitDatabases(false)
@@ -27,6 +29,6 @@ func main() {
 	http.Handle("/img/", fileServer)
 	controller.RegisterRoutes()
 
-	logger.Log("Server started!")
+	logger.Logger.Log("Main", "Server started!")
 	server.ListenAndServe()
 }

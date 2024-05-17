@@ -19,19 +19,19 @@ func loadMainPage(w http.ResponseWriter, r *http.Request) {
 	t := template.New("layout")
 	t, err := t.ParseFiles("./templates/layout.html", "./templates/header.html")
 	if err != nil {
-		logger.Log(err.Error())
+		logger.Logger.Log("Main", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	groups, err := model.ListGroups()
 	if err != nil {
-		logger.Log(err.Error())
+		logger.Logger.Log("Main", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	records, err := model.ListRecords()
 	if err != nil {
-		logger.Log(err.Error())
+		logger.Logger.Log("Main", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -63,17 +63,17 @@ func reloadHeader(w http.ResponseWriter) {
 	t := template.New("reloadHeader")
 	t, err := t.ParseFiles("./templates/header.html")
 	if err != nil {
-		common.ResponseError(w, "Failed to parse files, error: "+err.Error())
+		common.RespondError(w, "Failed to parse files, error: "+err.Error())
 		return
 	}
 	groups, err := model.ListGroups()
 	if err != nil {
-		common.ResponseError(w, "Failed to list groups, error: "+err.Error())
+		common.RespondError(w, "Failed to list groups, error: "+err.Error())
 		return
 	}
 	records, err := model.ListRecords()
 	if err != nil {
-		common.ResponseError(w, "Failed to list records, error: "+err.Error())
+		common.RespondError(w, "Failed to list records, error: "+err.Error())
 		return
 	}
 	data := struct {

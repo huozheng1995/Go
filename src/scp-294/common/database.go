@@ -21,7 +21,7 @@ func Connect() error {
 	if err != nil {
 		return err
 	}
-	logger.Log("Database Connected!")
+	logger.Logger.Log("Main", "Database Connected!")
 	return nil
 }
 

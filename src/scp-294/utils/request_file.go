@@ -18,13 +18,13 @@ func ReqFileToByteArrayChannel(file multipart.File, reqBufferPool *sync.Pool, re
 		len, err := file.Read(buf)
 		if err != nil {
 			if err == io.EOF {
-				logger.Log("File stream read done")
+				logger.Logger.Log("Main", "File stream read done")
 				if len > 0 {
 					readChan <- buf[0:len]
 					return
 				}
 			} else {
-				logger.Log("Failed to read file stream, error: " + err.Error())
+				logger.Logger.Log("Main", "Failed to read file stream, error: "+err.Error())
 			}
 			reqBufferPool.Put(buf)
 			return
@@ -41,13 +41,13 @@ func ReqFileToNumArrayChannel[T any](file *myfile.StrToNumFile[T], reqBufferPool
 		len, err := file.Read(buf)
 		if err != nil {
 			if err == io.EOF {
-				logger.Log("File stream read done")
+				logger.Logger.Log("Main", "File stream read done")
 				if len > 0 {
 					readChan <- buf[0:len]
 					return
 				}
 			} else {
-				logger.Log("Failed to read file stream, error: " + err.Error())
+				logger.Logger.Log("Main", "Failed to read file stream, error: "+err.Error())
 			}
 			reqBufferPool.Put(buf)
 			return
@@ -65,8 +65,8 @@ func ByteArrayChannelToResponse(readChan <-chan []byte, funcByteToStr myutil.Byt
 		buf, ok := <-readChan
 		bufLen := len(buf)
 		if !ok || len(buf) <= 0 {
-			logger.Log("Read channel done, total size: " + strconv.Itoa(readSize) + "Byte(" + strconv.Itoa(readSize>>10) + "KB)")
-			logger.Log("Write stream done, total size: " + strconv.Itoa(writeSize) + "Byte(" + strconv.Itoa(writeSize>>10) + "KB)")
+			logger.Logger.Log("Main", "Read channel done, total size: "+strconv.Itoa(readSize)+"Byte("+strconv.Itoa(readSize>>10)+"KB)")
+			logger.Logger.Log("Main", "Write stream done, total size: "+strconv.Itoa(writeSize)+"Byte("+strconv.Itoa(writeSize>>10)+"KB)")
 			return
 		}
 
@@ -79,7 +79,7 @@ func ByteArrayChannelToResponse(readChan <-chan []byte, funcByteToStr myutil.Byt
 
 		readSize += bufLen
 		writeSize += resLen
-		//logger.Log("Read stream size: " + strconv.Itoa(readSize) + "Byte")
+		//logger.Logger.Log("Main", "Read stream size: " + strconv.Itoa(readSize) + "Byte")
 	}
 }
 
@@ -90,8 +90,8 @@ func Int64ArrayChannelToResponse(readChan <-chan []int64, funcInt64ToStr myutil.
 		buf, ok := <-readChan
 		bufLen := len(buf)
 		if !ok || len(buf) <= 0 {
-			logger.Log("Read channel done, total size: " + strconv.Itoa(readSize<<3) + "Byte")
-			logger.Log("Write stream done, total size: " + strconv.Itoa(writeSize<<3) + "Byte")
+			logger.Logger.Log("Main", "Read channel done, total size: "+strconv.Itoa(readSize<<3)+"Byte")
+			logger.Logger.Log("Main", "Write stream done, total size: "+strconv.Itoa(writeSize<<3)+"Byte")
 			return
 		}
 
@@ -104,6 +104,6 @@ func Int64ArrayChannelToResponse(readChan <-chan []int64, funcInt64ToStr myutil.
 
 		readSize += bufLen
 		writeSize += resLen
-		//logger.Log("Read stream size: " + strconv.Itoa(readSize << 3) + "Byte")
+		//logger.Logger.Log("Main", "Read stream size: " + strconv.Itoa(readSize << 3) + "Byte")
 	}
 }

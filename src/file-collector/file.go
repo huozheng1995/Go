@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/edward/file-collector/logger"
 	"io"
 	"os"
 	"path/filepath"
@@ -108,7 +107,7 @@ func DeleteFolder(desRootPath string) error {
 }
 
 func CopyFile(src, des string) (int64, error) {
-	logger.Log(fmt.Sprintf("Begin to copy, file: [%s]", src))
+	Logger.Log("Main", fmt.Sprintf("Begin to copy, file: [%s]", src))
 	srcState, err := os.Stat(src)
 	if err != nil {
 		return 0, err

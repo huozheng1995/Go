@@ -19,19 +19,19 @@ func addGroup(w http.ResponseWriter, r *http.Request) {
 		group := model.Group{}
 		err := dec.Decode(&group)
 		if err != nil {
-			common.ResponseError(w, "Failed to decode data, error: "+err.Error())
+			common.RespondError(w, "Failed to decode data, error: "+err.Error())
 			return
 		}
 
 		err = group.Insert()
 		if err != nil {
-			common.ResponseError(w, "Failed to insert group, error: "+err.Error())
+			common.RespondError(w, "Failed to insert group, error: "+err.Error())
 			return
 		} else {
 			reloadHeader(w)
 		}
 	default:
-		common.ResponseError(w, "Failed to save group")
+		common.RespondError(w, "Failed to save group")
 	}
 }
 
@@ -41,22 +41,22 @@ func deleteGroup(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
 		id, ok := query["GroupId"]
 		if !ok {
-			common.ResponseError(w, "Failed to get parameter 'GroupId'")
+			common.RespondError(w, "Failed to get parameter 'GroupId'")
 			return
 		}
 		err := model.DeleteRecordsByGroupId(id[0])
 		if err != nil {
-			common.ResponseError(w, "Failed to delete records, error: "+err.Error())
+			common.RespondError(w, "Failed to delete records, error: "+err.Error())
 			return
 		}
 		err = model.DeleteGroup(id[0])
 		if err != nil {
-			common.ResponseError(w, "Failed to delete group, error: "+err.Error())
+			common.RespondError(w, "Failed to delete group, error: "+err.Error())
 			return
 		} else {
 			reloadHeader(w)
 		}
 	default:
-		common.ResponseError(w, "Failed to delete group")
+		common.RespondError(w, "Failed to delete group")
 	}
 }
