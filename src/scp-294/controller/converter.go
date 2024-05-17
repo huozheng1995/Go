@@ -135,7 +135,7 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 			return
 		}
 		readChan := make(chan []int64)
-		go utils.ReqFileToNumArrayChannel(strToInt64File, reqInt64BufferPool, readChan)
+		go utils.StrNumFileToNums(strToInt64File, reqInt64BufferPool, readChan)
 		utils.Int64ArrayChannelToResponse(readChan, funcInt64ToStr, reqInt64BufferPool, w)
 		return
 	}
@@ -150,7 +150,7 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 			return
 		}
 		readChan := make(chan []byte)
-		go utils.ReqFileToNumArrayChannel(strToByteFile, reqByteBufferPool, readChan)
+		go utils.StrNumFileToNums(strToByteFile, reqByteBufferPool, readChan)
 		utils.ByteArrayChannelToResponse(readChan, funcByteToStr, withDetails, reqByteBufferPool, w)
 		return
 	}
@@ -164,7 +164,7 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 			return
 		}
 		readChan := make(chan []byte)
-		go utils.ReqFileToByteArrayChannel(file, reqByteBufferPool, readChan)
+		go utils.RawBytesFileToBytes(file, reqByteBufferPool, readChan)
 		utils.ByteArrayChannelToResponse(readChan, funcByteToStr, withDetails, reqByteBufferPool, w)
 		return
 	}
@@ -178,7 +178,7 @@ var reqByteBufferPool = &sync.Pool{
 	New: func() interface{} {
 		atomic.AddInt32(&byteBufferCount, 1)
 		logger.Logger.Log("Main", "reqByteBufferPool: Count of new buffer: "+strconv.Itoa(int(byteBufferCount)))
-		return make([]byte, 4096)
+		return make([]byte, 128)
 	},
 }
 
@@ -205,14 +205,14 @@ func selectFuncStrToInt64(InputFormat common.NumType) (funcStrToInt64 myutil.Str
 	return funcStrToInt64
 }
 
-func selectStrToInt64File(file multipart.File, InputFormat common.NumType) (newFile *myfile.StrToNumFile[int64]) {
+func selectStrToInt64File(file multipart.File, InputFormat common.NumType) (newFile *myfile.StrNumFile[int64]) {
 	switch InputFormat {
 	case common.Hex:
-		newFile = myfile.NewHexStrMultipartFile(file)
+		newFile = myfile.NewStrHexFile(file)
 	case common.Dec:
-		newFile = myfile.NewDecStrMultipartFile(file)
+		newFile = myfile.NewStrDecFile(file)
 	case common.Bin:
-		newFile = myfile.NewBinStrMultipartFile(file)
+		newFile = myfile.NewStrBinFile(file)
 	default:
 		newFile = nil
 	}
@@ -247,14 +247,14 @@ func selectFuncStrToByte(InputFormat common.NumType) (funcStrToByte myutil.StrTo
 	return funcStrToByte
 }
 
-func selectStrToByteFile(file multipart.File, InputFormat common.NumType) (newFile *myfile.StrToNumFile[byte]) {
+func selectStrToByteFile(file multipart.File, InputFormat common.NumType) (newFile *myfile.StrNumFile[byte]) {
 	switch InputFormat {
 	case common.HexByte:
-		newFile = myfile.NewHex2StrMultipartFile(file)
+		newFile = myfile.NewStrHex2File(file)
 	case common.DecByte:
-		newFile = myfile.NewByteStrMultipartFile(file)
+		newFile = myfile.NewStrByteFile(file)
 	case common.DecInt8:
-		newFile = myfile.NewInt8StrMultipartFile(file)
+		newFile = myfile.NewStrInt8File(file)
 	default:
 		newFile = nil
 	}

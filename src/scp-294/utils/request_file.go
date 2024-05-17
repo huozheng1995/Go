@@ -11,33 +11,25 @@ import (
 	"sync"
 )
 
-func ReqFileToByteArrayChannel(file multipart.File, reqBufferPool *sync.Pool, readChan chan []byte) {
-	defer close(readChan)
-	for {
-		buf := reqBufferPool.Get().([]byte)
-		len, err := file.Read(buf)
-		if err != nil {
-			if err == io.EOF {
-				logger.Logger.Log("Main", "File stream read done")
-				if len > 0 {
-					readChan <- buf[0:len]
-					return
-				}
-			} else {
-				logger.Logger.Log("Main", "Failed to read file stream, error: "+err.Error())
-			}
-			reqBufferPool.Put(buf)
-			return
-		}
-
-		readChan <- buf[0:len]
+func RawBytesFileToBytes(file multipart.File, reqBufferPool *sync.Pool, readChan chan []byte) {
+	rawBytesNumFile := &myfile.RawBytesNumFile[byte]{
+		File: file,
 	}
+	fileToNum[byte](rawBytesNumFile, reqBufferPool, readChan)
 }
 
-func ReqFileToNumArrayChannel[T any](file *myfile.StrToNumFile[T], reqBufferPool *sync.Pool, readChan chan []T) {
+func StrNumFileToNums[T any](strNumFile *myfile.StrNumFile[T], reqBufferPool *sync.Pool, readChan chan []T) {
+	fileToNum[T](strNumFile, reqBufferPool, readChan)
+}
+
+func fileToNum[T any](file myfile.INumFile[T], reqBufferPool *sync.Pool, readChan chan []T) {
 	defer close(readChan)
 	for {
 		buf := reqBufferPool.Get().([]T)
+		if len(buf) < cap(buf) {
+			logger.Logger.Log("Main", "Resize the buf from "+strconv.Itoa(len(buf))+" to "+strconv.Itoa(cap(buf)))
+			buf = buf[0:cap(buf)]
+		}
 		len, err := file.Read(buf)
 		if err != nil {
 			if err == io.EOF {

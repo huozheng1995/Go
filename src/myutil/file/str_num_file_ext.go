@@ -9,8 +9,8 @@ import (
 
 // String To Byte
 
-func NewHex2StrMultipartFile(file multipart.File) *StrToNumFile[byte] {
-	return &StrToNumFile[byte]{
+func NewStrHex2File(file multipart.File) *StrNumFile[byte] {
+	return &StrNumFile[byte]{
 		buf:          make([]byte, 64*1024),
 		bufPos:       0,
 		bufSize:      0,
@@ -19,8 +19,8 @@ func NewHex2StrMultipartFile(file multipart.File) *StrToNumFile[byte] {
 	}
 }
 
-func NewInt8StrMultipartFile(file multipart.File) *StrToNumFile[byte] {
-	return &StrToNumFile[byte]{
+func NewStrInt8File(file multipart.File) *StrNumFile[byte] {
+	return &StrNumFile[byte]{
 		buf:          make([]byte, 64*1024),
 		bufPos:       0,
 		bufSize:      0,
@@ -29,8 +29,8 @@ func NewInt8StrMultipartFile(file multipart.File) *StrToNumFile[byte] {
 	}
 }
 
-func NewByteStrMultipartFile(file multipart.File) *StrToNumFile[byte] {
-	return &StrToNumFile[byte]{
+func NewStrByteFile(file multipart.File) *StrNumFile[byte] {
+	return &StrNumFile[byte]{
 		buf:          make([]byte, 64*1024),
 		bufPos:       0,
 		bufSize:      0,
@@ -41,8 +41,8 @@ func NewByteStrMultipartFile(file multipart.File) *StrToNumFile[byte] {
 
 // String To Int64
 
-func NewHexStrMultipartFile(file multipart.File) *StrToNumFile[int64] {
-	return &StrToNumFile[int64]{
+func NewStrHexFile(file multipart.File) *StrNumFile[int64] {
+	return &StrNumFile[int64]{
 		buf:          make([]byte, 64*1024),
 		bufPos:       0,
 		bufSize:      0,
@@ -51,8 +51,8 @@ func NewHexStrMultipartFile(file multipart.File) *StrToNumFile[int64] {
 	}
 }
 
-func NewDecStrMultipartFile(file multipart.File) *StrToNumFile[int64] {
-	return &StrToNumFile[int64]{
+func NewStrDecFile(file multipart.File) *StrNumFile[int64] {
+	return &StrNumFile[int64]{
 		buf:          make([]byte, 64*1024),
 		bufPos:       0,
 		bufSize:      0,
@@ -61,8 +61,8 @@ func NewDecStrMultipartFile(file multipart.File) *StrToNumFile[int64] {
 	}
 }
 
-func NewBinStrMultipartFile(file multipart.File) *StrToNumFile[int64] {
-	return &StrToNumFile[int64]{
+func NewStrBinFile(file multipart.File) *StrNumFile[int64] {
+	return &StrNumFile[int64]{
 		buf:          make([]byte, 64*1024),
 		bufPos:       0,
 		bufSize:      0,
@@ -73,18 +73,18 @@ func NewBinStrMultipartFile(file multipart.File) *StrToNumFile[int64] {
 
 // String To Byte, but with os.File
 
-type Hex2StrOSFile struct {
-	*StrToNumFile[byte]
+type StrHex2OSFile struct {
+	*StrNumFile[byte]
 }
 
-func NewHex2ByteOSFile(fileUri string) (*Hex2StrOSFile, error) {
+func NewStrHex2OSFile(fileUri string) (*StrHex2OSFile, error) {
 	file, err := os.Open(fileUri)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Hex2StrOSFile{
-		StrToNumFile: &StrToNumFile[byte]{
+	return &StrHex2OSFile{
+		StrNumFile: &StrNumFile[byte]{
 			buf:          make([]byte, 64*1024),
 			bufPos:       0,
 			bufSize:      0,
@@ -94,9 +94,9 @@ func NewHex2ByteOSFile(fileUri string) (*Hex2StrOSFile, error) {
 	}, nil
 }
 
-func (h *Hex2StrOSFile) ReadAll() ([]byte, error) {
+func (h *StrHex2OSFile) ReadAll() ([]byte, error) {
 	var size int
-	if info, err := h.StrToNumFile.file.(*os.File).Stat(); err == nil {
+	if info, err := h.StrNumFile.file.(*os.File).Stat(); err == nil {
 		size64 := info.Size()
 		if int64(int(size64)) == size64 {
 			size = int(size64)

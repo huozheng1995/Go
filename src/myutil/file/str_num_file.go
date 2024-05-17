@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type StrToNumFile[T any] struct {
+type StrNumFile[T any] struct {
 	buf          []byte
 	bufPos       int
 	bufSize      int
@@ -15,16 +15,16 @@ type StrToNumFile[T any] struct {
 	funcStrToNum func(str string) T
 }
 
-func (h *StrToNumFile[T]) innerRead() (err error) {
+func (h *StrNumFile[T]) innerRead() (err error) {
 	h.bufSize, err = h.file.Read(h.buf)
 	h.bufPos = 0
 	if myutil.Logger != nil {
-		myutil.Logger.Log("StrToNumFile", "Read bytes "+strconv.Itoa(h.bufSize))
+		myutil.Logger.Log("StrNumFile", "Read bytes "+strconv.Itoa(h.bufSize))
 	}
 	return err
 }
 
-func (h *StrToNumFile[T]) Read(p []T) (int, error) {
+func (h *StrNumFile[T]) Read(p []T) (int, error) {
 	pPos := 0
 	var builder strings.Builder
 	for pPos < cap(p) {
@@ -38,7 +38,7 @@ func (h *StrToNumFile[T]) Read(p []T) (int, error) {
 					builder.Reset()
 				}
 				if myutil.Logger != nil {
-					myutil.Logger.Log("StrToNumFile", "Return objects "+strconv.Itoa(pPos))
+					myutil.Logger.Log("StrNumFile", "Return objects "+strconv.Itoa(pPos))
 				}
 				return pPos, err
 			}
@@ -58,12 +58,12 @@ func (h *StrToNumFile[T]) Read(p []T) (int, error) {
 		}
 	}
 	if myutil.Logger != nil {
-		myutil.Logger.Log("StrToNumFile", "Return objects "+strconv.Itoa(pPos))
+		myutil.Logger.Log("StrNumFile", "Return objects "+strconv.Itoa(pPos))
 	}
 
 	return pPos, nil
 }
 
-func (h *StrToNumFile[T]) Close() error {
+func (h *StrNumFile[T]) Close() error {
 	return h.file.Close()
 }
