@@ -26,9 +26,15 @@ func BinStrToInt64(str string) int64 {
 
 // int64 to string
 
-type Int64ToStr func(val int64) string
+type Int64ToStr interface {
+	ToString(int64) string
+	GetWidth() int
+}
 
-func Int64ToHexStr(val int64) string {
+type Int64ToHexStr struct {
+}
+
+func (toStr Int64ToHexStr) ToString(val int64) string {
 	if val == 0 {
 		return "0"
 	}
@@ -44,12 +50,24 @@ func Int64ToHexStr(val int64) string {
 
 	return builder.String()
 }
-
-func Int64ToInt64Str(val int64) string {
-	return strconv.FormatInt(val, 10)
+func (toStr Int64ToHexStr) GetWidth() int {
+	return 16
 }
 
-func Int64ToBinStr(val int64) string {
+type Int64ToInt64Str struct {
+}
+
+func (toStr Int64ToInt64Str) ToString(val int64) string {
+	return strconv.FormatInt(val, 10)
+}
+func (toStr Int64ToInt64Str) GetWidth() int {
+	return 32
+}
+
+type Int64ToBinStr struct {
+}
+
+func (toStr Int64ToBinStr) ToString(val int64) string {
 	if val == 0 {
 		return "0"
 	}
@@ -64,4 +82,7 @@ func Int64ToBinStr(val int64) string {
 	}
 
 	return builder.String()
+}
+func (toStr Int64ToBinStr) GetWidth() int {
+	return 64
 }

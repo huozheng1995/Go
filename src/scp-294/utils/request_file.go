@@ -4,7 +4,6 @@ import (
 	"github.com/edward/scp-294/logger"
 	"io"
 	"mime/multipart"
-	"myutil"
 	myfile "myutil/file"
 	"net/http"
 	"strconv"
@@ -12,17 +11,17 @@ import (
 )
 
 func RawBytesFileToBytes(file multipart.File, reqBufferPool *sync.Pool, readChan chan []byte) {
-	rawBytesNumFile := &myfile.RawBytesNumFile[byte]{
+	rawBytesNumFile := &myfile.RawBytesNumFile{
 		File: file,
 	}
-	fileToNum[byte](rawBytesNumFile, reqBufferPool, readChan)
+	fileToNums[byte](rawBytesNumFile, reqBufferPool, readChan)
 }
 
-func StrNumFileToNums[T any](strNumFile *myfile.StrNumFile[T], reqBufferPool *sync.Pool, readChan chan []T) {
-	fileToNum[T](strNumFile, reqBufferPool, readChan)
+func StrNumFileToNums[T any](file *myfile.StrNumFile[T], reqBufferPool *sync.Pool, readChan chan []T) {
+	fileToNums[T](file, reqBufferPool, readChan)
 }
 
-func fileToNum[T any](file myfile.INumFile[T], reqBufferPool *sync.Pool, readChan chan []T) {
+func fileToNums[T any](file myfile.INumFile[T], reqBufferPool *sync.Pool, readChan chan []T) {
 	defer close(readChan)
 	for {
 		buf := reqBufferPool.Get().([]T)
@@ -49,45 +48,19 @@ func fileToNum[T any](file myfile.INumFile[T], reqBufferPool *sync.Pool, readCha
 	}
 }
 
-func ByteArrayChannelToResponse(readChan <-chan []byte, funcByteToStr myutil.ByteToStr, withDetails bool, reqBufferPool *sync.Pool, w http.ResponseWriter) {
-	readSize := 0
-	writeSize := 0
-	globalRowIndex := 0
-	for {
-		buf, ok := <-readChan
-		bufLen := len(buf)
-		if !ok || len(buf) <= 0 {
-			logger.Logger.Log("Main", "Read channel done, total size: "+strconv.Itoa(readSize)+"Byte("+strconv.Itoa(readSize>>10)+"KB)")
-			logger.Logger.Log("Main", "Write stream done, total size: "+strconv.Itoa(writeSize)+"Byte("+strconv.Itoa(writeSize>>10)+"KB)")
-			return
-		}
-
-		resPageBuf := ByteArrayToResponse(buf, &globalRowIndex, funcByteToStr, withDetails)
-		response := resPageBuf.Bytes()
-		resLen := len(response)
-
-		reqBufferPool.Put(buf)
-		w.Write(response)
-
-		readSize += bufLen
-		writeSize += resLen
-		//logger.Logger.Log("Main", "Read stream size: " + strconv.Itoa(readSize) + "Byte")
-	}
-}
-
-func Int64ArrayChannelToResponse(readChan <-chan []int64, funcInt64ToStr myutil.Int64ToStr, reqBufferPool *sync.Pool, w http.ResponseWriter) {
+func ReadFromChannelAndRespond[T any](readChan <-chan []T, numsToResp NumsToResp[T], reqBufferPool *sync.Pool, w http.ResponseWriter) {
 	readSize := 0
 	writeSize := 0
 	for {
 		buf, ok := <-readChan
 		bufLen := len(buf)
 		if !ok || len(buf) <= 0 {
-			logger.Logger.Log("Main", "Read channel done, total size: "+strconv.Itoa(readSize<<3)+"Byte")
-			logger.Logger.Log("Main", "Write stream done, total size: "+strconv.Itoa(writeSize<<3)+"Byte")
+			logger.Logger.Log("Main", "Read channel done, total size: "+strconv.Itoa(readSize)+"("+strconv.Itoa((readSize*numsToResp.GetBytes())>>10)+"KB)")
+			logger.Logger.Log("Main", "Write stream done, total size: "+strconv.Itoa(writeSize)+"("+strconv.Itoa((writeSize*numsToResp.GetBytes())>>10)+"KB)")
 			return
 		}
 
-		resPageBuf := Int64ArrayToResponse(buf, funcInt64ToStr)
+		resPageBuf := numsToResp.ToResp(buf)
 		response := resPageBuf.Bytes()
 		resLen := len(response)
 

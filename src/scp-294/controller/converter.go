@@ -74,7 +74,6 @@ func convert(w http.ResponseWriter, r *http.Request) {
 
 func convertText(InputData string, InputFormat, OutputFormat common.NumType, w http.ResponseWriter) {
 	var response string
-
 	funcStrToInt64 := selectFuncStrToInt64(InputFormat)
 	if funcStrToInt64 != nil {
 		funcInt64ToStr := selectFuncInt64ToStr(OutputFormat)
@@ -84,7 +83,10 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 			return
 		}
 		int64Array := utils.ReqTextToInt64Array(InputData, funcStrToInt64)
-		resPageBuf := utils.Int64ArrayToResponse(int64Array, funcInt64ToStr)
+		numsToResp := &utils.Int64sToResp{
+			NumToStr: funcInt64ToStr,
+		}
+		resPageBuf := numsToResp.ToResp(int64Array)
 		response = string(resPageBuf.Bytes())
 		writeResponse(w, response)
 		return
@@ -99,8 +101,12 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 			return
 		}
 		byteArray := utils.ReqTextToByteArray(InputData, funcStrToByte)
-		globalRowIndex := 0
-		resPageBuf := utils.ByteArrayToResponse(byteArray, &globalRowIndex, funcByteToStr, withDetails)
+		numsToResp := &utils.BytesToResp{
+			NumToStr:       funcByteToStr,
+			WithDetails:    withDetails,
+			GlobalRowIndex: 0,
+		}
+		resPageBuf := numsToResp.ToResp(byteArray)
 		response = string(resPageBuf.Bytes())
 		writeResponse(w, response)
 		return
@@ -136,7 +142,10 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 		}
 		readChan := make(chan []int64)
 		go utils.StrNumFileToNums(strToInt64File, reqInt64BufferPool, readChan)
-		utils.Int64ArrayChannelToResponse(readChan, funcInt64ToStr, reqInt64BufferPool, w)
+		numsToResp := &utils.Int64sToResp{
+			NumToStr: funcInt64ToStr,
+		}
+		utils.ReadFromChannelAndRespond(readChan, numsToResp, reqInt64BufferPool, w)
 		return
 	}
 
@@ -151,7 +160,12 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 		}
 		readChan := make(chan []byte)
 		go utils.StrNumFileToNums(strToByteFile, reqByteBufferPool, readChan)
-		utils.ByteArrayChannelToResponse(readChan, funcByteToStr, withDetails, reqByteBufferPool, w)
+		numsToResp := &utils.BytesToResp{
+			NumToStr:       funcByteToStr,
+			WithDetails:    withDetails,
+			GlobalRowIndex: 0,
+		}
+		utils.ReadFromChannelAndRespond(readChan, numsToResp, reqByteBufferPool, w)
 		return
 	}
 
@@ -165,7 +179,12 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 		}
 		readChan := make(chan []byte)
 		go utils.RawBytesFileToBytes(file, reqByteBufferPool, readChan)
-		utils.ByteArrayChannelToResponse(readChan, funcByteToStr, withDetails, reqByteBufferPool, w)
+		numsToResp := &utils.BytesToResp{
+			NumToStr:       funcByteToStr,
+			WithDetails:    withDetails,
+			GlobalRowIndex: 0,
+		}
+		utils.ReadFromChannelAndRespond(readChan, numsToResp, reqByteBufferPool, w)
 		return
 	}
 
@@ -178,7 +197,7 @@ var reqByteBufferPool = &sync.Pool{
 	New: func() interface{} {
 		atomic.AddInt32(&byteBufferCount, 1)
 		logger.Logger.Log("Main", "reqByteBufferPool: Count of new buffer: "+strconv.Itoa(int(byteBufferCount)))
-		return make([]byte, 128)
+		return make([]byte, 4096)
 	},
 }
 
@@ -222,11 +241,11 @@ func selectStrToInt64File(file multipart.File, InputFormat common.NumType) (newF
 func selectFuncInt64ToStr(OutputFormat common.NumType) (funcInt64ToStr myutil.Int64ToStr) {
 	switch OutputFormat {
 	case common.Hex:
-		funcInt64ToStr = myutil.Int64ToHexStr
+		funcInt64ToStr = myutil.Int64ToHexStr{}
 	case common.Dec:
-		funcInt64ToStr = myutil.Int64ToInt64Str
+		funcInt64ToStr = myutil.Int64ToInt64Str{}
 	case common.Bin:
-		funcInt64ToStr = myutil.Int64ToBinStr
+		funcInt64ToStr = myutil.Int64ToBinStr{}
 	default:
 		funcInt64ToStr = nil
 	}
