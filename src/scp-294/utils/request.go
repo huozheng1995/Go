@@ -4,11 +4,40 @@ import (
 	"github.com/edward/scp-294/logger"
 	"io"
 	"mime/multipart"
+	"myutil"
 	myfile "myutil/file"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 )
+
+// text to num array
+
+func TextToNums[T any](text string, strToNum myutil.StrToNum[T]) []T {
+	result := make([]T, 0, len(text))
+	var val byte
+	var builder strings.Builder
+	for i := 0; i < len(text)+1; i++ {
+		if i == len(text) {
+			val = 0
+		} else {
+			val = text[i]
+		}
+		if (val >= '0' && val <= '9') || (val >= 'a' && val <= 'f') || (val >= 'A' && val <= 'F') || val == '-' {
+			builder.WriteByte(val)
+		} else {
+			if builder.Len() > 0 {
+				result = append(result, strToNum.ToNum(builder.String()))
+				builder.Reset()
+			}
+		}
+	}
+
+	return result
+}
+
+// file to num array
 
 func RawBytesFileToBytes(file multipart.File, reqBufferPool *sync.Pool, readChan chan []byte) {
 	rawBytesNumFile := &myfile.RawBytesNumFile{

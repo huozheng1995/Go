@@ -7,19 +7,30 @@ import (
 
 // string to int64
 
-type StrToInt64 func(str string) int64
+type StrToInt64 interface {
+	ToNum(string) int64
+}
 
-func HexStrToInt64(str string) int64 {
+type HexStrToInt64 struct {
+}
+
+func (toNum HexStrToInt64) ToNum(str string) int64 {
 	val, _ := strconv.ParseInt(str, 16, 64)
 	return val
 }
 
-func DecStrToInt64(str string) int64 {
+type DecStrToInt64 struct {
+}
+
+func (toNum DecStrToInt64) ToNum(str string) int64 {
 	val, _ := strconv.ParseInt(str, 10, 64)
 	return val
 }
 
-func BinStrToInt64(str string) int64 {
+type BinStrToInt64 struct {
+}
+
+func (toNum BinStrToInt64) ToNum(str string) int64 {
 	val, _ := strconv.ParseInt(str, 2, 64)
 	return val
 }

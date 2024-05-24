@@ -6,19 +6,30 @@ import (
 
 // string to byte
 
-type StrToByte func(str string) byte
+type StrToByte interface {
+	ToNum(string) byte
+}
 
-func Hex2StrToByte(str string) byte {
+type Hex2StrToByte struct {
+}
+
+func (toNum Hex2StrToByte) ToNum(str string) byte {
 	val, _ := strconv.ParseInt(str, 16, 64)
 	return byte(val)
 }
 
-func ByteStrToByte(str string) byte {
+type ByteStrToByte struct {
+}
+
+func (toNum ByteStrToByte) ToNum(str string) byte {
 	val, _ := strconv.ParseInt(str, 10, 64)
 	return byte(val)
 }
 
-func Int8StrToByte(str string) byte {
+type Int8StrToByte struct {
+}
+
+func (toNum Int8StrToByte) ToNum(str string) byte {
 	val, _ := strconv.ParseInt(str, 10, 64)
 	return byte(val)
 }

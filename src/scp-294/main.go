@@ -20,7 +20,7 @@ func main() {
 	common.InitDatabases(false)
 
 	server := http.Server{
-		Addr: common.HttpAddr,
+		Addr: ":8294",
 	}
 
 	fileServer := http.FileServer(http.Dir("wwwroot"))

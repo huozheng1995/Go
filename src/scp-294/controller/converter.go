@@ -82,7 +82,7 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 			common.RespondError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
-		int64Array := utils.ReqTextToInt64Array(InputData, funcStrToInt64)
+		int64Array := utils.TextToNums[int64](InputData, funcStrToInt64)
 		numsToResp := &utils.Int64sToResp{
 			NumToStr: funcInt64ToStr,
 		}
@@ -100,7 +100,7 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 			common.RespondError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
-		byteArray := utils.ReqTextToByteArray(InputData, funcStrToByte)
+		byteArray := utils.TextToNums[byte](InputData, funcStrToByte)
 		numsToResp := &utils.BytesToResp{
 			NumToStr:       funcByteToStr,
 			WithDetails:    withDetails,
@@ -213,11 +213,11 @@ var reqInt64BufferPool = &sync.Pool{
 func selectFuncStrToInt64(InputFormat common.NumType) (funcStrToInt64 myutil.StrToInt64) {
 	switch InputFormat {
 	case common.Hex:
-		funcStrToInt64 = myutil.HexStrToInt64
+		funcStrToInt64 = myutil.HexStrToInt64{}
 	case common.Dec:
-		funcStrToInt64 = myutil.DecStrToInt64
+		funcStrToInt64 = myutil.DecStrToInt64{}
 	case common.Bin:
-		funcStrToInt64 = myutil.BinStrToInt64
+		funcStrToInt64 = myutil.BinStrToInt64{}
 	default:
 		funcStrToInt64 = nil
 	}
@@ -255,11 +255,11 @@ func selectFuncInt64ToStr(OutputFormat common.NumType) (funcInt64ToStr myutil.In
 func selectFuncStrToByte(InputFormat common.NumType) (funcStrToByte myutil.StrToByte) {
 	switch InputFormat {
 	case common.HexByte:
-		funcStrToByte = myutil.Hex2StrToByte
+		funcStrToByte = myutil.Hex2StrToByte{}
 	case common.DecByte:
-		funcStrToByte = myutil.ByteStrToByte
+		funcStrToByte = myutil.ByteStrToByte{}
 	case common.DecInt8:
-		funcStrToByte = myutil.Int8StrToByte
+		funcStrToByte = myutil.Int8StrToByte{}
 	default:
 		funcStrToByte = nil
 	}

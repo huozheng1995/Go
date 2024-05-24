@@ -46,7 +46,7 @@ func loadMainPage(w http.ResponseWriter, r *http.Request) {
 		Groups          []model.Group
 		Records         []model.Record
 	}{
-		common.ProjName,
+		"SCP-294",
 		common.TypeMap,
 		common.InputFormatMap,
 		common.TypeMap,

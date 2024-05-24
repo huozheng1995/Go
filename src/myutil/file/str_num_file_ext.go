@@ -15,7 +15,7 @@ func NewStrHex2File(file multipart.File) *StrNumFile[byte] {
 		bufPos:       0,
 		bufSize:      0,
 		file:         file,
-		funcStrToNum: myutil.Hex2StrToByte,
+		funcStrToNum: myutil.Hex2StrToByte{},
 	}
 }
 
@@ -25,7 +25,7 @@ func NewStrInt8File(file multipart.File) *StrNumFile[byte] {
 		bufPos:       0,
 		bufSize:      0,
 		file:         file,
-		funcStrToNum: myutil.Int8StrToByte,
+		funcStrToNum: myutil.Int8StrToByte{},
 	}
 }
 
@@ -35,7 +35,7 @@ func NewStrByteFile(file multipart.File) *StrNumFile[byte] {
 		bufPos:       0,
 		bufSize:      0,
 		file:         file,
-		funcStrToNum: myutil.ByteStrToByte,
+		funcStrToNum: myutil.ByteStrToByte{},
 	}
 }
 
@@ -47,7 +47,7 @@ func NewStrHexFile(file multipart.File) *StrNumFile[int64] {
 		bufPos:       0,
 		bufSize:      0,
 		file:         file,
-		funcStrToNum: myutil.HexStrToInt64,
+		funcStrToNum: myutil.HexStrToInt64{},
 	}
 }
 
@@ -57,7 +57,7 @@ func NewStrDecFile(file multipart.File) *StrNumFile[int64] {
 		bufPos:       0,
 		bufSize:      0,
 		file:         file,
-		funcStrToNum: myutil.DecStrToInt64,
+		funcStrToNum: myutil.DecStrToInt64{},
 	}
 }
 
@@ -67,7 +67,7 @@ func NewStrBinFile(file multipart.File) *StrNumFile[int64] {
 		bufPos:       0,
 		bufSize:      0,
 		file:         file,
-		funcStrToNum: myutil.BinStrToInt64,
+		funcStrToNum: myutil.BinStrToInt64{},
 	}
 }
 
@@ -89,7 +89,7 @@ func NewStrHex2OSFile(fileUri string) (*StrHex2OSFile, error) {
 			bufPos:       0,
 			bufSize:      0,
 			file:         file,
-			funcStrToNum: myutil.Hex2StrToByte,
+			funcStrToNum: myutil.Hex2StrToByte{},
 		},
 	}, nil
 }
