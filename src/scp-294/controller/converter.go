@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/edward/scp-294/common"
 	"github.com/edward/scp-294/logger"
-	"github.com/edward/scp-294/utils"
+	"github.com/edward/scp-294/util"
 	"mime/multipart"
 	"myutil"
 	myfile "myutil/file"
@@ -82,8 +82,8 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 			common.RespondError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
-		int64Array := utils.TextToNums[int64](InputData, funcStrToInt64)
-		numsToResp := &utils.Int64sToResp{
+		int64Array := util.TextToNums[int64](InputData, funcStrToInt64)
+		numsToResp := &util.Int64sToResp{
 			NumToStr: funcInt64ToStr,
 		}
 		resPageBuf := numsToResp.ToResp(int64Array)
@@ -100,8 +100,8 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 			common.RespondError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
 			return
 		}
-		byteArray := utils.TextToNums[byte](InputData, funcStrToByte)
-		numsToResp := &utils.BytesToResp{
+		byteArray := util.TextToNums[byte](InputData, funcStrToByte)
+		numsToResp := &util.BytesToResp{
 			NumToStr:       funcByteToStr,
 			WithDetails:    withDetails,
 			GlobalRowIndex: 0,
@@ -141,11 +141,11 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 			return
 		}
 		readChan := make(chan []int64)
-		go utils.StrNumFileToNums(strToInt64File, reqInt64BufferPool, readChan)
-		numsToResp := &utils.Int64sToResp{
+		go util.StrNumFileToNums(strToInt64File, reqInt64BufferPool, readChan)
+		numsToResp := &util.Int64sToResp{
 			NumToStr: funcInt64ToStr,
 		}
-		utils.ReadFromChannelAndRespond(readChan, numsToResp, reqInt64BufferPool, w)
+		util.ReadFromChannelAndRespond(readChan, numsToResp, reqInt64BufferPool, w)
 		return
 	}
 
@@ -159,13 +159,13 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 			return
 		}
 		readChan := make(chan []byte)
-		go utils.StrNumFileToNums(strToByteFile, reqByteBufferPool, readChan)
-		numsToResp := &utils.BytesToResp{
+		go util.StrNumFileToNums(strToByteFile, reqByteBufferPool, readChan)
+		numsToResp := &util.BytesToResp{
 			NumToStr:       funcByteToStr,
 			WithDetails:    withDetails,
 			GlobalRowIndex: 0,
 		}
-		utils.ReadFromChannelAndRespond(readChan, numsToResp, reqByteBufferPool, w)
+		util.ReadFromChannelAndRespond(readChan, numsToResp, reqByteBufferPool, w)
 		return
 	}
 
@@ -178,13 +178,13 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 			return
 		}
 		readChan := make(chan []byte)
-		go utils.RawBytesFileToBytes(file, reqByteBufferPool, readChan)
-		numsToResp := &utils.BytesToResp{
+		go util.RawBytesFileToBytes(file, reqByteBufferPool, readChan)
+		numsToResp := &util.BytesToResp{
 			NumToStr:       funcByteToStr,
 			WithDetails:    withDetails,
 			GlobalRowIndex: 0,
 		}
-		utils.ReadFromChannelAndRespond(readChan, numsToResp, reqByteBufferPool, w)
+		util.ReadFromChannelAndRespond(readChan, numsToResp, reqByteBufferPool, w)
 		return
 	}
 

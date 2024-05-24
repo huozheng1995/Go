@@ -17,7 +17,7 @@ func RegisterRoutes() {
 
 func loadMainPage(w http.ResponseWriter, r *http.Request) {
 	t := template.New("layout")
-	t, err := t.ParseFiles("./templates/layout.html", "./templates/header.html")
+	t, err := t.ParseFiles("./template/layout.html", "./template/header.html")
 	if err != nil {
 		logger.Logger.Log("Main", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
@@ -61,7 +61,7 @@ func loadMainPage(w http.ResponseWriter, r *http.Request) {
 
 func reloadHeader(w http.ResponseWriter) {
 	t := template.New("reloadHeader")
-	t, err := t.ParseFiles("./templates/header.html")
+	t, err := t.ParseFiles("./template/header.html")
 	if err != nil {
 		common.RespondError(w, "Failed to parse files, error: "+err.Error())
 		return

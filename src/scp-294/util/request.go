@@ -1,4 +1,4 @@
-package utils
+package util
 
 import (
 	"github.com/edward/scp-294/logger"
