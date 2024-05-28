@@ -9,13 +9,23 @@ import (
 
 // String To Byte
 
-func NewStrHex2File(file multipart.File) *StrNumFile[byte] {
+func NewStrHex8File(file multipart.File) *StrNumFile[byte] {
 	return &StrNumFile[byte]{
 		buf:     make([]byte, 64*1024),
 		bufPos:  0,
 		bufSize: 0,
 		file:    file,
 		numUtil: myutil.Hex8Util{},
+	}
+}
+
+func NewStrByte8File(file multipart.File) *StrNumFile[byte] {
+	return &StrNumFile[byte]{
+		buf:     make([]byte, 64*1024),
+		bufPos:  0,
+		bufSize: 0,
+		file:    file,
+		numUtil: myutil.Byte8Util{},
 	}
 }
 
@@ -26,16 +36,6 @@ func NewStrInt8File(file multipart.File) *StrNumFile[byte] {
 		bufSize: 0,
 		file:    file,
 		numUtil: myutil.Int8Util{},
-	}
-}
-
-func NewStrByteFile(file multipart.File) *StrNumFile[byte] {
-	return &StrNumFile[byte]{
-		buf:     make([]byte, 64*1024),
-		bufPos:  0,
-		bufSize: 0,
-		file:    file,
-		numUtil: myutil.Byte8Util{},
 	}
 }
 
