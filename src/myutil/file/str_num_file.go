@@ -32,7 +32,7 @@ func (h *StrNumFile[T]) Read(p []T) (int, error) {
 		if h.bufPos >= h.bufSize {
 			err := h.innerRead()
 			if err != nil {
-				if err == io.EOF && builder.Len() > 0 {
+				if builder.Len() > 0 {
 					p[pPos] = h.funcStrToNum.ToNum(builder.String())
 					pPos++
 					builder.Reset()
@@ -40,6 +40,7 @@ func (h *StrNumFile[T]) Read(p []T) (int, error) {
 				if myutil.Logger != nil {
 					myutil.Logger.Log("StrNumFile", "Return objects "+strconv.Itoa(pPos))
 				}
+
 				return pPos, err
 			}
 		}
@@ -49,12 +50,12 @@ func (h *StrNumFile[T]) Read(p []T) (int, error) {
 		h.bufPos++
 		if (val >= '0' && val <= '9') || (val >= 'a' && val <= 'f') || (val >= 'A' && val <= 'F') || val == '-' {
 			builder.WriteByte(val)
-		} else {
-			if builder.Len() > 0 {
-				p[pPos] = h.funcStrToNum.ToNum(builder.String())
-				pPos++
-				builder.Reset()
-			}
+			continue
+		}
+		if builder.Len() > 0 {
+			p[pPos] = h.funcStrToNum.ToNum(builder.String())
+			pPos++
+			builder.Reset()
 		}
 	}
 	if myutil.Logger != nil {

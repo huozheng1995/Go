@@ -24,13 +24,14 @@ func TextToNums[T any](text string, strToNum myutil.StrToNum[T]) []T {
 		} else {
 			val = text[i]
 		}
+
 		if (val >= '0' && val <= '9') || (val >= 'a' && val <= 'f') || (val >= 'A' && val <= 'F') || val == '-' {
 			builder.WriteByte(val)
-		} else {
-			if builder.Len() > 0 {
-				result = append(result, strToNum.ToNum(builder.String()))
-				builder.Reset()
-			}
+			continue
+		}
+		if builder.Len() > 0 {
+			result = append(result, strToNum.ToNum(builder.String()))
+			builder.Reset()
 		}
 	}
 
@@ -39,37 +40,37 @@ func TextToNums[T any](text string, strToNum myutil.StrToNum[T]) []T {
 
 // file to num array
 
-func RawBytesFileToBytes(file multipart.File, reqBufferPool *sync.Pool, readChan chan []byte) {
+func RawBytesFileToBytes(file multipart.File, bufferPool *sync.Pool, readChan chan []byte) {
 	rawBytesNumFile := &myfile.RawBytesNumFile{
 		File: file,
 	}
-	fileToNums[byte](rawBytesNumFile, reqBufferPool, readChan)
+	fileToNums[byte](rawBytesNumFile, bufferPool, readChan)
 }
 
 func StrNumFileToNums[T any](file *myfile.StrNumFile[T], reqBufferPool *sync.Pool, readChan chan []T) {
 	fileToNums[T](file, reqBufferPool, readChan)
 }
 
-func fileToNums[T any](file myfile.INumFile[T], reqBufferPool *sync.Pool, readChan chan []T) {
+func fileToNums[T any](file myfile.INumFile[T], bufferPool *sync.Pool, readChan chan []T) {
 	defer close(readChan)
 	for {
-		buf := reqBufferPool.Get().([]T)
+		buf := bufferPool.Get().([]T)
 		if len(buf) < cap(buf) {
-			logger.Logger.Log("Main", "Resize the buf from "+strconv.Itoa(len(buf))+" to "+strconv.Itoa(cap(buf)))
+			logger.Logger.Log("Main", "Resize the buffer from "+strconv.Itoa(len(buf))+" to "+strconv.Itoa(cap(buf)))
 			buf = buf[0:cap(buf)]
 		}
 		len, err := file.Read(buf)
 		if err != nil {
 			if err == io.EOF {
 				logger.Logger.Log("Main", "File stream read done")
-				if len > 0 {
-					readChan <- buf[0:len]
-					return
-				}
 			} else {
 				logger.Logger.Log("Main", "Failed to read file stream, error: "+err.Error())
 			}
-			reqBufferPool.Put(buf)
+			if len > 0 {
+				readChan <- buf[0:len]
+			} else {
+				bufferPool.Put(buf)
+			}
 			return
 		}
 
@@ -77,27 +78,28 @@ func fileToNums[T any](file myfile.INumFile[T], reqBufferPool *sync.Pool, readCh
 	}
 }
 
-func ReadFromChannelAndRespond[T any](readChan <-chan []T, numsToResp NumsToResp[T], reqBufferPool *sync.Pool, w http.ResponseWriter) {
+func ReadFromChannelAndRespond[T any](readChan <-chan []T, numsToResp NumsToResp[T], bufferPool *sync.Pool, w http.ResponseWriter) {
 	readSize := 0
 	writeSize := 0
 	for {
 		buf, ok := <-readChan
 		bufLen := len(buf)
 		if !ok || len(buf) <= 0 {
-			logger.Logger.Log("Main", "Read channel done, total size: "+strconv.Itoa(readSize)+"("+strconv.Itoa((readSize*numsToResp.GetBytes())>>10)+"KB)")
-			logger.Logger.Log("Main", "Write stream done, total size: "+strconv.Itoa(writeSize)+"("+strconv.Itoa((writeSize*numsToResp.GetBytes())>>10)+"KB)")
+			readKB := strconv.Itoa((readSize * numsToResp.GetBytes()) >> 10)
+			writeKB := strconv.Itoa((writeSize * numsToResp.GetBytes()) >> 10)
+			logger.Logger.Log("Main", "Read channel done, total size: "+strconv.Itoa(readSize)+"("+readKB+"KB)")
+			logger.Logger.Log("Main", "Write stream done, total size: "+strconv.Itoa(writeSize)+"("+writeKB+"KB)")
 			return
 		}
 
-		resPageBuf := numsToResp.ToResp(buf)
-		response := resPageBuf.Bytes()
-		resLen := len(response)
+		resp := numsToResp.ToResp(buf)
+		respLen := len(resp)
 
-		reqBufferPool.Put(buf)
-		w.Write(response)
+		bufferPool.Put(buf)
+		w.Write(resp)
 
 		readSize += bufLen
-		writeSize += resLen
-		//logger.Logger.Log("Main", "Read stream size: " + strconv.Itoa(readSize << 3) + "Byte")
+		writeSize += respLen
+		//logger.Logger.Log("Main", "Read stream size: "+strconv.Itoa((readSize*numsToResp.GetBytes()))+"Byte")
 	}
 }

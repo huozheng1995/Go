@@ -10,7 +10,7 @@ import (
 
 type NumsToResp[T any] interface {
 	GetBytes() int
-	ToResp(arr []T) *bytes.Buffer
+	ToResp(arr []T) []byte
 }
 
 type Int64sToResp struct {
@@ -21,14 +21,14 @@ func (toResp *Int64sToResp) GetBytes() int {
 	return 8
 }
 
-func (toResp *Int64sToResp) ToResp(arr []int64) *bytes.Buffer {
+func (toResp *Int64sToResp) ToResp(arr []int64) []byte {
 	resBuf := new(bytes.Buffer)
 	for _, val := range arr {
 		resBuf.WriteString(toResp.NumToStr.ToString(val))
 		resBuf.WriteString(", ")
 	}
 
-	return resBuf
+	return resBuf.Bytes()
 }
 
 type BytesToResp struct {
@@ -41,12 +41,12 @@ func (toResp *BytesToResp) GetBytes() int {
 	return 1
 }
 
-func (toResp *BytesToResp) ToResp(arr []byte) *bytes.Buffer {
+func (toResp *BytesToResp) ToResp(arr []byte) []byte {
 	resBuf := new(bytes.Buffer)
 	//To RawBytes
 	if _, ok := toResp.NumToStr.(myutil.ByteToRawBytes); ok {
 		resBuf.Write(arr)
-		return resBuf
+		return resBuf.Bytes()
 	}
 
 	//To String
@@ -84,7 +84,7 @@ func (toResp *BytesToResp) ToResp(arr []byte) *bytes.Buffer {
 		toResp.GlobalRowIndex++
 	}
 
-	return resBuf
+	return resBuf.Bytes()
 }
 
 func writeRowData(buffer *bytes.Buffer, byteToStr myutil.ByteToStr, arr []byte, off int, len2 int, withDetails bool) {

@@ -73,7 +73,6 @@ func convert(w http.ResponseWriter, r *http.Request) {
 }
 
 func convertText(InputData string, InputFormat, OutputFormat common.NumType, w http.ResponseWriter) {
-	var response string
 	funcStrToInt64 := selectFuncStrToInt64(InputFormat)
 	if funcStrToInt64 != nil {
 		funcInt64ToStr := selectFuncInt64ToStr(OutputFormat)
@@ -86,9 +85,8 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 		numsToResp := &util.Int64sToResp{
 			NumToStr: funcInt64ToStr,
 		}
-		resPageBuf := numsToResp.ToResp(int64Array)
-		response = string(resPageBuf.Bytes())
-		writeResponse(w, response)
+		resp := numsToResp.ToResp(int64Array)
+		writeResponse(w, string(resp))
 		return
 	}
 
@@ -106,9 +104,8 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 			WithDetails:    withDetails,
 			GlobalRowIndex: 0,
 		}
-		resPageBuf := numsToResp.ToResp(byteArray)
-		response = string(resPageBuf.Bytes())
-		writeResponse(w, response)
+		resp := numsToResp.ToResp(byteArray)
+		writeResponse(w, string(resp))
 		return
 	}
 
