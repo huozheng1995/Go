@@ -138,7 +138,7 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 			return
 		}
 		readChan := make(chan []int64)
-		go util.StrNumFileToNums(strToInt64File, reqInt64BufferPool, readChan)
+		go util.FileToNums[int64](strToInt64File, reqInt64BufferPool, readChan)
 		numsToResp := &util.Int64sToResp{
 			NumToStr: int64ToStr,
 		}
@@ -156,7 +156,7 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 			return
 		}
 		readChan := make(chan []byte)
-		go util.StrNumFileToNums(strToByteFile, reqByteBufferPool, readChan)
+		go util.FileToNums[byte](strToByteFile, reqByteBufferPool, readChan)
 		numsToResp := &util.BytesToResp{
 			NumToStr:       byteToStr,
 			WithDetails:    withDetails,
@@ -175,7 +175,7 @@ func convertFile(file multipart.File, InputFormat, OutputFormat common.NumType, 
 			return
 		}
 		readChan := make(chan []byte)
-		go util.RawBytesFileToBytes(file, reqByteBufferPool, readChan)
+		go util.FileToNums[byte](file, reqByteBufferPool, readChan)
 		numsToResp := &util.BytesToResp{
 			NumToStr:       byteToStr,
 			WithDetails:    withDetails,
@@ -207,14 +207,14 @@ var reqInt64BufferPool = &sync.Pool{
 	},
 }
 
-func selectStrToInt64(InputFormat common.NumType) (strToInt64 myutil.StrToInt64) {
+func selectStrToInt64(InputFormat common.NumType) (strToInt64 myutil.Int64Util) {
 	switch InputFormat {
 	case common.Hex:
-		strToInt64 = myutil.HexStrToInt64{}
+		strToInt64 = myutil.HexUtil{}
 	case common.Dec:
-		strToInt64 = myutil.DecStrToInt64{}
+		strToInt64 = myutil.DecUtil{}
 	case common.Bin:
-		strToInt64 = myutil.BinStrToInt64{}
+		strToInt64 = myutil.BinUtil{}
 	default:
 		strToInt64 = nil
 	}
@@ -235,28 +235,28 @@ func selectStrToInt64File(file multipart.File, InputFormat common.NumType) (newF
 	return newFile
 }
 
-func selectInt64ToStr(OutputFormat common.NumType) (int64ToStr myutil.Int64ToStr) {
+func selectInt64ToStr(OutputFormat common.NumType) (int64ToStr myutil.Int64Util) {
 	switch OutputFormat {
 	case common.Hex:
-		int64ToStr = myutil.Int64ToHexStr{}
+		int64ToStr = myutil.HexUtil{}
 	case common.Dec:
-		int64ToStr = myutil.Int64ToInt64Str{}
+		int64ToStr = myutil.DecUtil{}
 	case common.Bin:
-		int64ToStr = myutil.Int64ToBinStr{}
+		int64ToStr = myutil.BinUtil{}
 	default:
 		int64ToStr = nil
 	}
 	return int64ToStr
 }
 
-func selectStrToByte(InputFormat common.NumType) (strToByte myutil.StrToByte) {
+func selectStrToByte(InputFormat common.NumType) (strToByte myutil.ByteUtil) {
 	switch InputFormat {
 	case common.HexByte:
-		strToByte = myutil.Hex2StrToByte{}
+		strToByte = myutil.Hex8Util{}
 	case common.DecByte:
-		strToByte = myutil.ByteStrToByte{}
+		strToByte = myutil.Byte8Util{}
 	case common.DecInt8:
-		strToByte = myutil.Int8StrToByte{}
+		strToByte = myutil.Int8Util{}
 	default:
 		strToByte = nil
 	}
@@ -277,26 +277,26 @@ func selectStrToByteFile(file multipart.File, InputFormat common.NumType) (newFi
 	return newFile
 }
 
-func selectByteToStr(OutputFormat common.NumType) (byteToStr myutil.ByteToStr, withDetails bool) {
+func selectByteToStr(OutputFormat common.NumType) (byteToStr myutil.ByteUtil, withDetails bool) {
 	withDetails = false
 	switch OutputFormat {
 	case common.HexByte:
-		byteToStr = myutil.ByteToHexStr{}
+		byteToStr = myutil.Hex8Util{}
 	case common.DecByte:
-		byteToStr = myutil.ByteToByteStr{}
+		byteToStr = myutil.Byte8Util{}
 	case common.DecInt8:
-		byteToStr = myutil.ByteToInt8Str{}
+		byteToStr = myutil.Int8Util{}
 	case common.HexByteFormatted:
 		withDetails = true
-		byteToStr = myutil.ByteToHexStr{}
+		byteToStr = myutil.Hex8Util{}
 	case common.DecByteFormatted:
 		withDetails = true
-		byteToStr = myutil.ByteToByteStr{}
+		byteToStr = myutil.Byte8Util{}
 	case common.DecInt8Formatted:
 		withDetails = true
-		byteToStr = myutil.ByteToInt8Str{}
+		byteToStr = myutil.Int8Util{}
 	case common.RawBytes:
-		byteToStr = myutil.ByteToRawBytes{}
+		byteToStr = myutil.RawBytesUtil{}
 	default:
 		byteToStr = nil
 	}

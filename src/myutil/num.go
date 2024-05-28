@@ -1,14 +1,7 @@
 package myutil
 
-// num to string
-
-type NumToStr[T any] interface {
+type NumUtil[T any] interface {
 	ToString(T) string
-	GetWidth() int
-}
-
-// string to num
-
-type StrToNum[T any] interface {
+	GetDisplaySize() int
 	ToNum(string2 string) T
 }

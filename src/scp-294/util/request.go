@@ -3,7 +3,6 @@ package util
 import (
 	"github.com/edward/scp-294/logger"
 	"io"
-	"mime/multipart"
 	"myutil"
 	myfile "myutil/file"
 	"net/http"
@@ -14,7 +13,7 @@ import (
 
 // text to num array
 
-func TextToNums[T any](text string, strToNum myutil.StrToNum[T]) []T {
+func TextToNums[T any](text string, strToNum myutil.NumUtil[T]) []T {
 	result := make([]T, 0, len(text))
 	var val byte
 	var builder strings.Builder
@@ -40,18 +39,7 @@ func TextToNums[T any](text string, strToNum myutil.StrToNum[T]) []T {
 
 // file to num array
 
-func RawBytesFileToBytes(file multipart.File, bufferPool *sync.Pool, readChan chan []byte) {
-	rawBytesNumFile := &myfile.RawBytesNumFile{
-		File: file,
-	}
-	fileToNums[byte](rawBytesNumFile, bufferPool, readChan)
-}
-
-func StrNumFileToNums[T any](file *myfile.StrNumFile[T], reqBufferPool *sync.Pool, readChan chan []T) {
-	fileToNums[T](file, reqBufferPool, readChan)
-}
-
-func fileToNums[T any](file myfile.INumFile[T], bufferPool *sync.Pool, readChan chan []T) {
+func FileToNums[T any](file myfile.INumFile[T], bufferPool *sync.Pool, readChan chan []T) {
 	defer close(readChan)
 	for {
 		buf := bufferPool.Get().([]T)
@@ -85,8 +73,8 @@ func ReadFromChannelAndRespond[T any](readChan <-chan []T, numsToResp NumsToResp
 		buf, ok := <-readChan
 		bufLen := len(buf)
 		if !ok || len(buf) <= 0 {
-			readKB := strconv.Itoa((readSize * numsToResp.GetBytes()) >> 10)
-			writeKB := strconv.Itoa((writeSize * numsToResp.GetBytes()) >> 10)
+			readKB := strconv.Itoa((readSize * numsToResp.GetByteNum()) >> 10)
+			writeKB := strconv.Itoa((writeSize * numsToResp.GetByteNum()) >> 10)
 			logger.Logger.Log("Main", "Read channel done, total size: "+strconv.Itoa(readSize)+"("+readKB+"KB)")
 			logger.Logger.Log("Main", "Write stream done, total size: "+strconv.Itoa(writeSize)+"("+writeKB+"KB)")
 			return
@@ -100,6 +88,6 @@ func ReadFromChannelAndRespond[T any](readChan <-chan []T, numsToResp NumsToResp
 
 		readSize += bufLen
 		writeSize += respLen
-		//logger.Logger.Log("Main", "Read stream size: "+strconv.Itoa((readSize*numsToResp.GetBytes()))+"Byte")
+		//logger.Logger.Log("Main", "Read stream size: "+strconv.Itoa((readSize*numsToResp.GetByteNum()))+"Byte")
 	}
 }

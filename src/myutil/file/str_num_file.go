@@ -8,11 +8,11 @@ import (
 )
 
 type StrNumFile[T any] struct {
-	buf          []byte
-	bufPos       int
-	bufSize      int
-	file         io.ReadCloser
-	funcStrToNum myutil.StrToNum[T]
+	buf     []byte
+	bufPos  int
+	bufSize int
+	file    io.ReadCloser
+	numUtil myutil.NumUtil[T]
 }
 
 func (h *StrNumFile[T]) innerRead() (err error) {
@@ -33,7 +33,7 @@ func (h *StrNumFile[T]) Read(p []T) (int, error) {
 			err := h.innerRead()
 			if err != nil {
 				if builder.Len() > 0 {
-					p[pPos] = h.funcStrToNum.ToNum(builder.String())
+					p[pPos] = h.numUtil.ToNum(builder.String())
 					pPos++
 					builder.Reset()
 				}
@@ -53,7 +53,7 @@ func (h *StrNumFile[T]) Read(p []T) (int, error) {
 			continue
 		}
 		if builder.Len() > 0 {
-			p[pPos] = h.funcStrToNum.ToNum(builder.String())
+			p[pPos] = h.numUtil.ToNum(builder.String())
 			pPos++
 			builder.Reset()
 		}

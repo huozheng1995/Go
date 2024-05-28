@@ -4,47 +4,19 @@ import (
 	"strconv"
 )
 
-// string to byte
-
-type StrToByte interface {
+type ByteUtil interface {
 	ToNum(string) byte
+	ToString(byte) string
+	GetDisplaySize() int
 }
 
-type Hex2StrToByte struct {
-}
+type Hex8Util struct{}
 
-func (toNum Hex2StrToByte) ToNum(str string) byte {
+func (u Hex8Util) ToNum(str string) byte {
 	val, _ := strconv.ParseInt(str, 16, 64)
 	return byte(val)
 }
-
-type ByteStrToByte struct {
-}
-
-func (toNum ByteStrToByte) ToNum(str string) byte {
-	val, _ := strconv.ParseInt(str, 10, 64)
-	return byte(val)
-}
-
-type Int8StrToByte struct {
-}
-
-func (toNum Int8StrToByte) ToNum(str string) byte {
-	val, _ := strconv.ParseInt(str, 10, 64)
-	return byte(val)
-}
-
-// byte to string
-
-type ByteToStr interface {
-	ToString(byte) string
-	GetWidth() int
-}
-
-type ByteToHexStr struct {
-}
-
-func (byteToStr ByteToHexStr) ToString(val byte) string {
+func (u Hex8Util) ToString(val byte) string {
 	if val == 0 {
 		return "00"
 	}
@@ -55,36 +27,44 @@ func (byteToStr ByteToHexStr) ToString(val byte) string {
 
 	return string(arr)
 }
-func (byteToStr ByteToHexStr) GetWidth() int {
+func (u Hex8Util) GetDisplaySize() int {
 	return 2
 }
 
-type ByteToByteStr struct {
-}
+type Byte8Util struct{}
 
-func (byteToStr ByteToByteStr) ToString(val byte) string {
+func (u Byte8Util) ToNum(str string) byte {
+	val, _ := strconv.ParseInt(str, 10, 64)
+	return byte(val)
+}
+func (u Byte8Util) ToString(val byte) string {
 	return strconv.Itoa(int(val))
 }
-func (byteToStr ByteToByteStr) GetWidth() int {
+func (u Byte8Util) GetDisplaySize() int {
 	return 3
 }
 
-type ByteToInt8Str struct {
-}
+type Int8Util struct{}
 
-func (byteToStr ByteToInt8Str) ToString(val byte) string {
+func (u Int8Util) ToNum(str string) byte {
+	val, _ := strconv.ParseInt(str, 10, 64)
+	return byte(val)
+}
+func (u Int8Util) ToString(val byte) string {
 	return strconv.Itoa(int(int8(val)))
 }
-func (byteToStr ByteToInt8Str) GetWidth() int {
+func (u Int8Util) GetDisplaySize() int {
 	return 4
 }
 
-type ByteToRawBytes struct {
-}
+type RawBytesUtil struct{}
 
-func (byteToStr ByteToRawBytes) ToString(val byte) string {
+func (u RawBytesUtil) ToNum(str string) byte {
+	return 0
+}
+func (u RawBytesUtil) ToString(val byte) string {
 	return ""
 }
-func (byteToStr ByteToRawBytes) GetWidth() int {
+func (u RawBytesUtil) GetDisplaySize() int {
 	return 0
 }

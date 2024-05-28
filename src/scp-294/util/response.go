@@ -9,15 +9,15 @@ import (
 // num array to response
 
 type NumsToResp[T any] interface {
-	GetBytes() int
+	GetByteNum() int
 	ToResp(arr []T) []byte
 }
 
 type Int64sToResp struct {
-	NumToStr myutil.Int64ToStr
+	NumToStr myutil.Int64Util
 }
 
-func (toResp *Int64sToResp) GetBytes() int {
+func (toResp *Int64sToResp) GetByteNum() int {
 	return 8
 }
 
@@ -32,19 +32,19 @@ func (toResp *Int64sToResp) ToResp(arr []int64) []byte {
 }
 
 type BytesToResp struct {
-	NumToStr       myutil.ByteToStr
+	NumToStr       myutil.ByteUtil
 	WithDetails    bool
 	GlobalRowIndex int
 }
 
-func (toResp *BytesToResp) GetBytes() int {
+func (toResp *BytesToResp) GetByteNum() int {
 	return 1
 }
 
 func (toResp *BytesToResp) ToResp(arr []byte) []byte {
 	resBuf := new(bytes.Buffer)
 	//To RawBytes
-	if _, ok := toResp.NumToStr.(myutil.ByteToRawBytes); ok {
+	if _, ok := toResp.NumToStr.(myutil.RawBytesUtil); ok {
 		resBuf.Write(arr)
 		return resBuf.Bytes()
 	}
@@ -87,11 +87,11 @@ func (toResp *BytesToResp) ToResp(arr []byte) []byte {
 	return resBuf.Bytes()
 }
 
-func writeRowData(buffer *bytes.Buffer, byteToStr myutil.ByteToStr, arr []byte, off int, len2 int, withDetails bool) {
+func writeRowData(buffer *bytes.Buffer, byteToStr myutil.ByteUtil, arr []byte, off int, len2 int, withDetails bool) {
 	count := 0
 	for i := 0; i < len2; i++ {
 		count++
-		writeStringWithSpace(buffer, byteToStr.ToString(arr[off+i]), byteToStr.GetWidth())
+		writeStringWithSpace(buffer, byteToStr.ToString(arr[off+i]), byteToStr.GetDisplaySize())
 		if withDetails {
 			if count&0x0F == 0 {
 				buffer.WriteString(", ")

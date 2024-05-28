@@ -5,47 +5,20 @@ import (
 	"strings"
 )
 
-// string to int64
-
-type StrToInt64 interface {
+type Int64Util interface {
 	ToNum(string) int64
+	ToString(int64) string
+	GetDisplaySize() int
 }
 
-type HexStrToInt64 struct {
+type HexUtil struct {
 }
 
-func (toNum HexStrToInt64) ToNum(str string) int64 {
+func (u HexUtil) ToNum(str string) int64 {
 	val, _ := strconv.ParseInt(str, 16, 64)
 	return val
 }
-
-type DecStrToInt64 struct {
-}
-
-func (toNum DecStrToInt64) ToNum(str string) int64 {
-	val, _ := strconv.ParseInt(str, 10, 64)
-	return val
-}
-
-type BinStrToInt64 struct {
-}
-
-func (toNum BinStrToInt64) ToNum(str string) int64 {
-	val, _ := strconv.ParseInt(str, 2, 64)
-	return val
-}
-
-// int64 to string
-
-type Int64ToStr interface {
-	ToString(int64) string
-	GetWidth() int
-}
-
-type Int64ToHexStr struct {
-}
-
-func (toStr Int64ToHexStr) ToString(val int64) string {
+func (u HexUtil) ToString(val int64) string {
 	if val == 0 {
 		return "0"
 	}
@@ -61,24 +34,32 @@ func (toStr Int64ToHexStr) ToString(val int64) string {
 
 	return builder.String()
 }
-func (toStr Int64ToHexStr) GetWidth() int {
+func (u HexUtil) GetDisplaySize() int {
 	return 16
 }
 
-type Int64ToInt64Str struct {
+type DecUtil struct {
 }
 
-func (toStr Int64ToInt64Str) ToString(val int64) string {
+func (u DecUtil) ToNum(str string) int64 {
+	val, _ := strconv.ParseInt(str, 10, 64)
+	return val
+}
+func (u DecUtil) ToString(val int64) string {
 	return strconv.FormatInt(val, 10)
 }
-func (toStr Int64ToInt64Str) GetWidth() int {
+func (u DecUtil) GetDisplaySize() int {
 	return 32
 }
 
-type Int64ToBinStr struct {
+type BinUtil struct {
 }
 
-func (toStr Int64ToBinStr) ToString(val int64) string {
+func (u BinUtil) ToNum(str string) int64 {
+	val, _ := strconv.ParseInt(str, 2, 64)
+	return val
+}
+func (u BinUtil) ToString(val int64) string {
 	if val == 0 {
 		return "0"
 	}
@@ -94,6 +75,6 @@ func (toStr Int64ToBinStr) ToString(val int64) string {
 
 	return builder.String()
 }
-func (toStr Int64ToBinStr) GetWidth() int {
+func (u BinUtil) GetDisplaySize() int {
 	return 64
 }
