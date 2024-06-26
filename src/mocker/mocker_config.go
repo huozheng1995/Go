@@ -19,6 +19,10 @@ type MockerConfig struct {
 		ResponseDataLength int      `json:"ResponseDataLength"`
 		ResponseFiles      []string `json:"ResponseFiles"`
 	} `json:"MockDataGroup2"`
+	MockDataGroup3 []struct {
+		RequestFile string `json:"RequestFile"`
+		Delay       int    `json:"Delay"`
+	} `json:"MockDataGroup3"`
 }
 
 func ParseConfig() *MockerConfig {

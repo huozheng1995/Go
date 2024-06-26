@@ -1,13 +1,17 @@
 {
   "ServerIP": "172.16.85.139",
-  "ServerPort": 50000,
-  "MockerPort": 50000,
+  "ServerPort": 5432,
+  "MockerPort": 5432,
   "PrintDetails": true,
-  "TunnelMode": true,
-  "CreateTunnelManual": true,
-  "MockDataLocation": "D:/DevelopTools/mocker/db2",
+  "MockDataLocation": "D:/temp",
   "MockDataGroup1": [
   ],
   "MockDataGroup2": [
+  ],
+  "MockDataGroup3": [
+    {
+      "RequestFile": "/req1.txt",
+      "Delay": 5
+    }
   ]
 }

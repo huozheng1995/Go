@@ -38,9 +38,15 @@ type ResLenResFiles struct {
 	FileUris []string
 }
 
+type ReqDataDelay struct {
+	ReqData *[]byte
+	Delay   int
+}
+
 type Mocker struct {
 	ReqDataResFiles *myutil.Set
 	ResLenResFiles  *myutil.Set
+	ReqDataDelay    *myutil.Set
 	MockerConfig    *MockerConfig
 }
 
@@ -87,6 +93,31 @@ func NewMocker(config *MockerConfig) *Mocker {
 		})
 	}
 
+	reqDataDelay := myutil.NewSet()
+	for _, mockData := range config.MockDataGroup3 {
+		var reqData []byte
+		func() {
+			fileUri := path.Join(config.MockDataLocation, mockData.RequestFile)
+			hexFile, err := file.NewStrHex2OSFile(fileUri)
+			defer hexFile.Close()
+			if err != nil {
+				Logger.LogError("Main", "Error opening file: "+fileUri+", error: "+err.Error())
+				panic(err)
+			}
+			reqData, err = hexFile.ReadAll()
+			if err != nil {
+				Logger.LogError("Main", "Error reading file: "+fileUri+", error: "+err.Error())
+				panic(err)
+			}
+		}()
+
+		Logger.Log("Main", "Parsed ReqDataResFiles, req data length: "+strconv.Itoa(len(reqData)))
+		reqDataDelay.Add(&ReqDataDelay{
+			ReqData: &reqData,
+			Delay:   mockData.Delay,
+		})
+	}
+
 	ip, err := myutil.GetIPByDomain(config.ServerIP)
 	if err != nil {
 		Logger.LogError("Main", "Failed to get IP, domain:"+config.ServerIP+", error: "+err.Error())
@@ -102,6 +133,7 @@ func NewMocker(config *MockerConfig) *Mocker {
 	return &Mocker{
 		ReqDataResFiles: reqDataResFiles,
 		ResLenResFiles:  resLenResFiles,
+		ReqDataDelay:    reqDataDelay,
 		MockerConfig:    config,
 	}
 }
@@ -191,7 +223,8 @@ func (m *Mocker) handleClientSocket(mockerConn *MockerConn) {
 
 	logCode := Logger.GetCode(mockerConn.ConnId, "C")
 	Logger.Log(logCode, "Listening on client socket...")
-	resDataFiles := m.ReqDataResFiles.Elements()
+	reqDataResFiles := m.ReqDataResFiles.Elements()
+	reqDataDelay := m.ReqDataDelay.Elements()
 	buffer := make([]byte, 64*1024)
 	for {
 		n, err := mockerConn.ClientConn.Read(buffer)
@@ -208,7 +241,7 @@ func (m *Mocker) handleClientSocket(mockerConn *MockerConn) {
 
 		//handle ReqDataResFiles
 		var fileUris []string
-		for _, item := range resDataFiles {
+		for _, item := range reqDataResFiles {
 			rr := item.(*ReqDataResFiles)
 			if bytes.Equal(*rr.ReqData, request) {
 				Logger.Log(logCode, "Response is found in ReqDataResFiles!")
@@ -224,6 +257,18 @@ func (m *Mocker) handleClientSocket(mockerConn *MockerConn) {
 				}
 			}
 			continue
+		}
+
+		for _, item := range reqDataDelay {
+			rr := item.(*ReqDataDelay)
+			if bytes.Equal(*rr.ReqData, request) {
+				Logger.Log(logCode, "Request is matched in ReqDataDelay!")
+				if rr.Delay > 0 {
+					Logger.Log(logCode, "Delaying..., will continue in "+strconv.Itoa(rr.Delay)+" seconds")
+					time.Sleep(time.Duration(rr.Delay) * time.Second)
+				}
+				break
+			}
 		}
 
 		Logger.Log(logCode, "Response isn't found in ReqDataResFiles, try to send request to server")
