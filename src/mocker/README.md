@@ -6,8 +6,9 @@
 - Run CData driver
 
 ### Common Config
-- ServerIP: The server ip to connect
+- ServerIP: The server IP to connect
 - ServerPort: The server port to connect
+- MockerIP: Mocker will use this IP to create a local network interface and listen on it
 - MockerPort: Mocker will listen on this port
 - PrintDetails: Whether to print the byte data
 - MockDataLocation: The root folder to save the mocked request and response data
