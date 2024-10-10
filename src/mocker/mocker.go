@@ -57,11 +57,11 @@ func NewMocker(config *MockerConfig) *Mocker {
 		func() {
 			fileUri := path.Join(config.MockDataLocation, mockData.RequestFile)
 			hexFile, err := file.NewStrHex2OSFile(fileUri)
-			defer hexFile.Close()
 			if err != nil {
 				Logger.LogError("Main", "Error opening file: "+fileUri+", error: "+err.Error())
 				panic(err)
 			}
+			defer hexFile.Close()
 			reqData, err = hexFile.ReadAll()
 			if err != nil {
 				Logger.LogError("Main", "Error reading file: "+fileUri+", error: "+err.Error())
@@ -99,11 +99,11 @@ func NewMocker(config *MockerConfig) *Mocker {
 		func() {
 			fileUri := path.Join(config.MockDataLocation, mockData.RequestFile)
 			hexFile, err := file.NewStrHex2OSFile(fileUri)
-			defer hexFile.Close()
 			if err != nil {
 				Logger.LogError("Main", "Error opening file: "+fileUri+", error: "+err.Error())
 				panic(err)
 			}
+			defer hexFile.Close()
 			reqData, err = hexFile.ReadAll()
 			if err != nil {
 				Logger.LogError("Main", "Error reading file: "+fileUri+", error: "+err.Error())
@@ -140,12 +140,12 @@ func NewMocker(config *MockerConfig) *Mocker {
 
 func (m *Mocker) Start() {
 	var listener net.Listener
-	err := myutil.CreateInterfaceManual(m.MockerConfig.ServerIP)
+	err := myutil.CreateInterfaceManual(m.MockerConfig.MockerIP)
 	if err != nil {
 		Logger.LogError("Main", "Failed to create Network Interface, error: "+err.Error())
 		panic(err)
 	}
-	listener, err = net.Listen("tcp", m.MockerConfig.ServerIP+":"+strconv.Itoa(m.MockerConfig.MockerPort))
+	listener, err = net.Listen("tcp", m.MockerConfig.MockerIP+":"+strconv.Itoa(m.MockerConfig.MockerPort))
 	if err != nil {
 		Logger.LogError("Main", "Error listening, error: "+err.Error())
 		panic(err)
@@ -194,7 +194,7 @@ func (m *Mocker) connectServer() (net.Conn, error) {
 }
 
 func (m *Mocker) connectServerAccordingToRouteTable() (net.Conn, error) {
-	ipNet, err := myutil.FindInterfaceInRouteTable(m.MockerConfig.ServerIP)
+	ipNet, err := myutil.FindInterfaceInRouteTable(m.MockerConfig.ServerIP, m.MockerConfig.MockerName)
 	if err != nil {
 		Logger.LogError("Main", "Error finding network interface in route table, IP: "+m.MockerConfig.ServerIP+", error: "+err.Error())
 		return nil, err

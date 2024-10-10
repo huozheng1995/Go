@@ -8,6 +8,8 @@ import (
 type MockerConfig struct {
 	ServerIP         string `json:"ServerIP"`
 	ServerPort       int    `json:"ServerPort"`
+	MockerName       string `json:"MockerName"`
+	MockerIP         string `json:"MockerIP"`
 	MockerPort       int    `json:"MockerPort"`
 	PrintDetails     bool   `json:"PrintDetails"`
 	MockDataLocation string `json:"MockDataLocation"`

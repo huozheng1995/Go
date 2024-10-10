@@ -14,19 +14,20 @@ func main() {
 	Logger = myutil.NewMyLogger("mocker.log")
 
 	config := ParseConfig()
+	config.MockerName = "mocker0"
 
-	go createNetwork(config.ServerIP)
+	go createNetwork(config.MockerIP, config.MockerName)
 
 	mocker := NewMocker(config)
 	mocker.Start()
 }
 
-func createNetwork(ServerIP string) {
+func createNetwork(ServerIP string, networkName string) {
 	configObj := struct {
 		NetworksToAdd []myutil.Network `json:"NetworksToAdd"`
 	}{
 		NetworksToAdd: []myutil.Network{
-			{Name: "mocker0", IPv4Address: ServerIP, SubnetMask: 32},
+			{Name: networkName, IPv4Address: ServerIP, SubnetMask: 32},
 		},
 	}
 

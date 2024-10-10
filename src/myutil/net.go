@@ -1,7 +1,6 @@
 package myutil
 
 import (
-	"bytes"
 	"fmt"
 	"net"
 	"strings"
@@ -87,7 +86,7 @@ func GetIPByDomain(domain string) (*net.IP, error) {
 	return nil, nil
 }
 
-func FindInterfaceInRouteTable(ipStr string) (*net.IPNet, error) {
+func FindInterfaceInRouteTable(ipStr string, interfaceToIgnore string) (*net.IPNet, error) {
 	ip := net.ParseIP(ipStr)
 	ifaces, err := net.Interfaces()
 	if err != nil {
@@ -95,6 +94,10 @@ func FindInterfaceInRouteTable(ipStr string) (*net.IPNet, error) {
 	}
 
 	for _, iface := range ifaces {
+		if iface.Name == interfaceToIgnore {
+			continue
+		}
+
 		addrs, err := iface.Addrs()
 		if err != nil {
 			return nil, err
@@ -102,9 +105,6 @@ func FindInterfaceInRouteTable(ipStr string) (*net.IPNet, error) {
 
 		for _, addr := range addrs {
 			if ipnet, ok := addr.(*net.IPNet); ok && ipnet.Contains(ip) {
-				if bytes.Equal(ipnet.IP, ip) {
-					continue
-				}
 				return ipnet, nil
 			}
 		}
