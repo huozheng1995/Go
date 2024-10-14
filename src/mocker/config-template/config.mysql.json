@@ -1,0 +1,24 @@
+{
+  "ServerIP": "172.16.85.139",
+  "ServerPort": 3306,
+  "MockerIP": "172.16.85.139",
+  "MockerPort": 3306,
+  "PrintDetails": true,
+  "MockDataLocation": "D:/Program/mocker/temp/mysql",
+  "MockDataGroup1": [
+    {
+      "RequestFile": "/req1.txt",
+      "ResponseFiles": [
+        "/res1.txt"
+      ]
+    }
+  ],
+  "MockDataGroup2": [
+    {
+      "ResponseDataLength": 328,
+      "ResponseFiles": [
+        "/res2.log"
+      ]
+    }
+  ]
+}

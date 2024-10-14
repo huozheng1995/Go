@@ -1,0 +1,30 @@
+{
+  "ServerIP": "172.16.85.139",
+  "ServerPort": 50000,
+  "MockerIP": "172.16.85.139",
+  "MockerPort": 50000,
+  "PrintDetails": true,
+  "MockDataLocation": "D:/Program/mocker/temp/db2",
+  "MockDataGroup1": [
+    {
+      "RequestFile": "/connreq1.txt",
+      "ResponseFiles": [
+        "/connres1.txt"
+      ]
+    },
+    {
+      "RequestFile": "/connreq2.txt",
+      "ResponseFiles": [
+        "/connres2.txt"
+      ]
+    },
+    {
+      "RequestFile": "/req1.txt",
+      "ResponseFiles": [
+        "/res1.txt", "/res2.txt", "/res3.txt"
+      ]
+    }
+  ],
+  "MockDataGroup2": [
+  ]
+}

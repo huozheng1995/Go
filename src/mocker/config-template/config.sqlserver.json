@@ -4,7 +4,7 @@
   "MockerIP": "192.168.0.145",
   "MockerPort": 1434,
   "PrintDetails": true,
-  "MockDataLocation": "D:/Program/mocker/temp",
+  "MockDataLocation": "D:/Program/mocker/temp/sqlserver",
   "MockDataGroup1": [
     {
       "RequestFile": "/18set-req.txt",

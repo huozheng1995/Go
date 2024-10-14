@@ -1,0 +1,12 @@
+{
+  "ServerIP": "172.16.85.139",
+  "ServerPort": 5432,
+  "MockerIP": "172.16.85.139",
+  "MockerPort": 5432,
+  "PrintDetails": true,
+  "MockDataLocation": "D:/Program/mocker/temp/pgsql",
+  "MockDataGroup1": [
+  ],
+  "MockDataGroup2": [
+  ]
+}
