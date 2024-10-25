@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/edward/scp-294/common"
 	"github.com/edward/scp-294/logger"
+	"github.com/edward/scp-294/processor"
 	"github.com/edward/scp-294/util"
 	"mime/multipart"
 	"myutil"
@@ -99,6 +100,14 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 			return
 		}
 		byteArray := util.TextToNums[byte](InputData, byteUtil)
+
+		processors := []string{processor.IbmEBCDICDecoder}
+		byteArray, err := processByProcessors(processors, byteArray)
+		if err != nil {
+			common.RespondError(w, err.Error())
+			return
+		}
+
 		numsToResp := &util.BytesToResp{
 			NumToStr:       byteToStr,
 			WithDetails:    withDetails,
@@ -111,6 +120,26 @@ func convertText(InputData string, InputFormat, OutputFormat common.NumType, w h
 
 	w.WriteHeader(http.StatusInternalServerError)
 	common.RespondError(w, "Cannot convert '"+common.InputFormatMap[InputFormat]+"' to '"+common.OutputFormatMap[OutputFormat]+"'")
+}
+
+var registry = processor.NewProcessorRegistry()
+
+func processByProcessors(processors []string, input []byte) ([]byte, error) {
+	chain := processor.NewProcessorChain()
+	for _, name := range processors {
+		processor, err := registry.GetProcessor(name)
+		if err != nil {
+			return nil, err
+		}
+		chain.AddProcessor(processor)
+	}
+
+	result, err := chain.Process(input)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func writeResponse(w http.ResponseWriter, response string) {
