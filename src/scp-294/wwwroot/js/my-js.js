@@ -4,6 +4,7 @@ const DownloadFileName = "scp294-output.txt";
 document.addEventListener("DOMContentLoaded", () => {
     onGroupChange();
     onInputTypeChange();
+    onInputFormatChange();
     let inputType = document.getElementById("inputType");
     window.fileType = inputType.options[inputType.options.length - 1].value;
 });

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/edward/scp-294/common"
+	"github.com/edward/scp-294/inout"
 	"github.com/edward/scp-294/logger"
 	"github.com/edward/scp-294/model"
 	"html/template"
@@ -35,24 +36,17 @@ func loadMainPage(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
 	data := struct {
-		ProjName        string
-		InputTypeMap    map[common.NumType]string
-		InputFormatMap  map[common.NumType]string
-		OutputTypeMap   map[common.NumType]string
-		OutputFormatMap map[common.NumType]string
-		TypeDescMap     map[common.NumType]string
-		FormatDescMap   map[common.NumType]string
-		Groups          []model.Group
-		Records         []model.Record
+		ProjName            string
+		InoutTypes          []inout.Type
+		InoutFormatMappings []inout.FormatMapping
+		Groups              []model.Group
+		Records             []model.Record
 	}{
 		"SCP-294",
-		common.TypeMap,
-		common.InputFormatMap,
-		common.TypeMap,
-		common.OutputFormatMap,
-		common.TypeDescMap,
-		common.FormatDescMap,
+		inout.CreateTypes(),
+		inout.CreateFormatMappings(),
 		groups,
 		records,
 	}

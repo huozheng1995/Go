@@ -17,13 +17,13 @@ func NewIbmEBCDIC(name string, procType ProcType) *IbmEBCDIC {
 	return instance
 }
 
-func (p *IbmEBCDIC) Process(input []byte) ([]byte, error) {
+func (p *IbmEBCDIC) Process(arr []byte) ([]byte, error) {
 	if p.procType == Encode {
-		return p.charset.Encode(input)
+		return p.charset.Encode(arr)
 	} else if p.procType == Decode {
-		return p.charset.Decode(input)
+		return p.charset.Decode(arr)
 	}
-	return input, nil
+	return arr, nil
 }
 
 func (p *IbmEBCDIC) GetName() string {

@@ -17,16 +17,16 @@
         <div class="selectDiv">
             <label>InputType: </label>
             <select id="inputType" title="inputType" onchange="onInputTypeChange()">
-                {{range $key, $value := .InputTypeMap}}
-                <option value={{$key}} title="{{ (index $.TypeDescMap $key) }}">{{$value}}</option>
+                {{range $key, $inoutType := .InoutTypes}}
+                <option value={{ $inoutType.Code }} title="{{ $inoutType.Desc }}">{{ $inoutType.Name }}</option>
                 {{end}}
             </select>
         </div>
         <div class="selectDiv">
             <label>InputFormat: </label>
-            <select id="inputFormat" title="inputFormat">
-                {{range $key, $value := .InputFormatMap}}
-                <option value={{$key}} title="{{ (index $.FormatDescMap $key) }}">{{$value}}</option>
+            <select id="inputFormat" title="inputFormat" onchange="onInputFormatChange()">
+                {{range $key, $mapping := .InoutFormatMappings}}
+                <option value={{ $mapping.InputFormat.Code }} title="{{ $mapping.InputFormat.Desc }}">{{ $mapping.InputFormat.Name }}</option>
                 {{end}}
             </select>
         </div>
@@ -37,17 +37,15 @@
         <div class="selectDiv">
             <label>OutputType: </label>
             <select id="outputType" title="outputType">
-                {{range $key, $value := .OutputTypeMap}}
-                <option value={{$key}}>{{$value}}</option>
+                {{range $key, $inoutType := .InoutTypes}}
+                <option value={{ $inoutType.Code }} title="{{ $inoutType.Desc }}">{{ $inoutType.Name }}</option>
                 {{end}}
             </select>
         </div>
         <div class="selectDiv">
             <label>OutputFormat: </label>
             <select id="outputFormat" title="outputFormat">
-                {{range $key, $value := .OutputFormatMap}}
-                <option value={{$key}}>{{$value}}</option>
-                {{end}}
+                <!-- Output types will be populated here -->
             </select>
         </div>
         <button type="button" class="rowBtn" onclick="convert()">Convert</button>
@@ -68,5 +66,28 @@
     <textarea id="output" placeholder="output..."></textarea>
 </div>
 </body>
+<script>
+    function onInputFormatChange() {
+        let inputFormat = document.getElementById("inputFormat");
+        let outputFormat = document.getElementById("outputFormat");
+        let selectedCode = inputFormat.value;
+
+        outputFormat.innerHTML = "";
+        let formatMappings = {{ $.InoutFormatMappings }};
+        for (let i = 0; i < formatMappings.length; i++) {
+            if (formatMappings[i].InputFormat.Code == selectedCode) {
+                let outputFormats = formatMappings[i].OutputFormats;
+                outputFormats.forEach(function(format) {
+                    let option = document.createElement("option");
+                    option.value = format.Code;
+                    option.textContent = format.Name;
+                    option.title = format.Desc; // Optional: Add title for tooltips
+                    outputFormat.appendChild(option);
+                });
+                break;
+            }
+        }
+    }
+</script>
 </html>
 {{ end }}
