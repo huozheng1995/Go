@@ -30,6 +30,14 @@
                 {{end}}
             </select>
         </div>
+        <div class="selectDiv">
+            <label>Processor: </label>
+            <select id="processor" title="processor">
+                {{range $key, $processor := .Processors}}
+                <option value={{ $processor }} title="Select specific rule to process data before conversion">{{ $processor }}</option>
+                {{end}}
+            </select>
+        </div>
     </div>
 </div>
 <div class="rowDiv" style="display: flex;justify-content: space-between">

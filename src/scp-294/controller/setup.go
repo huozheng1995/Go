@@ -5,6 +5,7 @@ import (
 	"github.com/edward/scp-294/inout"
 	"github.com/edward/scp-294/logger"
 	"github.com/edward/scp-294/model"
+	"github.com/edward/scp-294/processor"
 	"html/template"
 	"net/http"
 )
@@ -43,12 +44,14 @@ func loadMainPage(w http.ResponseWriter, r *http.Request) {
 		InoutFormatMappings []inout.FormatMapping
 		Groups              []model.Group
 		Records             []model.Record
+		Processors          []string
 	}{
 		"SCP-294",
 		inout.CreateTypes(),
 		inout.CreateFormatMappings(),
 		groups,
 		records,
+		append([]string{"None"}, processor.DefaultProcRegistry.GetProcessorNames()...),
 	}
 	t.ExecuteTemplate(w, "layout", data)
 }

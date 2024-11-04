@@ -32,6 +32,7 @@ func convert(w http.ResponseWriter, r *http.Request) {
 
 		var InputType inout.TypeCode
 		var InputFormat, OutputFormat inout.FormatCode
+		processors := make([]string, 0)
 		var InputData string
 		for key, values := range form.Value {
 			if key == "InputType" {
@@ -43,6 +44,8 @@ func convert(w http.ResponseWriter, r *http.Request) {
 			} else if key == "OutputFormat" {
 				intVal, _ := strconv.Atoi(values[0])
 				OutputFormat = inout.FormatCode(intVal)
+			} else if key == "processor" {
+				processors = append(processors, values[0])
 			} else if key == "InputData" {
 				InputData = values[0]
 			}
@@ -63,9 +66,9 @@ func convert(w http.ResponseWriter, r *http.Request) {
 			if file != nil {
 				defer file.Close()
 			}
-			convertFile(file, InputFormat, OutputFormat, w)
+			convertFile(file, InputFormat, OutputFormat, processors, w)
 		} else {
-			convertText(InputData, InputFormat, OutputFormat, w)
+			convertText(InputData, InputFormat, OutputFormat, processors, w)
 		}
 
 	default:
@@ -73,7 +76,7 @@ func convert(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func convertText(InputData string, InputFormat, OutputFormat inout.FormatCode, w http.ResponseWriter) {
+func convertText(InputData string, InputFormat, OutputFormat inout.FormatCode, processors []string, w http.ResponseWriter) {
 	int64Util := selectInt64Util(InputFormat)
 	if int64Util != nil {
 		int64ToStr := selectInt64Util(OutputFormat)
@@ -90,8 +93,7 @@ func convertText(InputData string, InputFormat, OutputFormat inout.FormatCode, w
 	if byteUtil != nil {
 		byteToStr, withDetails := selectByteUtil(OutputFormat)
 		byteArray := util.TextToNums[byte](InputData, byteUtil)
-
-		processors := []string{processor.IbmEBCDICDecoder}
+		//process data before conversion
 		byteArray, err := process(processors, byteArray)
 		if err != nil {
 			common.RespondError(w, err.Error())
@@ -112,7 +114,7 @@ func convertText(InputData string, InputFormat, OutputFormat inout.FormatCode, w
 	common.RespondError(w, fmt.Sprintln("Cannot convert ", InputFormat, " to ", OutputFormat))
 }
 
-func convertFile(file multipart.File, InputFormat, OutputFormat inout.FormatCode, w http.ResponseWriter) {
+func convertFile(file multipart.File, InputFormat, OutputFormat inout.FormatCode, processors []string, w http.ResponseWriter) {
 	int64File := selectInt64File(file, InputFormat)
 	if int64File != nil {
 		int64ToStr := selectInt64Util(OutputFormat)
@@ -144,10 +146,7 @@ func convertFile(file multipart.File, InputFormat, OutputFormat inout.FormatCode
 }
 
 func process(processors []string, arr []byte) ([]byte, error) {
-	chain, err := processor.NewProcessorChain(processors)
-	if err != nil {
-		return nil, err
-	}
+	chain := processor.NewProcessorChain(processors)
 
 	result, err := chain.Process(arr)
 	if err != nil {

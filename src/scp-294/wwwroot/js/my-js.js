@@ -12,12 +12,14 @@ document.addEventListener("DOMContentLoaded", () => {
 function convert() {
     let inputType = document.getElementById("inputType");
     let inputFormat = document.getElementById("inputFormat");
+    let processor = document.getElementById("processor");
     let outputType = document.getElementById("outputType");
     let outputFormat = document.getElementById("outputFormat");
     let inputText = document.getElementById("inputText");
     let formData = new FormData();
     formData.append("InputType", inputType.value);
     formData.append("InputFormat", inputFormat.value);
+    formData.append("processor", processor.value);
     formData.append("OutputType", outputType.value);
     formData.append("OutputFormat", outputFormat.value);
     let inputIsFile = inputType.value == window.fileType;

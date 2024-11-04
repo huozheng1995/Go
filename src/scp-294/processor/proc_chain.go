@@ -6,19 +6,18 @@ type ProcChain struct {
 	processors []IProcessor
 }
 
-func NewProcessorChain(procNames []string) (*ProcChain, error) {
-	chain := &ProcChain{
+func NewProcessorChain(procNames []string) ProcChain {
+	chain := ProcChain{
 		processors: []IProcessor{},
 	}
 
 	for _, name := range procNames {
-		processor, err := DefaultProcRegistry.GetProcessor(name)
-		if err != nil {
-			return nil, err
+		processor := DefaultProcRegistry.GetProcessor(name)
+		if processor != nil {
+			chain.AddProcessor(processor)
 		}
-		chain.AddProcessor(processor)
 	}
-	return chain, nil
+	return chain
 }
 
 func (chain *ProcChain) AddProcessor(processor IProcessor) {
