@@ -239,6 +239,7 @@ function loadRecord() {
             let outputFormat = document.getElementById("outputFormat");
             inputType.value = re.Data.InputType;
             inputFormat.value = re.Data.InputFormat;
+            onInputFormatChange();
             outputType.value = re.Data.OutputType;
             outputFormat.value = re.Data.OutputFormat;
             if (inputType.value != window.fileType) {
