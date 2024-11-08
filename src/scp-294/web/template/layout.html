@@ -18,7 +18,9 @@
             <label>InputType: </label>
             <select id="inputType" title="inputType" onchange="onInputTypeChange()">
                 {{range $key, $inoutType := .InoutTypes}}
-                <option value={{ $inoutType.Code }} title="{{ $inoutType.Desc }}">{{ $inoutType.Name }}</option>
+                <option value={{ $inoutType.Code }} title="{{ $inoutType.Desc }}">
+                    {{ $inoutType.Name }}
+                </option>
                 {{end}}
             </select>
         </div>
@@ -26,7 +28,9 @@
             <label>InputFormat: </label>
             <select id="inputFormat" title="inputFormat" onchange="onInputFormatChange()">
                 {{range $key, $mapping := .InoutFormatMappings}}
-                <option value={{ $mapping.InputFormat.Code }} title="{{ $mapping.InputFormat.Desc }}">{{ $mapping.InputFormat.Name }}</option>
+                <option value={{ $mapping.InputFormat.Code }} title="{{ $mapping.InputFormat.Desc }}">
+                    {{ $mapping.InputFormat.Name }}
+                </option>
                 {{end}}
             </select>
         </div>
@@ -34,7 +38,9 @@
             <label>Processor: </label>
             <select id="processor" title="processor">
                 {{range $key, $processor := .Processors}}
-                <option value={{ $processor }} title="Select specific rule to process data before conversion">{{ $processor }}</option>
+                <option value={{ $processor }} title="Select specific rule to process data before conversion">
+                    {{ $processor }}
+                </option>
                 {{end}}
             </select>
         </div>
@@ -46,7 +52,9 @@
             <label>OutputType: </label>
             <select id="outputType" title="outputType">
                 {{range $key, $inoutType := .InoutTypes}}
-                <option value={{ $inoutType.Code }} title="{{ $inoutType.Desc }}">{{ $inoutType.Name }}</option>
+                <option value={{ $inoutType.Code }} title="{{ $inoutType.Desc }}">
+                    {{ $inoutType.Name }}
+                </option>
                 {{end}}
             </select>
         </div>
@@ -78,22 +86,26 @@
     function onInputFormatChange() {
         let inputFormat = document.getElementById("inputFormat");
         let outputFormat = document.getElementById("outputFormat");
+        let processor = document.getElementById("processor");
         let selectedCode = inputFormat.value;
 
         outputFormat.innerHTML = "";
         let formatMappings = {{ $.InoutFormatMappings }};
         for (let i = 0; i < formatMappings.length; i++) {
-            if (formatMappings[i].InputFormat.Code == selectedCode) {
-                let outputFormats = formatMappings[i].OutputFormats;
-                outputFormats.forEach(function(format) {
-                    let option = document.createElement("option");
-                    option.value = format.Code;
-                    option.textContent = format.Name;
-                    option.title = format.Desc;
-                    outputFormat.appendChild(option);
-                });
-                break;
+            if (formatMappings[i].InputFormat.Code != selectedCode) {
+                continue;
             }
+            let outputFormats = formatMappings[i].OutputFormats;
+            outputFormats.forEach(function (format) {
+                let option = document.createElement("option");
+                option.value = format.Code;
+                option.textContent = format.Name;
+                option.title = format.Desc;
+                outputFormat.appendChild(option);
+            });
+
+            processor.disabled = !formatMappings[i].SupportProcessor;
+            break;
         }
     }
 </script>

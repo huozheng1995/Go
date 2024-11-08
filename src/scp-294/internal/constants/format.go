@@ -22,8 +22,9 @@ type Format struct {
 }
 
 type FormatMapping struct {
-	InputFormat   Format
-	OutputFormats []Format
+	InputFormat      Format
+	OutputFormats    []Format
+	SupportProcessor bool
 }
 
 func CreateFormatMappings() []FormatMapping {
@@ -38,12 +39,16 @@ func CreateFormatMappings() []FormatMapping {
 	formattedDecInt8 := Format{FormattedDecInt8, "Formatted Dec Int8 numbers", ""}
 	rawBytes := Format{RawBytes, "Raw Bytes", "Raw Bytes in textarea or file"}
 	mappings := make([]FormatMapping, 0)
-	mappings = append(mappings, FormatMapping{hex, []Format{hex, dec, bin}})
-	mappings = append(mappings, FormatMapping{dec, []Format{hex, dec, bin}})
-	mappings = append(mappings, FormatMapping{bin, []Format{hex, dec, bin}})
-	mappings = append(mappings, FormatMapping{hexByte, []Format{hexByte, decByte, decInt8, rawBytes, formattedHexByte, formattedDecByte, formattedDecInt8}})
-	mappings = append(mappings, FormatMapping{decByte, []Format{hexByte, decByte, decInt8, rawBytes, formattedHexByte, formattedDecByte, formattedDecInt8}})
-	mappings = append(mappings, FormatMapping{decInt8, []Format{hexByte, decByte, decInt8, rawBytes, formattedHexByte, formattedDecByte, formattedDecInt8}})
-	mappings = append(mappings, FormatMapping{rawBytes, []Format{hexByte, decByte, decInt8, rawBytes, formattedHexByte, formattedDecByte, formattedDecInt8}})
+	mappings = append(mappings, FormatMapping{hex, []Format{hex, dec, bin}, false})
+	mappings = append(mappings, FormatMapping{dec, []Format{hex, dec, bin}, false})
+	mappings = append(mappings, FormatMapping{bin, []Format{hex, dec, bin}, false})
+	mappings = append(mappings, FormatMapping{hexByte,
+		[]Format{hexByte, decByte, decInt8, rawBytes, formattedHexByte, formattedDecByte, formattedDecInt8}, true})
+	mappings = append(mappings, FormatMapping{decByte,
+		[]Format{hexByte, decByte, decInt8, rawBytes, formattedHexByte, formattedDecByte, formattedDecInt8}, true})
+	mappings = append(mappings, FormatMapping{decInt8,
+		[]Format{hexByte, decByte, decInt8, rawBytes, formattedHexByte, formattedDecByte, formattedDecInt8}, true})
+	mappings = append(mappings, FormatMapping{rawBytes,
+		[]Format{hexByte, decByte, decInt8, rawBytes, formattedHexByte, formattedDecByte, formattedDecInt8}, true})
 	return mappings
 }

@@ -19,7 +19,9 @@ function convert() {
     let formData = new FormData();
     formData.append("InputType", inputType.value);
     formData.append("InputFormat", inputFormat.value);
-    formData.append("processor", processor.value);
+    if (!processor.disabled) {
+        formData.append("processor", processor.value);
+    }
     formData.append("OutputType", outputType.value);
     formData.append("OutputFormat", outputFormat.value);
     let inputIsFile = inputType.value == window.fileType;
