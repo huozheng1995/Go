@@ -1,21 +1,21 @@
-package common
+package handler
 
 import (
 	"encoding/json"
-	"github.com/edward/scp-294/logger"
+	"github.com/edward/scp-294/internal"
 	"net/http"
 )
 
-type ResData struct {
+type resData struct {
 	Success bool        `json:"Success"`
 	Message string      `json:"Message"`
 	Data    interface{} `json:"Data"`
 }
 
-func RespondError(w http.ResponseWriter, message string) {
-	logger.Logger.Log("Main", message)
+func respondError(w http.ResponseWriter, message string) {
+	internal.Logger.Log("Main", message)
 	enc := json.NewEncoder(w)
-	resData := ResData{
+	resData := resData{
 		Success: false,
 		Message: message,
 		Data:    nil,

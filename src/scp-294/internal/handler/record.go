@@ -1,9 +1,8 @@
-package controller
+package handler
 
 import (
 	"encoding/json"
-	"github.com/edward/scp-294/common"
-	"github.com/edward/scp-294/model"
+	"github.com/edward/scp-294/internal/dbaccess"
 	"net/http"
 )
 
@@ -17,22 +16,22 @@ func addRecord(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		dec := json.NewDecoder(r.Body)
-		record := model.Record{}
+		record := dbaccess.Record{}
 		err := dec.Decode(&record)
 		if err != nil {
-			common.RespondError(w, "Failed to decode data, error: "+err.Error())
+			respondError(w, "Failed to decode data, error: "+err.Error())
 			return
 		}
 
 		err = record.Insert()
 		if err != nil {
-			common.RespondError(w, "Failed to insert record, error: "+err.Error())
+			respondError(w, "Failed to insert record, error: "+err.Error())
 			return
 		} else {
 			reloadHeader(w)
 		}
 	default:
-		common.RespondError(w, "Failed to save record")
+		respondError(w, "Failed to save record")
 	}
 }
 
@@ -42,28 +41,28 @@ func loadRecord(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
 		id, ok := query["RecordId"]
 		if !ok {
-			common.RespondError(w, "Failed to get parameter 'RecordId'")
+			respondError(w, "Failed to get parameter 'RecordId'")
 			return
 		}
-		record, err := model.GetRecord(id[0])
+		record, err := dbaccess.GetRecord(id[0])
 		if err != nil {
-			common.RespondError(w, "Failed to get record, error: "+err.Error())
+			respondError(w, "Failed to get record, error: "+err.Error())
 			return
 		}
 
 		enc := json.NewEncoder(w)
-		resData := common.ResData{
+		resData := resData{
 			Success: true,
 			Message: "Record was loaded!",
 			Data:    record,
 		}
 		err = enc.Encode(resData)
 		if err != nil {
-			common.RespondError(w, "Failed to encode data, error: "+err.Error())
+			respondError(w, "Failed to encode data, error: "+err.Error())
 			return
 		}
 	default:
-		common.RespondError(w, "Failed to load record")
+		respondError(w, "Failed to load record")
 	}
 }
 
@@ -73,17 +72,17 @@ func deleteRecord(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
 		id, ok := query["RecordId"]
 		if !ok {
-			common.RespondError(w, "Failed to get parameter 'RecordId'")
+			respondError(w, "Failed to get parameter 'RecordId'")
 			return
 		}
-		err := model.DeleteRecord(id[0])
+		err := dbaccess.DeleteRecord(id[0])
 		if err != nil {
-			common.RespondError(w, "Failed to delete record, error: "+err.Error())
+			respondError(w, "Failed to delete record, error: "+err.Error())
 			return
 		} else {
 			reloadHeader(w)
 		}
 	default:
-		common.RespondError(w, "Failed to delete record")
+		respondError(w, "Failed to delete record")
 	}
 }

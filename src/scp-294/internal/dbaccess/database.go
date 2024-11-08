@@ -1,9 +1,9 @@
-package common
+package dbaccess
 
 import (
 	"context"
 	"database/sql"
-	"github.com/edward/scp-294/logger"
+	"github.com/edward/scp-294/internal"
 )
 
 var Db *sql.DB
@@ -21,7 +21,7 @@ func Connect() error {
 	if err != nil {
 		return err
 	}
-	logger.Logger.Log("Main", "Database Connected!")
+	internal.Logger.Log("Main", "Database Connected!")
 	return nil
 }
 

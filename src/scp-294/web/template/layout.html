@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>{{.ProjName}}</title>
-    <link rel="stylesheet" href="/css/my-css.css">
-    <script src="/js/my-js.js"></script>
+    <link rel="stylesheet" href="/static/my-css.css">
+    <script src="/static/my-js.js"></script>
 </head>
 <body>
 <div id="divHeader">
@@ -89,7 +89,7 @@
                     let option = document.createElement("option");
                     option.value = format.Code;
                     option.textContent = format.Name;
-                    option.title = format.Desc; // Optional: Add title for tooltips
+                    option.title = format.Desc;
                     outputFormat.appendChild(option);
                 });
                 break;

@@ -1,5 +1,5 @@
 .idea/
-pkg/
+/pkg/
+bin/
 *.exe
 *.log
-src/simpletun-main/

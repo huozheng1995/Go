@@ -1,6 +1,4 @@
-package model
-
-import "github.com/edward/scp-294/common"
+package dbaccess
 
 type Group struct {
 	Id   int
@@ -9,7 +7,7 @@ type Group struct {
 
 func ListGroups() (groups []Group, err error) {
 	sql := "SELECT Id, Name FROM t_group"
-	rows, err := common.Db.Query(sql)
+	rows, err := Db.Query(sql)
 	if err != nil {
 		return
 	}
@@ -27,13 +25,13 @@ func ListGroups() (groups []Group, err error) {
 
 func GetGroup(id string) (group Group, err error) {
 	sql := "SELECT Id, Name FROM t_group WHERE Id=$1"
-	err = common.Db.QueryRow(sql, id).Scan(&group.Id, &group.Name)
+	err = Db.QueryRow(sql, id).Scan(&group.Id, &group.Name)
 	return
 }
 
 func (group *Group) Insert() (err error) {
 	sql := "INSERT INTO t_group (Name) VALUES ($1)"
-	stmt, err := common.Db.Prepare(sql)
+	stmt, err := Db.Prepare(sql)
 	if err != nil {
 		return
 	}
@@ -46,7 +44,7 @@ func (group *Group) Insert() (err error) {
 
 func (group *Group) Update() (err error) {
 	sql := "UPDATE t_group set Name=$1 WHERE Id=$2"
-	_, err = common.Db.Exec(sql, group.Name, group.Id)
+	_, err = Db.Exec(sql, group.Name, group.Id)
 	if err != nil {
 		return
 	}
@@ -55,7 +53,7 @@ func (group *Group) Update() (err error) {
 
 func DeleteGroup(id string) (err error) {
 	sql := "DELETE FROM t_group WHERE Id=$1"
-	_, err = common.Db.Exec(sql, id)
+	_, err = Db.Exec(sql, id)
 	if err != nil {
 		return
 	}

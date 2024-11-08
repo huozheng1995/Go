@@ -1,7 +1,7 @@
-package util
+package handler
 
 import (
-	"github.com/edward/scp-294/logger"
+	"github.com/edward/scp-294/internal"
 	"io"
 	"myutil"
 	myfile "myutil/file"
@@ -44,15 +44,15 @@ func FileToNums[T any](file myfile.INumFile[T], bufferPool *sync.Pool, readChan 
 	for {
 		buf := bufferPool.Get().([]T)
 		if len(buf) < cap(buf) {
-			logger.Logger.Log("Main", "Resize the buffer from "+strconv.Itoa(len(buf))+" to "+strconv.Itoa(cap(buf)))
+			internal.Logger.Log("Main", "Resize the buffer from "+strconv.Itoa(len(buf))+" to "+strconv.Itoa(cap(buf)))
 			buf = buf[0:cap(buf)]
 		}
 		len, err := file.Read(buf)
 		if err != nil {
 			if err == io.EOF {
-				logger.Logger.Log("Main", "File stream read done")
+				internal.Logger.Log("Main", "File stream read done")
 			} else {
-				logger.Logger.Log("Main", "Failed to read file stream, error: "+err.Error())
+				internal.Logger.Log("Main", "Failed to read file stream, error: "+err.Error())
 			}
 			if len > 0 {
 				readChan <- buf[0:len]
@@ -75,8 +75,8 @@ func ReadFromChannelAndRespond[T any](readChan <-chan []T, numsToResp NumsToResp
 		if !ok || len(buf) <= 0 {
 			readKB := strconv.Itoa((readSize * numsToResp.GetByteNum()) >> 10)
 			writeKB := strconv.Itoa((writeSize * numsToResp.GetByteNum()) >> 10)
-			logger.Logger.Log("Main", "Read channel done, total size: "+strconv.Itoa(readSize)+"("+readKB+"KB)")
-			logger.Logger.Log("Main", "Write stream done, total size: "+strconv.Itoa(writeSize)+"("+writeKB+"KB)")
+			internal.Logger.Log("Main", "Read channel done, total size: "+strconv.Itoa(readSize)+"("+readKB+"KB)")
+			internal.Logger.Log("Main", "Write stream done, total size: "+strconv.Itoa(writeSize)+"("+writeKB+"KB)")
 			return
 		}
 

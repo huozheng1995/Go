@@ -1,4 +1,4 @@
-package inout
+package constants
 
 type FormatCode int
 

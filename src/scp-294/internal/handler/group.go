@@ -1,9 +1,8 @@
-package controller
+package handler
 
 import (
 	"encoding/json"
-	"github.com/edward/scp-294/common"
-	"github.com/edward/scp-294/model"
+	"github.com/edward/scp-294/internal/dbaccess"
 	"net/http"
 )
 
@@ -16,22 +15,22 @@ func addGroup(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		dec := json.NewDecoder(r.Body)
-		group := model.Group{}
+		group := dbaccess.Group{}
 		err := dec.Decode(&group)
 		if err != nil {
-			common.RespondError(w, "Failed to decode data, error: "+err.Error())
+			respondError(w, "Failed to decode data, error: "+err.Error())
 			return
 		}
 
 		err = group.Insert()
 		if err != nil {
-			common.RespondError(w, "Failed to insert group, error: "+err.Error())
+			respondError(w, "Failed to insert group, error: "+err.Error())
 			return
 		} else {
 			reloadHeader(w)
 		}
 	default:
-		common.RespondError(w, "Failed to save group")
+		respondError(w, "Failed to save group")
 	}
 }
 
@@ -41,22 +40,22 @@ func deleteGroup(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
 		id, ok := query["GroupId"]
 		if !ok {
-			common.RespondError(w, "Failed to get parameter 'GroupId'")
+			respondError(w, "Failed to get parameter 'GroupId'")
 			return
 		}
-		err := model.DeleteRecordsByGroupId(id[0])
+		err := dbaccess.DeleteRecordsByGroupId(id[0])
 		if err != nil {
-			common.RespondError(w, "Failed to delete records, error: "+err.Error())
+			respondError(w, "Failed to delete records, error: "+err.Error())
 			return
 		}
-		err = model.DeleteGroup(id[0])
+		err = dbaccess.DeleteGroup(id[0])
 		if err != nil {
-			common.RespondError(w, "Failed to delete group, error: "+err.Error())
+			respondError(w, "Failed to delete group, error: "+err.Error())
 			return
 		} else {
 			reloadHeader(w)
 		}
 	default:
-		common.RespondError(w, "Failed to delete group")
+		respondError(w, "Failed to delete group")
 	}
 }
