@@ -1,6 +1,5 @@
 ### Build
-- build: go build -o bin/scp-294.exe cmd/main.go
-- build: go build -v -a
+- go build -o bin/scp-294.exe cmd/main.go
 
 ### Windows service:
 - kill task: taskkill /pid xxx /F
