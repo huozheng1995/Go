@@ -160,7 +160,7 @@ async function textToFile(re) {
 }
 
 class MyTypedArray {
-    static MaxSize = 512 * 1024 * 1024;
+    static MaxSize = 128 * 1024 * 1024;
 
     constructor(typedArrayClass, cap) {
         this.typedArrayClass = typedArrayClass;

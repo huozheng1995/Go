@@ -1,26 +1,50 @@
 [
   {
-    "SrcRootPath": "C:\\Dev\\RSSBus\\v22",
-    "DesRootPath": "C:\\source\\provider_tests",
-    "FileNames": "localtest.java, localtests.java",
+    "SrcRootPath": "C:\\Dev\\RSSBus\\v23",
+    "DesRootPath": "C:\\source\\file-collector\\root\\v23-tests",
+    "FileNames": "LocalConn.java, LocalTests.java, BinlogTest2.java",
     "DirPattern": "test%",
     "ExcludedDirPattern": "release",
     "DeleteDesRootBeforeCollect": true
   },
   {
-    "SrcRootPath": "C:\\Users\\User\\AppData\\Roaming\\DBeaverData",
-    "DesRootPath": "C:\\source\\DBeaverData",
+    "SrcRootPath": "C:\\Dev\\RSSBus\\v24",
+    "DesRootPath": "C:\\source\\file-collector\\root\\v24-tests",
+    "FileNames": "LocalConn.java, LocalTests.java, BinlogTest2.java",
+    "DirPattern": "test%",
+    "ExcludedDirPattern": "release",
+    "DeleteDesRootBeforeCollect": true
+  },
+  {
+    "SrcRootPath": "C:\\Users\\EdwardHuo\\AppData\\Roaming\\DBeaverData",
+    "DesRootPath": "C:\\source\\file-collector\\root\\DBeaverData",
     "FileNames": "",
     "DirPattern": "",
     "ExcludedDirPattern": "",
     "DeleteDesRootBeforeCollect": true
   },
   {
-    "SrcRootPath": "D:\\workspace\\learn-java\\src\\test\\java\\com\\drivers",
-    "DesRootPath": "C:\\source\\learn-java",
+    "SrcRootPath": "C:\\Users\\EdwardHuo\\Documents\\SQL Server Management Studio",
+    "DesRootPath": "C:\\source\\file-collector\\root\\SSMS",
     "FileNames": "",
     "DirPattern": "",
     "ExcludedDirPattern": "",
+    "DeleteDesRootBeforeCollect": true
+  },
+  {
+    "SrcRootPath": "D:\\workspace\\learn-java\\src\\main\\java\\drivers",
+    "DesRootPath": "C:\\source\\file-collector\\root\\learn-java",
+    "FileNames": "",
+    "DirPattern": "",
+    "ExcludedDirPattern": "",
+    "DeleteDesRootBeforeCollect": true
+  },
+  {
+    "SrcRootPath": "D:\\workspace\\learn-csharp\\Net6TestProject1\\Net6TestProject1",
+    "DesRootPath": "C:\\source\\file-collector\\root\\learn-csharp",
+    "FileNames": "",
+    "DirPattern": "%Drivers",
+    "ExcludedDirPattern": "bin",
     "DeleteDesRootBeforeCollect": true
   }
 ]
