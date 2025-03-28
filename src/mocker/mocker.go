@@ -244,7 +244,7 @@ func (m *Mocker) handleClientSocket(mockerConn *MockerConn) {
 		for _, item := range reqDataResFiles {
 			rr := item.(*ReqDataResFiles)
 			if bytes.Equal(*rr.ReqData, request) {
-				Logger.Log(logCode, "Response is found in ReqDataResFiles!")
+				Logger.Log(logCode, msgLevelUp("Response is found in ReqDataResFiles!!!"))
 				fileUris = rr.FileUris
 				break
 			}
@@ -262,7 +262,7 @@ func (m *Mocker) handleClientSocket(mockerConn *MockerConn) {
 		for _, item := range reqDataDelay {
 			rr := item.(*ReqDataDelay)
 			if bytes.Equal(*rr.ReqData, request) {
-				Logger.Log(logCode, "Request is matched in ReqDataDelay!")
+				Logger.Log(logCode, msgLevelUp("Request is matched in ReqDataDelay!!!"))
 				if rr.Delay > 0 {
 					Logger.Log(logCode, "Delaying..., will continue in "+strconv.Itoa(rr.Delay)+" seconds")
 					time.Sleep(time.Duration(rr.Delay) * time.Second)
@@ -271,7 +271,6 @@ func (m *Mocker) handleClientSocket(mockerConn *MockerConn) {
 			}
 		}
 
-		Logger.Log(logCode, "Response isn't found in ReqDataResFiles, try to send request to server")
 		_, err = mockerConn.ServerConn.Write(request)
 		if err != nil {
 			Logger.LogError(logCode, "Error sending request to server: "+err.Error())
@@ -305,7 +304,7 @@ func (m *Mocker) handleServerSocket(mockerConn *MockerConn) {
 		for _, item := range postElements {
 			rr := item.(*ResLenResFiles)
 			if rr.ResLen == len(response) {
-				Logger.Log(logCode, "Response is matched in ResLenResFiles!")
+				Logger.Log(logCode, msgLevelUp("Response is matched in ResLenResFiles!!!"))
 				fileUris = rr.FileUris
 				break
 			}
@@ -356,5 +355,8 @@ func writeFileToClient(fileUri string, mockerConn *MockerConn, logCode string) e
 			return nil
 		}
 	}
+}
 
+func msgLevelUp(str string) string {
+	return "----------> " + str + " <----------"
 }
