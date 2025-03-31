@@ -194,7 +194,7 @@ func (m *Mocker) connectServer() (net.Conn, error) {
 }
 
 func (m *Mocker) connectServerAccordingToRouteTable() (net.Conn, error) {
-	ipNet, err := myutil.FindInterfaceInRouteTable(m.MockerConfig.ServerIP, m.MockerConfig.MockerName)
+	ipNet, err := myutil.FindInterfaceInRouteTable(m.MockerConfig.ServerIP, m.MockerConfig.MockerName, m.MockerConfig.DefNetInterface)
 	if err != nil {
 		Logger.LogError("Main", "Error finding network interface in route table, IP: "+m.MockerConfig.ServerIP+", error: "+err.Error())
 		return nil, err

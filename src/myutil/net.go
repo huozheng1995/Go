@@ -86,7 +86,7 @@ func GetIPByDomain(domain string) (*net.IP, error) {
 	return nil, nil
 }
 
-func FindInterfaceInRouteTable(ipStr string, interfaceToIgnore string) (*net.IPNet, error) {
+func FindInterfaceInRouteTable(ipStr string, interfaceToIgnore string, defNetInterface string) (*net.IPNet, error) {
 	ip := net.ParseIP(ipStr)
 	ifaces, err := net.Interfaces()
 	if err != nil {
@@ -104,8 +104,12 @@ func FindInterfaceInRouteTable(ipStr string, interfaceToIgnore string) (*net.IPN
 		}
 
 		for _, addr := range addrs {
-			if ipnet, ok := addr.(*net.IPNet); ok && ipnet.Contains(ip) {
-				return ipnet, nil
+			if ipnet, ok := addr.(*net.IPNet); ok {
+				if ipnet.Contains(ip) {
+					return ipnet, nil
+				} else if iface.Name == defNetInterface && ipnet.IP.To4() != nil {
+					return ipnet, nil
+				}
 			}
 		}
 	}

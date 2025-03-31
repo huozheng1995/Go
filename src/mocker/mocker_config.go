@@ -11,6 +11,7 @@ type MockerConfig struct {
 	MockerName       string `json:"MockerName"`
 	MockerIP         string `json:"MockerIP"`
 	MockerPort       int    `json:"MockerPort"`
+	DefNetInterface  string `json:"DefNetInterface"`
 	PrintDetails     bool   `json:"PrintDetails"`
 	MockDataLocation string `json:"MockDataLocation"`
 	MockDataGroup1   []struct {

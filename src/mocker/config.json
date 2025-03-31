@@ -1,30 +1,20 @@
 {
-  "ServerIP": "172.16.85.139",
-  "ServerPort": 50000,
+  "ServerIP": "dev750.rzkh.de",
+  "ServerPort": 446,
   "MockerIP": "172.16.85.139",
-  "MockerPort": 50000,
+  "MockerPort": 446,
+  "NetworkInterface": "以太网",
   "PrintDetails": true,
   "MockDataLocation": "D:/Program/mocker/temp/db2",
   "MockDataGroup1": [
     {
-      "RequestFile": "/connreq1.txt",
+      "RequestFile": "/exec_query_req.txt",
       "ResponseFiles": [
-        "/connres1.txt"
-      ]
-    },
-    {
-      "RequestFile": "/connreq2.txt",
-      "ResponseFiles": [
-        "/connres2.txt"
-      ]
-    },
-    {
-      "RequestFile": "/req1.txt",
-      "ResponseFiles": [
-        "/res1.txt", "/res2.txt", "/res3.txt"
+        "/exec_query_res.txt", "/exec_query_res2.txt"
       ]
     }
   ],
   "MockDataGroup2": [
+
   ]
 }
